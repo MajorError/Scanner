@@ -24,7 +24,7 @@ public:
 protected:
     void DrawSphere();
 
-    std::vector< Vector<3> > balls;
+    std::vector< Vector<3,double,Reference>* > balls;
     bool initialised;
 
 };

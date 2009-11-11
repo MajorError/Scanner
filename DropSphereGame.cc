@@ -7,9 +7,14 @@ using namespace CVD;
 
 DropSphereGame::DropSphereGame() {
     initialised = false;
+    double d[3] = {0.0, 0.0, 0.0};
+    balls.push_back( new Vector<3,double,Reference>( d ) );
+    /*balls.push_back( Vector<3>( 0, 1, 0 ) );
+    balls.push_back( Vector<3>( 0, 0, 0 ) );
+    balls.push_back( Vector<3>( 1, 1, 0 ) );*/
 }
 
-void DropSphereGame::DrawStuff(Vector < 3 > v3CameraPos) {
+void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
     if (!initialised)
         Init();
 
@@ -43,14 +48,12 @@ void DropSphereGame::DrawStuff(Vector < 3 > v3CameraPos) {
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
 
     glMatrixMode(GL_MODELVIEW);
-    /* TODO: Draw Spheres
-    for (int i = 0; i < 4; i++) {
-
+    // Draw Spheres
+    for (unsigned int i = 0; i < balls.size(); i++) {
         glLoadIdentity();
-        glMultMatrix(ase3WorldFromEye[i]);
-        glScaled(mdEyeRadius, mdEyeRadius, mdEyeRadius);
-        glCallList(mnEyeDisplayList);
-    }*/
+        glTranslate<3>( *balls[i] );
+        DrawSphere();
+    }
 
     glDisable(GL_LIGHTING);
 
@@ -87,9 +90,9 @@ void DropSphereGame::DrawSphere()
   int nWhiteSlice = 6;
   for(int j = 1; j<nSlices;j++)
     {
-      if(j == nBlueSlice)
+      /*if(j == nBlueSlice)
 	glColor3f(0,0,1);
-      if(j == nWhiteSlice)
+      if(j == nWhiteSlice)*/
 	glColor4d(0.92, 0.9, 0.85,1);
 
       glBegin(GL_QUAD_STRIP);

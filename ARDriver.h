@@ -49,6 +49,6 @@ class ARDriver
   bool mbInitialised;
 
   // Sphere Inserter:
-  EyeGame mGame;
+  DropSphereGame mGame;
 };
 #endif
