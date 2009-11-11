@@ -9,9 +9,12 @@ DropSphereGame::DropSphereGame() {
     initialised = false;
     double d[3] = {0.0, 0.0, 0.0};
     balls.push_back( new Vector<3,double,Reference>( d ) );
-    /*balls.push_back( Vector<3>( 0, 1, 0 ) );
-    balls.push_back( Vector<3>( 0, 0, 0 ) );
-    balls.push_back( Vector<3>( 1, 1, 0 ) );*/
+    d[0] = 1.0;
+    balls.push_back( new Vector<3,double,Reference>( d ) );
+    d[1] = 1.0;
+    balls.push_back( new Vector<3,double,Reference>( d ) );
+    d[2] = 1.0;
+    balls.push_back( new Vector<3,double,Reference>( d ) );
 }
 
 void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
@@ -51,6 +54,7 @@ void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
     // Draw Spheres
     for (unsigned int i = 0; i < balls.size(); i++) {
         glLoadIdentity();
+        glScaled(0.1, 0.1, 0.1);
         glTranslate<3>( *balls[i] );
         DrawSphere();
     }
@@ -69,7 +73,7 @@ void DropSphereGame::DrawSphere()
   double dSliceAngle = M_PI / (double)(nSlices);
   double dSegAngle = 2.0 * M_PI / (double)(nSegments);
 
-  glColor3f(0.0,0.0,0.0);
+  glColor4d(0.92, 0.9, 0.85,1);
   {  // North pole:
     double Z = sin(M_PI/2.0 - dSliceAngle);
     double R = cos(M_PI/2.0 - dSliceAngle);
@@ -86,14 +90,11 @@ void DropSphereGame::DrawSphere()
     glEnd();
   }
 
-  int nBlueSlice = 3;
-  int nWhiteSlice = 6;
   for(int j = 1; j<nSlices;j++)
     {
       /*if(j == nBlueSlice)
 	glColor3f(0,0,1);
       if(j == nWhiteSlice)*/
-	glColor4d(0.92, 0.9, 0.85,1);
 
       glBegin(GL_QUAD_STRIP);
       double zTop = sin(M_PI/2.0 - dSliceAngle * (double)j);
