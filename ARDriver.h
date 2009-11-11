@@ -34,9 +34,7 @@ class ARDriver
   ATANCamera mCamera;
   GLWindow2 &mGLWindow;
   void DrawFadingGrid();
-  void MakeFrameBuffer();
   void DrawFBBackGround();
-  void DrawDistortedFB();
   void SetFrustum();
   
   // Texture stuff:

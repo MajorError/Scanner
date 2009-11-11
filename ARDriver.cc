@@ -6,8 +6,6 @@ using namespace GVars3;
 using namespace CVD;
 using namespace std;
 
-static bool CheckFramebufferStatus();
-
 ARDriver::ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw)
   :mCamera(cam), mGLWindow(glw)
 {
@@ -24,8 +22,32 @@ void ARDriver::Init()
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB,mnFrameTex);
   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 
 	       GL_RGBA, mirFrameSize.x, mirFrameSize.y, 0, 
-	       GL_RGBA, GL_UNSIGNED_BYTE, NULL); 
-  MakeFrameBuffer();
+	       GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+  cout << "  ARDriver: Creating FBO... ";
+
+  glGenTextures(1, &mnFrameBufferTex);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB,mnFrameBufferTex);
+  glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0,
+	       GL_RGBA, mirFBSize.x, mirFBSize.y, 0,
+	       GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  GLuint DepthBuffer;
+  glGenRenderbuffers(1, &DepthBuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, DepthBuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mirFBSize.x, mirFBSize.y);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			    GL_TEXTURE_RECTANGLE_ARB, mnFrameBufferTex, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+  			       GL_RENDERBUFFER, DepthBuffer);
+  cout << " .. created FBO." << endl;
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   mGame.Init();
 };
 
@@ -53,43 +75,33 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 		  GL_RGB,
 		  GL_UNSIGNED_BYTE,
 		  imFrame.data());
-  
-  // Set up rendering to go the FBO, draw undistorted video frame into BG
+
   glBindFramebuffer(GL_FRAMEBUFFER,0);
-  
-  CheckFramebufferStatus();
   glViewport(0,0,mirFBSize.x,mirFBSize.y);
-  
+
   glLoadIdentity();
   mGLWindow.SetupViewport();
   mGLWindow.SetupVideoOrtho();
   mGLWindow.SetupVideoRasterPosAndZoom();
   glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
   DrawFBBackGround();
-  //glClearDepth(1);
-  //glClear(GL_DEPTH_BUFFER_BIT);
+  glClearDepth(1);
+  glClear(GL_DEPTH_BUFFER_BIT);
   
-  // Set up 3D projection
-  //glViewport(0,0,mirFBSize.x,mirFBSize.y);
-  //mGLWindow.SetupVideoOrtho();
-  //mGLWindow.SetupVideoRasterPosAndZoom();
-  //glMatrixMode(GL_MODELVIEW);
-  //mGLWindow.SetupVideoOrtho();
-  //mGLWindow.SetupVideoRasterPosAndZoom();
-  //glViewport(0,0,mirFrameSize.x,mirFrameSize.y);*/
+  // Set up 3D projection matrix
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  Matrix<4> m4 = Zeros;
-  double left = -0.5 * 0.005;
-  double right = 0.5 * 0.005;
-  double top = -0.5 * 0.005;
-  double bottom = 0.5 * 0.005;
 
   // The openGhelL frustum manpage is A PACK OF LIES!!
   // Two of the elements are NOT what the manpage says they should be.
   // Anyway, below code makes a frustum projection matrix
   // Which projects a RHS-coord frame with +z in front of the camera
   // Which is what I usually want, instead of glFrustum's LHS, -z idea.
+  Matrix<4> m4 = Zeros;
+  double left = -0.5 * 0.005;
+  double right = 0.5 * 0.005;
+  double top = -0.5 * 0.005;
+  double bottom = 0.5 * 0.005;
   m4[0][0] = (2 * 0.005) / (right - left);
   m4[1][1] = (2 * 0.005) / (top - bottom);
 
@@ -100,14 +112,12 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 
   m4[2][3] = 2*0.005*100 / (0.005 - 100);
   glMultMatrix(m4);
+  //glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
+
   glMultMatrix(se3CfromW);
-
-
-  /*glMatrixMode(GL_PROJECTION);
+  glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
-  glMultMatrix(se3CfromW);*/
-  
+
   DrawFadingGrid();
   
   mGame.DrawStuff(se3CfromW.inverse().get_translation());
@@ -115,65 +125,14 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
   glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_BLEND);
-  
-  /*glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();*/
-  
-  // Set up for drawing 2D stuff:
-  //glBindFramebuffer(GL_FRAMEBUFFER_EXT,0);
-  
-  //DrawDistortedFB();
-  
+
+  // Reset to window-space for UI rendering
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   mGLWindow.SetupViewport();
   mGLWindow.SetupVideoOrtho();
   mGLWindow.SetupVideoRasterPosAndZoom();
 }
-
-
-
-void ARDriver::MakeFrameBuffer()
-{
-  // Needs nvidia drivers >= 97.46
-  cout << "  ARDriver: Creating FBO... ";
-  
-  glGenTextures(1, &mnFrameBufferTex);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB,mnFrameBufferTex);
-  glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, 
-	       GL_RGBA, mirFBSize.x, mirFBSize.y, 0, 
-	       GL_RGBA, GL_UNSIGNED_BYTE, NULL); 
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  GLuint DepthBuffer;
-  glGenRenderbuffers(1, &DepthBuffer);
-  glBindRenderbuffer(GL_RENDERBUFFER, DepthBuffer);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mirFBSize.x, mirFBSize.y);
-
-  //glGenFramebuffers(1, &mnFrameBuffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
-			    GL_TEXTURE_RECTANGLE_ARB, mnFrameBufferTex, 0);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
-  			       GL_RENDERBUFFER, DepthBuffer);
-  
-  CheckFramebufferStatus();
-  cout << " .. created FBO." << endl;
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-static bool CheckFramebufferStatus()         
-{
-    return true;
-  GLenum n;                                            
-  n = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if(n == GL_FRAMEBUFFER_COMPLETE || n == GL_FRAMEBUFFER_COMPLETE_EXT)
-    return true; // All good
-  
-  cout << "glCheckFrameBufferStatusExt returned error " << n << endl;
-  return false;
-};
 
 void ARDriver::DrawFBBackGround()
 {
@@ -217,55 +176,6 @@ void ARDriver::DrawFBBackGround()
 		Vector<2> v2UFBDistorted = v2Iter; 
 		//Vector<2> v2UFBUnDistorted = mCamera.UFBLinearProject(mCamera.UFBUnProject(v2UFBDistorted));
 		glTexCoord2d(v2UFBDistorted[0] * mirFrameSize.x, v2UFBDistorted[1] * mirFrameSize.y);
-		glVertex(v2UFBDistorted);
-	      }
-	  glEnd();
-	}
-      glEndList();
-    }
-  else
-    glCallList(nList);
-  glDisable(GL_TEXTURE_RECTANGLE_ARB);
-}
-
-
-void ARDriver::DrawDistortedFB()
-{
-  static bool bFirstRun = true;
-  static GLuint nList;
-  mGLWindow.SetupViewport();
-  mGLWindow.SetupUnitOrtho();
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  glEnable(GL_TEXTURE_RECTANGLE_ARB);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, mnFrameBufferTex);  
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glDisable(GL_POLYGON_SMOOTH);
-  glDisable(GL_BLEND);
-  if(bFirstRun)
-    {
-      bFirstRun = false;
-      nList = glGenLists(1);
-      glNewList(nList, GL_COMPILE_AND_EXECUTE);
-      // How many grid divisions in the x and y directions to use?
-      int nStepsX = 24; // Pretty arbitrary..
-      int nStepsY = (int) (nStepsX * ((double) mirFrameSize.x / mirFrameSize.y)); // Scaled by aspect ratio
-      if(nStepsY < 2)
-	nStepsY = 2;
-      glColor3f(1,1,1);
-      for(int ystep = 0; ystep<nStepsY; ystep++)
-	{  
-	  glBegin(GL_QUAD_STRIP);
-	  for(int xstep = 0; xstep<=nStepsX; xstep++)
-	    for(int yystep = ystep; yystep<=ystep + 1; yystep++) // Two y-coords in one go - magic.
-	      {
-		Vector<2> v2Iter;
-		v2Iter[0] = (double) xstep / nStepsX;
-		v2Iter[1] = (double) yystep / nStepsY;
-		Vector<2> v2UFBDistorted = v2Iter; 
-		Vector<2> v2UFBUnDistorted = mCamera.UFBLinearProject(mCamera.UFBUnProject(v2UFBDistorted));
-		glTexCoord2d(v2UFBUnDistorted[0] * mirFBSize.x, (1.0 - v2UFBUnDistorted[1]) * mirFBSize.y);
 		glVertex(v2UFBDistorted);
 	      }
 	  glEnd();
