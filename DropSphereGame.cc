@@ -6,14 +6,12 @@
 using namespace CVD;
 
 DropSphereGame::DropSphereGame() {
-    mbInitialised = false;
+    initialised = false;
 }
 
 void DropSphereGame::DrawStuff(Vector < 3 > v3CameraPos) {
-    if (!mbInitialised)
+    if (!initialised)
         Init();
-
-    mnFrameCounter++;
 
     glDisable(GL_BLEND);
     glEnable(GL_CULL_FACE);
@@ -45,56 +43,100 @@ void DropSphereGame::DrawStuff(Vector < 3 > v3CameraPos) {
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
 
     glMatrixMode(GL_MODELVIEW);
-
+    /* TODO: Draw Spheres
     for (int i = 0; i < 4; i++) {
-        if (mnFrameCounter < 100)
-            LookAt(i, 500.0 * (Vector < 3 >) makeVector((i < 2 ? -1 : 1)*(mnFrameCounter < 50 ? -1 : 1) * -0.4, -0.1, 1), 0.05);
-        else
-            LookAt(i, v3CameraPos, 0.02);
 
         glLoadIdentity();
         glMultMatrix(ase3WorldFromEye[i]);
         glScaled(mdEyeRadius, mdEyeRadius, mdEyeRadius);
         glCallList(mnEyeDisplayList);
-    }
+    }*/
 
     glDisable(GL_LIGHTING);
 
-    glLoadIdentity();
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, mnShadowTex);
-    glEnable(GL_BLEND);
-    glColor4f(0, 0, 0, 0.5);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2d(-mdShadowHalfSize, -mdShadowHalfSize);
-    glTexCoord2f(0, 1);
-    glVertex2d(-mdShadowHalfSize, mdShadowHalfSize);
-    glTexCoord2f(1, 1);
-    glVertex2d(mdShadowHalfSize, mdShadowHalfSize);
-    glTexCoord2f(1, 0);
-    glVertex2d(mdShadowHalfSize, -mdShadowHalfSize);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 };
 
-void DropSphereGame::Reset() {
-    mnFrameCounter = 0;
+void DropSphereGame::DrawSphere()
+{
+  int nSegments = 45;
+  int nSlices = 45;
 
+  double dSliceAngle = M_PI / (double)(nSlices);
+  double dSegAngle = 2.0 * M_PI / (double)(nSegments);
+
+  glColor3f(0.0,0.0,0.0);
+  {  // North pole:
+    double Z = sin(M_PI/2.0 - dSliceAngle);
+    double R = cos(M_PI/2.0 - dSliceAngle);
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0,0,1);
+    glVertex3f(0,0,1);
+    for(int i=0; i<nSegments;i++)
+      {
+	glNormal3f(R * sin((double)i * dSegAngle), R * cos((double)i * dSegAngle),  Z);
+	glVertex3f(R * sin((double)i * dSegAngle), R * cos((double)i * dSegAngle),  Z);
+      }
+    glNormal3f(0,R,Z);
+    glVertex3f(0,R,Z);
+    glEnd();
+  }
+
+  int nBlueSlice = 3;
+  int nWhiteSlice = 6;
+  for(int j = 1; j<nSlices;j++)
+    {
+      if(j == nBlueSlice)
+	glColor3f(0,0,1);
+      if(j == nWhiteSlice)
+	glColor4d(0.92, 0.9, 0.85,1);
+
+      glBegin(GL_QUAD_STRIP);
+      double zTop = sin(M_PI/2.0 - dSliceAngle * (double)j);
+      double zBot = sin(M_PI/2.0 - dSliceAngle * (double)(j+1));
+      double rTop = cos(M_PI/2.0 - dSliceAngle * (double)j);
+      double rBot = cos(M_PI/2.0 - dSliceAngle * (double)(j+1));
+      for(int i=0; i<nSegments;i++)
+	{
+	  glNormal3f(rTop*sin((double)i*dSegAngle), rTop*cos((double)i*dSegAngle), zTop);
+	  glVertex3f(rTop*sin((double)i*dSegAngle), rTop*cos((double)i*dSegAngle), zTop);
+	  glNormal3f(rBot*sin((double)i*dSegAngle), rBot*cos((double)i*dSegAngle), zBot);
+	  glVertex3f(rBot*sin((double)i*dSegAngle), rBot*cos((double)i*dSegAngle), zBot);
+	};
+      glNormal3f(0,rTop, zTop);
+      glVertex3f(0,rTop, zTop);
+      glNormal3f(0,rBot, zBot);
+      glVertex3f(0,rBot, zBot);
+      glEnd();
+    };
+
+  {
+    // South pole:
+    double Z = sin(M_PI/2.0 - dSliceAngle);
+    double R = cos(M_PI/2.0 - dSliceAngle);
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3f(0,0,-1);
+    glVertex3f(0,0,-1);
+    for(int i=0; i<nSegments;i++)
+      {
+	glNormal3f(R * sin((double)i * -dSegAngle), R * cos((double)i * -dSegAngle),  -Z);
+	glVertex3f(R * sin((double)i * -dSegAngle), R * cos((double)i * -dSegAngle),  -Z);
+      }
+    glNormal3f(0,R,-Z);
+    glVertex3f(0,R,-Z);
+    glEnd();
+  };
+}
+
+void DropSphereGame::Reset() {
+    // No-Op
 };
 
 void DropSphereGame::Init() {
-    if (mbInitialised)
+    if (initialised)
         return;
-    mbInitialised = true;
-    // Set up the display list for the eyeball.
-    mnEyeDisplayList = glGenLists(1);
-    glNewList(mnEyeDisplayList, GL_COMPILE);
-    DrawEye();
-    glEndList();
-    MakeShadowTex();
+    initialised = true;
 };
 
 

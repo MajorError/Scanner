@@ -17,6 +17,7 @@
 #include <cvd/image.h>
 #include <cvd/rgb.h>
 #include <cvd/byte.h>
+#include "DropSphereGame.h"
 #include "EyeGame.h"
 
 using namespace std;
@@ -49,7 +50,7 @@ class ARDriver
   SE3<> mse3;
   bool mbInitialised;
 
-  // Eyeballs:
+  // Sphere Inserter:
   EyeGame mGame;
 };
 #endif

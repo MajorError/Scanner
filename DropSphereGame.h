@@ -13,9 +13,8 @@
 using namespace TooN;
 #include <vector>
 #include "OpenGL.h"
-#include "EyeGame.h"
 
-class DropSphereGame : public EyeGame {
+class DropSphereGame {
 public:
     DropSphereGame();
     virtual void DrawStuff(Vector<3> v3CameraPos);
@@ -23,7 +22,10 @@ public:
     virtual void Init();
 
 protected:
+    void DrawSphere();
+
     std::vector< Vector<3> > balls;
+    bool initialised;
 
 };
 

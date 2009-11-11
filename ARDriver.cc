@@ -55,18 +55,58 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 		  imFrame.data());
   
   // Set up rendering to go the FBO, draw undistorted video frame into BG
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,mnFrameBuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER,0);
+  
   CheckFramebufferStatus();
   glViewport(0,0,mirFBSize.x,mirFBSize.y);
+  
+  glLoadIdentity();
+  mGLWindow.SetupViewport();
+  mGLWindow.SetupVideoOrtho();
+  mGLWindow.SetupVideoRasterPosAndZoom();
+  glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
   DrawFBBackGround();
-  glClearDepth(1);
-  glClear(GL_DEPTH_BUFFER_BIT);
+  //glClearDepth(1);
+  //glClear(GL_DEPTH_BUFFER_BIT);
   
   // Set up 3D projection
+  //glViewport(0,0,mirFBSize.x,mirFBSize.y);
+  //mGLWindow.SetupVideoOrtho();
+  //mGLWindow.SetupVideoRasterPosAndZoom();
+  //glMatrixMode(GL_MODELVIEW);
+  //mGLWindow.SetupVideoOrtho();
+  //mGLWindow.SetupVideoRasterPosAndZoom();
+  //glViewport(0,0,mirFrameSize.x,mirFrameSize.y);*/
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
+  Matrix<4> m4 = Zeros;
+  double left = -0.5 * 0.005;
+  double right = 0.5 * 0.005;
+  double top = -0.5 * 0.005;
+  double bottom = 0.5 * 0.005;
+
+  // The openGhelL frustum manpage is A PACK OF LIES!!
+  // Two of the elements are NOT what the manpage says they should be.
+  // Anyway, below code makes a frustum projection matrix
+  // Which projects a RHS-coord frame with +z in front of the camera
+  // Which is what I usually want, instead of glFrustum's LHS, -z idea.
+  m4[0][0] = (2 * 0.005) / (right - left);
+  m4[1][1] = (2 * 0.005) / (top - bottom);
+
+  m4[0][2] = (right + left) / (left - right);
+  m4[1][2] = (top + bottom) / (bottom - top);
+  m4[2][2] = (100 + 0.005) / (100 - 0.005);
+  m4[3][2] = 1;
+
+  m4[2][3] = 2*0.005*100 / (0.005 - 100);
+  glMultMatrix(m4);
   glMultMatrix(se3CfromW);
+
+
+  /*glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
+  glMultMatrix(se3CfromW);*/
   
   DrawFadingGrid();
   
@@ -76,13 +116,13 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDisable(GL_BLEND);
   
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  /*glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();*/
   
   // Set up for drawing 2D stuff:
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,0);
+  //glBindFramebuffer(GL_FRAMEBUFFER_EXT,0);
   
-  DrawDistortedFB();
+  //DrawDistortedFB();
   
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -107,31 +147,31 @@ void ARDriver::MakeFrameBuffer()
   glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   GLuint DepthBuffer;
-  glGenRenderbuffersEXT(1, &DepthBuffer);
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, DepthBuffer);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, mirFBSize.x, mirFBSize.y);
+  glGenRenderbuffers(1, &DepthBuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, DepthBuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mirFBSize.x, mirFBSize.y);
 
-  glGenFramebuffersEXT(1, &mnFrameBuffer);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mnFrameBuffer); 
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
+  //glGenFramebuffers(1, &mnFrameBuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
 			    GL_TEXTURE_RECTANGLE_ARB, mnFrameBufferTex, 0);
-  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, 
-  			       GL_RENDERBUFFER_EXT, DepthBuffer);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
+  			       GL_RENDERBUFFER, DepthBuffer);
   
   CheckFramebufferStatus();
   cout << " .. created FBO." << endl;
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 static bool CheckFramebufferStatus()         
-{                                            
-  
+{
+    return true;
   GLenum n;                                            
-  n = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  if(n == GL_FRAMEBUFFER_COMPLETE_EXT)
+  n = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if(n == GL_FRAMEBUFFER_COMPLETE || n == GL_FRAMEBUFFER_COMPLETE_EXT)
     return true; // All good
   
-  cout << "glCheckFrameBufferStatusExt returned an error." << endl;
+  cout << "glCheckFrameBufferStatusExt returned error " << n << endl;
   return false;
 };
 
@@ -175,9 +215,9 @@ void ARDriver::DrawFBBackGround()
 		  for(int i=0; i<2; i++)
 		    v2Iter[i] = v2Iter[i] * 1.02 - 0.01; 
 		Vector<2> v2UFBDistorted = v2Iter; 
-		Vector<2> v2UFBUnDistorted = mCamera.UFBLinearProject(mCamera.UFBUnProject(v2UFBDistorted));
+		//Vector<2> v2UFBUnDistorted = mCamera.UFBLinearProject(mCamera.UFBUnProject(v2UFBDistorted));
 		glTexCoord2d(v2UFBDistorted[0] * mirFrameSize.x, v2UFBDistorted[1] * mirFrameSize.y);
-		glVertex(v2UFBUnDistorted);
+		glVertex(v2UFBDistorted);
 	      }
 	  glEnd();
 	}
@@ -227,7 +267,7 @@ void ARDriver::DrawDistortedFB()
 		Vector<2> v2UFBUnDistorted = mCamera.UFBLinearProject(mCamera.UFBUnProject(v2UFBDistorted));
 		glTexCoord2d(v2UFBUnDistorted[0] * mirFBSize.x, (1.0 - v2UFBUnDistorted[1]) * mirFBSize.y);
 		glVertex(v2UFBDistorted);
-	      }	 
+	      }
 	  glEnd();
 	}
       glEndList();
@@ -239,12 +279,12 @@ void ARDriver::DrawDistortedFB()
 
 void ARDriver::DrawFadingGrid()
 {
-  double dStrength;
-  if(mnCounter >= 60)
+  double dStrength( 1.0 );
+  /*if(mnCounter >= 60)
     return;
   if(mnCounter < 30)
     dStrength = 1.0;
-  dStrength = (60 - mnCounter) / 30.0;
+  dStrength = (60 - mnCounter) / 30.0;*/
   
   glColor4f(1,1,1,dStrength);
   int nHalfCells = 8;
