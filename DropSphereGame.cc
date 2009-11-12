@@ -2,19 +2,29 @@
 #include "DropSphereGame.h"
 #include "OpenGL.h"
 #include <cvd/convolution.h>
+#include <gvars3/gvars3.h>
+#include <gvars3/instances.h>
 
 using namespace CVD;
+using namespace GVars3;
 
 DropSphereGame::DropSphereGame() {
     initialised = false;
-    double d[3] = {0.0, 0.0, 0.0};
-    balls.push_back( new Vector<3,double,Reference>( d ) );
-    d[0] = 1.0;
-    balls.push_back( new Vector<3,double,Reference>( d ) );
-    d[1] = 1.0;
-    balls.push_back( new Vector<3,double,Reference>( d ) );
-    d[2] = 1.0;
-    balls.push_back( new Vector<3,double,Reference>( d ) );
+    balls.push_back( makeVector( 0.0, 0.0, 0.0 ) );
+    balls.push_back( makeVector( 0.0, 1.0, 0.0 ) );
+    balls.push_back( makeVector( 0.0, 0.0, 1.0 ) );
+    balls.push_back( makeVector( 0.0, 1.0, 1.0 ) );
+
+    GUI.RegisterCommand( "sphere.create", DropSphereGame::create, this );
+}
+
+void DropSphereGame::create(void* obj, std::string cmd, std::string params) {
+    double d[3];
+    std::stringstream paramStream( params );
+    paramStream >> d[0];
+    paramStream >> d[1];
+    paramStream >> d[2];
+    static_cast<DropSphereGame*>( obj )->balls.push_back( makeVector( d[0], d[1], d[2] ) );
 }
 
 void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
@@ -52,10 +62,11 @@ void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
 
     glMatrixMode(GL_MODELVIEW);
     // Draw Spheres
-    for (unsigned int i = 0; i < balls.size(); i++) {
+    double ds = GV3::get<double>( "dotSize", 0.05 );
+    for ( unsigned int i = 0; i < balls.size(); i++ ) {
         glLoadIdentity();
-        glScaled(0.1, 0.1, 0.1);
-        glTranslate<3>( *balls[i] );
+        glTranslate<3>( balls[i] );
+        glScaled( ds, ds, ds );
         DrawSphere();
     }
 

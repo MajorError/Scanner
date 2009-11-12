@@ -11,6 +11,8 @@
 #define __DropSphereGame_H
 #include <TooN/TooN.h>
 using namespace TooN;
+#include <gvars3/GUI.h>
+using namespace GVars3;
 #include <vector>
 #include "OpenGL.h"
 
@@ -20,11 +22,12 @@ public:
     virtual void DrawStuff(Vector<3> v3CameraPos);
     virtual void Reset();
     virtual void Init();
+    static void create(void* obj, std::string cmd, std::string params);
 
 protected:
     void DrawSphere();
 
-    std::vector< Vector<3,double,Reference>* > balls;
+    std::vector< Vector<3> > balls;
     bool initialised;
 
 };
