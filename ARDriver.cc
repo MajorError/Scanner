@@ -6,8 +6,8 @@ using namespace GVars3;
 using namespace CVD;
 using namespace std;
 
-ARDriver::ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw)
-  :mCamera(cam), mGLWindow(glw)
+ARDriver::ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw, Environment *e)
+  :mCamera(cam), mGLWindow(glw), mGame( *new ARPointRenderer( e ) )
 {
   mirFrameSize = irFrameSize;
   mCamera.SetImageSize(mirFrameSize);

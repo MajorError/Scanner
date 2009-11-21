@@ -17,7 +17,7 @@
 #include <cvd/image.h>
 #include <cvd/rgb.h>
 #include <cvd/byte.h>
-#include "DropSphereGame.h"
+#include "ARPointRenderer.h"
 #include "EyeGame.h"
 
 using namespace std;
@@ -26,7 +26,7 @@ using namespace CVD;
 class ARDriver
 {
  public:
-  ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw);
+  ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw, Environment *e);
   void Render(Image<Rgb<byte> > &imFrame, SE3<> se3CamFromWorld);
   void Reset();
   void Init();
@@ -49,6 +49,6 @@ class ARDriver
   bool mbInitialised;
 
   // Sphere Inserter:
-  DropSphereGame mGame;
+  ARPointRenderer mGame;
 };
 #endif

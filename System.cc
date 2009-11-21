@@ -41,7 +41,7 @@ System::System()
   mpMap = new Map;
   mpMapMaker = new MapMaker(*mpMap, *mpCamera);
   mpTracker = new Tracker(mVideoSource.Size(), *mpCamera, *mpMap, *mpMapMaker);
-  mpARDriver = new ARDriver(*mpCamera, mVideoSource.Size(), mGLWindow);
+  mpARDriver = new ARDriver(*mpCamera, mVideoSource.Size(), mGLWindow, NULL);
   mpMapViewer = new MapViewer(*mpMap, mGLWindow);
   
   GUI.ParseLine("GLWindow.AddMenu Menu Menu");
