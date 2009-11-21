@@ -6,14 +6,11 @@
  */
 
 #include <cvd/glwindow.h>
-
-
 #include <stdlib.h>
 #include "Environment.h"
-
 #include "VisionProcessor.h"
 #include "Tool.h"
-
+#include "GUICommand.h"
 #include "GLWindow2.h"
 #include "VideoSource.h"
 #include <cvd/image.h>
@@ -67,7 +64,7 @@ void PTAMDispatcher::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sce
         environment->setCamera( mpCamera );
     }
 
-    mpTracker->TrackFrame( sceneBW, !mpMap->IsGood() );
+    mpTracker->TrackFrame( sceneBW, false/*!mpMap->IsGood()*/ );
     environment->setCameraPose( mpTracker->GetCurrentPose() );
     // TODO: Is this slow? Worth it to prevent dep leakage?
     environment->clearFeatures();
@@ -106,6 +103,22 @@ void Clicky::click() {
     cout << "CLICK" << endl;
 };*/
 
+MK_GUI_COMMAND( point, create )
+void point::create( string params ) {
+    Vector<3> v;
+    if ( params.size() > 0 ) {
+        double d[3];
+        std::stringstream paramStream( params );
+        paramStream >> d[0];
+        paramStream >> d[1];
+        paramStream >> d[2];
+        v = makeVector( d[0], d[1], d[2] );
+    } else {
+        v = environment->getCameraPose().get_translation();
+    }
+    environment->addPoint( v );
+}
+
 /*
  *
  */
@@ -113,16 +126,14 @@ int main(int argc, char** argv) {
     CVD::Image<CVD::byte> bw;
     CVD::Image< CVD::Rgb<CVD::byte> > rgb;
 
-    cout << "Starting parser...";
     GVars3::GUI.StartParserThread();
-    cout << "done" << endl;
 
-    VisionPlugin::setEnvironment( new Environment() );
+    Environment env;
+    VisionPlugin::setEnvironment( &env );
+    GUICommand::setEnvironment( &env );
 
     while( true ) {
-        cout << "Loop... " << endl;
         for( unsigned int i = 0; i < VisionPlugin::list.size(); i++ ) {
-            cout << VisionPlugin::list[i]->getShortName() << ":" << endl;
             VisionPlugin::list[i]->process( bw, rgb );
         }
     }

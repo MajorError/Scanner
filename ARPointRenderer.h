@@ -21,13 +21,11 @@ public:
     virtual void DrawStuff(SE3<> camera);
     virtual void Reset();
     virtual void Init();
-    static void create(void* obj, std::string cmd, std::string params);
 
 protected:
     void DrawSphere();
     Environment *env;
     bool initialised;
-    SE3<> lastCam;
 
 };
 

@@ -11,27 +11,6 @@ using namespace GVars3;
 
 ARPointRenderer::ARPointRenderer( Environment *e ) : env( e ) {
     initialised = false;
-    /*balls.push_back( makeVector( 0.0, 0.0, 0.0 ) );
-    balls.push_back( makeVector( 0.0, 1.0, 0.0 ) );
-    balls.push_back( makeVector( 0.0, 0.0, 1.0 ) );
-    balls.push_back( makeVector( 0.0, 1.0, 1.0 ) );*/
-
-    GUI.RegisterCommand( "sphere.create", ARPointRenderer::create, this );
-}
-
-void ARPointRenderer::create(void* obj, std::string cmd, std::string params) {
-    Vector<3> v;
-    if ( params.size() > 0 ) {
-        double d[3];
-        std::stringstream paramStream( params );
-        paramStream >> d[0];
-        paramStream >> d[1];
-        paramStream >> d[2];
-        v = makeVector( d[0], d[1], d[2] );
-    } else {
-        v = static_cast<ARPointRenderer*>( obj )->lastCam.get_translation();
-    }
-    static_cast<ARPointRenderer*>( obj )->env->addPoint( v );
 }
 
 void ARPointRenderer::DrawStuff(SE3<> camera) {
@@ -79,11 +58,11 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
         DrawSphere();
     }
     // Draw Features
-    ds = GV3::get<double>( "ftSize", 0.01 );
+    ds = GV3::get<double>( "ftSize", 0.03 );
     glColor4d(0.2, 0.2, 0.9,1);
     Matrix<> rot = camera.get_rotation().get_matrix();
     Vector<3> z = makeVector( rot[2][0], rot[2][1], rot[2][2] );
-    std::vector< Vector<3> > features( env->getFeatures( camera.get_translation(), z, 0.01 ) );
+    std::vector< Vector<3> > features( env->getFeatures( camera.get_translation(), z, 1.0 ) );
     for ( unsigned int i = 0; i < features.size(); i++ ) {
         glLoadIdentity();
         glTranslate<3>( features[i] );
