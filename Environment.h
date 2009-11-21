@@ -12,6 +12,7 @@
 #include "TooN/TooN.h"
 #include "TooN/se3.h"
 using namespace TooN;
+using namespace std;
 
 
 class Environment {

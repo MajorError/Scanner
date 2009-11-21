@@ -47,16 +47,12 @@ public:                                                                     \
     NAME() : GUICommand()                                                   \
     {                                                                       \
         setupCommands();                                                    \
-        GUI.RegisterCommand( "NAME.COMMAND", NAME::callback, this );        \
+        GUI.RegisterCommand( getShortName().append( "." ).append( #COMMAND ), NAME::callback, this );        \
     };                                                                      \
     virtual ~NAME() {};                                                     \
-    virtual std::string getName()                                           \
-    {                                                                       \
-        return "NAME";                                                      \
-    };                                                                      \
     virtual std::string getShortName()                                      \
     {                                                                       \
-        return "NAME";                                                      \
+        return #NAME;                                                      \
     };                                                                      \
     static NAME* instance;                                                  \
 protected:                                                                  \

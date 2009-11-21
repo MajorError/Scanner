@@ -65,7 +65,7 @@ void PTAMDispatcher::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sce
     }
 
     mpTracker->TrackFrame( sceneBW, false/*!mpMap->IsGood()*/ );
-    environment->setCameraPose( mpTracker->GetCurrentPose() );
+    environment->setCameraPose( mpTracker->GetCurrentPose().inverse() );
     // TODO: Is this slow? Worth it to prevent dep leakage?
     environment->clearFeatures();
     for( unsigned int i = 0; i < mpMap->vpPoints.size(); i++ )
@@ -92,7 +92,7 @@ void GUIDispatcher::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& scen
 
     ard->Render( sceneRGB, environment->getCameraPose() );
 
-    // (TODO?) No message at this time... glWindow.DrawCaption( sCaption );
+    // (TODO?) No message at this time... glWindow->DrawCaption( sCaption );
     glWindow->DrawMenus();
     glWindow->swap_buffers();
     glWindow->HandlePendingEvents();
@@ -103,7 +103,7 @@ void Clicky::click() {
     cout << "CLICK" << endl;
 };*/
 
-MK_GUI_COMMAND( point, create )
+MK_GUI_COMMAND(point, create)
 void point::create( string params ) {
     Vector<3> v;
     if ( params.size() > 0 ) {
@@ -123,10 +123,10 @@ void point::create( string params ) {
  *
  */
 int main(int argc, char** argv) {
-    CVD::Image<CVD::byte> bw;
-    CVD::Image< CVD::Rgb<CVD::byte> > rgb;
+    Image<CVD::byte> bw;
+    Image< CVD::Rgb<CVD::byte> > rgb;
 
-    GVars3::GUI.StartParserThread();
+    GUI.StartParserThread();
 
     Environment env;
     VisionPlugin::setEnvironment( &env );

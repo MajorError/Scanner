@@ -56,6 +56,7 @@ std::vector< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, dou
     double d; // the square of the distance
     std::vector< Vector<3> > out;
     tol *= tol;
+    v -= o;
     for( unsigned int i = 0; i < features.size(); i++ ) {
         // o = x1, v = x2, feature = x0
         // d =	(|(x_0-x_1)x(x_0-x_2)|)/(|x_2-x_1|)

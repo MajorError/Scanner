@@ -37,12 +37,6 @@ public:
         GVars3::GUI.RegisterCommand( getShortName().append( ".disable" ), Plugin::disable, this );
     };
     /**
-     * Answer a name for this plugin; should make it clear what this plugin
-     * does, how it affects the output, and what its parameters are.
-     * \return A UI-friendly string name
-     */
-    virtual std::string getName(){ return "NULL"; };
-    /**
      * Answer a short-name for this plugin; should be short enough to be used
      * in scripting to choose the operation
      * \return A code-friendly short string name
@@ -65,10 +59,6 @@ public:                                                                     \
         setupCommands();                                                    \
     };                                                                      \
     virtual ~TYPE() {};                                                     \
-    virtual std::string getName()                                           \
-    {                                                                       \
-        return "TYPE";                                                      \
-    };                                                                      \
     virtual std::string getShortName()                                      \
     {                                                                       \
         return SHORTNAME;                                                   \

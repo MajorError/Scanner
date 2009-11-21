@@ -19,13 +19,10 @@ class ARPointRenderer {
 public:
     ARPointRenderer( Environment *e );
     virtual void DrawStuff(SE3<> camera);
-    virtual void Reset();
-    virtual void Init();
 
 protected:
     void DrawSphere();
     Environment *env;
-    bool initialised;
 
 };
 

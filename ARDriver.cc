@@ -47,13 +47,10 @@ void ARDriver::Init()
   cout << " .. created FBO." << endl;
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  mGame.Init();
 };
 
 void ARDriver::Reset()
 {
-  mGame.Reset();
   mnCounter = 0;
 }
 
@@ -114,13 +111,13 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
   glMultMatrix(m4);
   //glMultMatrix(mCamera.MakeUFBLinearFrustumMatrix(0.005, 100));
 
-  glMultMatrix(se3CfromW);
+  glMultMatrix(se3CfromW.inverse());
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   DrawFadingGrid();
   
-  mGame.DrawStuff(se3CfromW.inverse());
+  mGame.DrawStuff(se3CfromW);
   
   glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

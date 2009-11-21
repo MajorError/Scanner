@@ -10,13 +10,9 @@ using namespace CVD;
 using namespace GVars3;
 
 ARPointRenderer::ARPointRenderer( Environment *e ) : env( e ) {
-    initialised = false;
 }
 
 void ARPointRenderer::DrawStuff(SE3<> camera) {
-    if (!initialised)
-        Init();
-    lastCam = camera;
 
     glDisable(GL_BLEND);
     glEnable(GL_CULL_FACE);
@@ -58,17 +54,18 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
         DrawSphere();
     }
     // Draw Features
-    ds = GV3::get<double>( "ftSize", 0.03 );
+    /*ds = GV3::get<double>( "ftSize", 0.01 );
+    double rad = GV3::get<double>( "ftRadius", 1.1 );
     glColor4d(0.2, 0.2, 0.9,1);
     Matrix<> rot = camera.get_rotation().get_matrix();
     Vector<3> z = makeVector( rot[2][0], rot[2][1], rot[2][2] );
-    std::vector< Vector<3> > features( env->getFeatures( camera.get_translation(), z, 1.0 ) );
+    std::vector< Vector<3> > features( env->getFeatures( camera.get_translation(), z, rad ) );
     for ( unsigned int i = 0; i < features.size(); i++ ) {
         glLoadIdentity();
         glTranslate<3>( features[i] );
         glScaled( ds, ds, ds );
         DrawSphere();
-    }
+    }*/
 
     // Draw a target ball
     /*std::cout << "Camera: t"
@@ -152,16 +149,6 @@ void ARPointRenderer::DrawSphere()
     glVertex3f(0,R,-Z);
     glEnd();
   };
-}
-
-void ARPointRenderer::Reset() {
-    // No-Op
-};
-
-void ARPointRenderer::Init() {
-    if (initialised)
-        return;
-    initialised = true;
 };
 
 
