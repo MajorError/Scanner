@@ -120,7 +120,7 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 
   DrawFadingGrid();
   
-  mGame.DrawStuff(se3CfromW.inverse().get_translation());
+  mGame.DrawStuff(se3CfromW.inverse());
   
   glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -189,7 +189,7 @@ void ARDriver::DrawFBBackGround()
 
 void ARDriver::DrawFadingGrid()
 {
-  double dStrength( 1.0 );
+  double dStrength( 0.8 );
   /*if(mnCounter >= 60)
     return;
   if(mnCounter < 30)
@@ -229,10 +229,3 @@ void ARDriver::DrawFadingGrid()
       glEnd();
     };
 };
-
-
-
-
-
-
-

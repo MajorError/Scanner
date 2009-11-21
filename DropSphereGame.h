@@ -19,7 +19,7 @@ using namespace GVars3;
 class DropSphereGame {
 public:
     DropSphereGame();
-    virtual void DrawStuff(Vector<3> v3CameraPos);
+    virtual void DrawStuff(SE3<> camera);
     virtual void Reset();
     virtual void Init();
     static void create(void* obj, std::string cmd, std::string params);
@@ -29,6 +29,7 @@ protected:
 
     std::vector< Vector<3> > balls;
     bool initialised;
+    SE3<> lastCam;
 
 };
 

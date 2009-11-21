@@ -10,26 +10,33 @@ using namespace GVars3;
 
 DropSphereGame::DropSphereGame() {
     initialised = false;
-    balls.push_back( makeVector( 0.0, 0.0, 0.0 ) );
+    /*balls.push_back( makeVector( 0.0, 0.0, 0.0 ) );
     balls.push_back( makeVector( 0.0, 1.0, 0.0 ) );
     balls.push_back( makeVector( 0.0, 0.0, 1.0 ) );
-    balls.push_back( makeVector( 0.0, 1.0, 1.0 ) );
+    balls.push_back( makeVector( 0.0, 1.0, 1.0 ) );*/
 
     GUI.RegisterCommand( "sphere.create", DropSphereGame::create, this );
 }
 
 void DropSphereGame::create(void* obj, std::string cmd, std::string params) {
-    double d[3];
-    std::stringstream paramStream( params );
-    paramStream >> d[0];
-    paramStream >> d[1];
-    paramStream >> d[2];
-    static_cast<DropSphereGame*>( obj )->balls.push_back( makeVector( d[0], d[1], d[2] ) );
+    Vector<3> v;
+    if ( params.size() > 0 ) {
+        double d[3];
+        std::stringstream paramStream( params );
+        paramStream >> d[0];
+        paramStream >> d[1];
+        paramStream >> d[2];
+        v = makeVector( d[0], d[1], d[2] );
+    } else {
+        v = static_cast<DropSphereGame*>( obj )->lastCam.get_translation();
+    }
+    static_cast<DropSphereGame*>( obj )->balls.push_back( v );
 }
 
-void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
+void DropSphereGame::DrawStuff(SE3<> camera) {
     if (!initialised)
         Init();
+    lastCam = camera;
 
     glDisable(GL_BLEND);
     glEnable(GL_CULL_FACE);
@@ -63,12 +70,24 @@ void DropSphereGame::DrawStuff(Vector<3> v3CameraPos) {
     glMatrixMode(GL_MODELVIEW);
     // Draw Spheres
     double ds = GV3::get<double>( "dotSize", 0.05 );
+    glColor4d(0.92, 0.9, 0.85,1);
     for ( unsigned int i = 0; i < balls.size(); i++ ) {
         glLoadIdentity();
         glTranslate<3>( balls[i] );
         glScaled( ds, ds, ds );
         DrawSphere();
     }
+
+    // Draw a target ball
+    /*std::cout << "Camera: t"
+        << lastCam.get_translation() << std::endl
+        << lastCam.get_rotation() << std::endl;
+    Matrix<3,3> m( lastCam.get_rotation().get_matrix() );
+    glLoadIdentity();
+    glColor4d(0.2, 0.9, 0.2, 0.4);
+    glTranslate<3>( makeVector( -m[2][0], -m[2][1], -m[2][2] ) );
+    glScaled( ds/2, ds/2, ds/2 );
+    DrawSphere();*/
 
     glDisable(GL_LIGHTING);
 
@@ -84,7 +103,6 @@ void DropSphereGame::DrawSphere()
   double dSliceAngle = M_PI / (double)(nSlices);
   double dSegAngle = 2.0 * M_PI / (double)(nSegments);
 
-  glColor4d(0.92, 0.9, 0.85,1);
   {  // North pole:
     double Z = sin(M_PI/2.0 - dSliceAngle);
     double R = cos(M_PI/2.0 - dSliceAngle);
