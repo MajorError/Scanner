@@ -47,39 +47,37 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     // Draw Points
     double ds = GV3::get<double>( "ptSize", 0.05 );
     glColor4d(0.92, 0.9, 0.85,1);
-    for ( unsigned int i = 0; i < env->getPoints().size(); i++ ) {
+    for ( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
         glLoadIdentity();
         glTranslate<3>( env->getPoints()[i] );
         glScaled( ds, ds, ds );
         DrawSphere();
     }
+    
     // Draw Features
-    /*ds = GV3::get<double>( "ftSize", 0.01 );
-    double rad = GV3::get<double>( "ftRadius", 1.1 );
-    glColor4d(0.2, 0.2, 0.9,1);
-    Matrix<> rot = camera.get_rotation().get_matrix();
-    Vector<3> z = makeVector( rot[2][0], rot[2][1], rot[2][2] );
-    std::vector< Vector<3> > features( env->getFeatures( camera.get_translation(), z, rad ) );
-    for ( unsigned int i = 0; i < features.size(); i++ ) {
+    ds = GV3::get<double>( "ftSize", 0.01 );
+    double rad = GV3::get<double>( "ftRadius", 1.0 );
+
+    glColor4d(0.9, 0.2, 0.2, 1.0);
+    std::vector< Vector<3> > features( env->getFeaturesSorted( camera, rad ) );
+    for ( unsigned int i = 0; i < features.size() && i < 5; ++i ) {
         glLoadIdentity();
         glTranslate<3>( features[i] );
         glScaled( ds, ds, ds );
         DrawSphere();
-    }*/
+        glColor4d(0.2, 0.2, 0.9, 1.0);
+        ds *= 0.8;
+    }
 
     // Draw a target ball
-    /*std::cout << "Camera: t"
-        << lastCam.get_translation() << std::endl
-        << lastCam.get_rotation() << std::endl;
-    Matrix<3,3> m( lastCam.get_rotation().get_matrix() );
     glLoadIdentity();
     glColor4d(0.2, 0.9, 0.2, 0.4);
-    glTranslate<3>( makeVector( -m[2][0], -m[2][1], -m[2][2] ) );
+    Matrix<> rot = camera.get_rotation().get_matrix();
+    glTranslate<3>( camera.get_translation() + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
     glScaled( ds/2, ds/2, ds/2 );
-    DrawSphere();*/
+    DrawSphere();
 
     glDisable(GL_LIGHTING);
-
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 };
@@ -110,9 +108,6 @@ void ARPointRenderer::DrawSphere()
 
   for(int j = 1; j<nSlices;j++)
     {
-      /*if(j == nBlueSlice)
-	glColor3f(0,0,1);
-      if(j == nWhiteSlice)*/
 
       glBegin(GL_QUAD_STRIP);
       double zTop = sin(M_PI/2.0 - dSliceAngle * (double)j);

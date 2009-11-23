@@ -103,8 +103,8 @@ void Clicky::click() {
     cout << "CLICK" << endl;
 };*/
 
-MK_GUI_COMMAND(point, create)
-void point::create( string params ) {
+MK_GUI_COMMAND(sphere, createByPos,)
+void sphere::createByPos( string params ) {
     Vector<3> v;
     if ( params.size() > 0 ) {
         double d[3];
@@ -117,6 +117,17 @@ void point::create( string params ) {
         v = environment->getCameraPose().get_translation();
     }
     environment->addPoint( v );
+}
+
+MK_GUI_COMMAND(target, create,)
+void target::create( string params ) {
+    double rad = GV3::get<double>( "ftRadius", 1.0 );
+    SE3<> camera( environment->getCameraPose() );
+    Matrix<> rot = camera.get_rotation().get_matrix();
+    Vector<3> view = makeVector( rot[0][2], rot[1][2], rot[2][2] );
+    std::vector< Vector<3> > features( environment->getFeaturesSorted( camera, rad ) );
+    if ( features.size() > 0 )
+        environment->addPoint( features[0] );
 }
 
 /*

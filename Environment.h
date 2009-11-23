@@ -37,6 +37,11 @@ public:
      * vector. Assumes input vector at origin o and with formula given as o + (v-o)t
      */
     std::vector< Vector<3> > getFeatures( Vector<3> o, Vector<3> v, double tol );
+    std::vector< Vector<3> > getFeaturesSorted( SE3<> camera, double tol );
+    std::vector< Vector<3> > getFeaturesSorted( Vector<3> o, Vector<3> v, double tol );
+
+    static Vector<3> v, o;
+    static bool closer( Vector<3> a, Vector<3> b );
     
 private:
     ATANCamera* camera;

@@ -40,7 +40,7 @@ protected:
 
 std::vector<GUICommand*> GUICommand::list;
 
-#define MK_GUI_COMMAND(NAME, COMMAND)                                       \
+#define MK_GUI_COMMAND(NAME, COMMAND, VARS)                                 \
 class NAME : public GUICommand                                              \
 {                                                                           \
 public:                                                                     \
@@ -52,12 +52,13 @@ public:                                                                     \
     virtual ~NAME() {};                                                     \
     virtual std::string getShortName()                                      \
     {                                                                       \
-        return #NAME;                                                      \
+        return #NAME;                                                       \
     };                                                                      \
     static NAME* instance;                                                  \
 protected:                                                                  \
     virtual void call( std::string params ) { COMMAND( params ); };         \
     void COMMAND( std::string params );                                     \
+    VARS                                                                    \
 };                                                                          \
 NAME* NAME::instance = new NAME();
 
