@@ -19,6 +19,7 @@
 #include "OpenGL.h"
 #include <gvars3/instances.h>
 #include <stdlib.h>
+#include <algorithm>
 #include "ATANCamera.h"
 #include "MapMaker.h"
 #include "Tracker.h"
@@ -122,12 +123,39 @@ void sphere::createByPos( string params ) {
 MK_GUI_COMMAND(target, create,)
 void target::create( string params ) {
     double rad = GV3::get<double>( "ftRadius", 1.0 );
-    SE3<> camera( environment->getCameraPose() );
-    Matrix<> rot = camera.get_rotation().get_matrix();
-    Vector<3> view = makeVector( rot[0][2], rot[1][2], rot[2][2] );
-    std::vector< Vector<3> > features( environment->getFeaturesSorted( camera, rad ) );
+    std::vector< Vector<3> > features( environment->getFeaturesSorted( environment->getCameraPose(), rad ) );
     if ( features.size() > 0 )
         environment->addPoint( features[0] );
+}
+
+MK_GUI_COMMAND(point, move, SE3<> start; bool done; pthread_t mover; static void* moveProcessor( void* ptr );)
+void point::move( string params ) {
+    if ( params == "start" ) {
+        start = environment->getCameraPose();
+        done = false;
+        pthread_create( &mover, NULL, point::moveProcessor, (void*)this );
+    } else if ( environment->getPoints().size() > 0 ) {
+        done = true;
+        pthread_join( mover, NULL );
+    }
+}
+
+void* point::moveProcessor( void* ptr ) {
+    point *p = static_cast<point*>( ptr );
+    Vector<3> startPt;
+    SE3<> camera( p->environment->getCameraPose() );
+    Matrix<> rot = camera.get_rotation().get_matrix();
+    Vector<3> view = makeVector( rot[0][2], rot[1][2], rot[2][2] );
+    // Set up and perform the sort
+    Environment::v = camera.get_translation();
+    Environment::o = camera.get_translation() + view;
+    std::sort( p->environment->getPoints().begin(), p->environment->getPoints().end(), Environment::closer );
+    startPt = (p->environment->getPoints()[0] - p->start.get_translation()) * p->start.get_rotation().inverse().get_matrix();
+    while( !p->done ) {
+        camera = p->environment->getCameraPose();
+        p->environment->getPoints()[0] = startPt * camera.get_rotation().get_matrix() + camera.get_translation();
+    }
+    return NULL;
 }
 
 /*
