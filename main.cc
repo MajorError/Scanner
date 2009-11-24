@@ -142,7 +142,7 @@ void point::move( string params ) {
 
 void* point::moveProcessor( void* ptr ) {
     point *p = static_cast<point*>( ptr );
-    Vector<3> startPt;
+    Vector<3> projection;
     SE3<> camera( p->environment->getCameraPose() );
     Matrix<> rot = camera.get_rotation().get_matrix();
     Vector<3> view = makeVector( rot[0][2], rot[1][2], rot[2][2] );
@@ -150,10 +150,23 @@ void* point::moveProcessor( void* ptr ) {
     Environment::v = camera.get_translation();
     Environment::o = camera.get_translation() + view;
     std::sort( p->environment->getPoints().begin(), p->environment->getPoints().end(), Environment::closer );
-    startPt = (p->environment->getPoints()[0] - p->start.get_translation()) * p->start.get_rotation().inverse().get_matrix();
+    // start point on vector ~ camera + view*t
+    projection = p->environment->getPoints()[0];
+    projection -= camera.get_translation();
+    projection[0] /= view[0];
+    projection[1] /= view[1];
+    projection[2] /= view[2];
+    cerr << "Move Factor: " << projection << endl;
     while( !p->done ) {
         camera = p->environment->getCameraPose();
-        p->environment->getPoints()[0] = startPt * camera.get_rotation().get_matrix() + camera.get_translation();
+        rot = camera.get_rotation().get_matrix();
+        // Now project as camera + view * startPt
+        // Calculate in a separate vector to prevent flickering
+        Vector<3> tmp( camera.get_translation() );
+        tmp[0] += rot[0][2] * projection[0];
+        tmp[1] += rot[1][2] * projection[1];
+        tmp[2] += rot[2][2] * projection[2];
+        p->environment->getPoints()[0] = tmp;
     }
     return NULL;
 }
