@@ -35,13 +35,14 @@ class ARDriver
   GLWindow2 &mGLWindow;
   void DrawFadingGrid();
   void DrawFBBackGround();
+  void DrawDistortedFB();
   void SetFrustum();
   
   // Texture stuff:
   GLuint mnFrameBuffer;
   GLuint mnFrameBufferTex;
   GLuint mnFrameTex;
-  
+
   int mnCounter;
   ImageRef mirFBSize;
   ImageRef mirFrameSize;

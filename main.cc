@@ -104,8 +104,8 @@ void Clicky::click() {
     cout << "CLICK" << endl;
 };*/
 
-MK_GUI_COMMAND(sphere, createByPos,)
-void sphere::createByPos( string params ) {
+MK_GUI_COMMAND(target, create,)
+void target::create( string params ) {
     Vector<3> v;
     if ( params.size() > 0 ) {
         double d[3];
@@ -115,17 +115,14 @@ void sphere::createByPos( string params ) {
         paramStream >> d[2];
         v = makeVector( d[0], d[1], d[2] );
     } else {
-        v = environment->getCameraPose().get_translation();
+        double rad = GV3::get<double>( "ftRadius", 1.0 );
+        std::vector< Vector<3> > features( environment->getFeaturesSorted( environment->getCameraPose(), rad ) );
+        if ( features.size() < 1 )
+            return;
+        v = features[0];
+        cout << "target.create " << v[0] << ' ' << v[1] << ' ' << v[2] << endl;
     }
     environment->addPoint( v );
-}
-
-MK_GUI_COMMAND(target, create,)
-void target::create( string params ) {
-    double rad = GV3::get<double>( "ftRadius", 1.0 );
-    std::vector< Vector<3> > features( environment->getFeaturesSorted( environment->getCameraPose(), rad ) );
-    if ( features.size() > 0 )
-        environment->addPoint( features[0] );
 }
 
 MK_GUI_COMMAND(point, move, SE3<> start; bool done; pthread_t mover; static void* moveProcessor( void* ptr );)
