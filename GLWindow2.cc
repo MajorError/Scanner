@@ -292,11 +292,12 @@ void GLWindow2::on_key_down(GLWindow&, int k)
     case XK_space:  s="Space"; break;
     case XK_BackSpace:  s="BackSpace"; break;
     case XK_Escape:  s="Escape"; break;
+    case XK_Control_L: case XK_Control_R:  s="Control"; break;
     default: ;
     }
 
   if(s!="")
-    GUI.ParseLine("try KeyPress "+s);
+    GUI.ParseLine("try key.handle "+s);
 }
 #else
 void GLWindow2::on_key_down(GLWindow&, int k)
@@ -322,7 +323,7 @@ void GLWindow2::on_key_down(GLWindow&, int k)
   }
   
   if(s!="")
-    GUI.ParseLine("try KeyPress "+s);
+    GUI.ParseLine("try key.handle "+s);
 }
 #endif
 

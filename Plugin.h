@@ -41,7 +41,7 @@ public:
      * in scripting to choose the operation
      * \return A code-friendly short string name
      */
-    virtual std::string getShortName(){ return "NULL"; };
+    virtual std::string getShortName() { return "PNULL"; };
 
 protected:
     bool enabled;
@@ -54,14 +54,13 @@ protected:
 class TYPE : public SUPER                                                   \
 {                                                                           \
 public:                                                                     \
-    TYPE() : SUPER()                                                        \
-    {                                                                       \
+    TYPE() : SUPER(){                                                       \
         setupCommands();                                                    \
     };                                                                      \
     virtual ~TYPE() {};                                                     \
     virtual std::string getShortName()                                      \
     {                                                                       \
-        return SHORTNAME;                                                   \
+        return #SHORTNAME;                                                  \
     };                                                                      \
     static TYPE* instance;                                                  \
     DECLS                                                                   \

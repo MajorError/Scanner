@@ -9,6 +9,10 @@
 #define	_GUICOMMAND_H
 
 #include "Plugin.h"
+#include <gvars3/instances.h>
+
+using namespace GVars3;
+
 class GUICommand : public Plugin {
 
 public:
@@ -20,8 +24,7 @@ public:
         if ( static_cast<GUICommand*>( obj )->enabled )
             static_cast<GUICommand*>( obj )->call( params );
     };
-    virtual std::string getName(){ return "GNULL"; };
-    virtual std::string getShortName(){ return "GNULL"; };
+    virtual std::string getShortName() { return "CNULL"; };
     /**
      * A static list of all plugins currently loaded into the system, generated
      * at initialisation time.
@@ -40,27 +43,17 @@ protected:
 
 std::vector<GUICommand*> GUICommand::list;
 
-#define MK_GUI_COMMAND(NAME, COMMAND, VARS)                                 \
-class NAME : public GUICommand                                              \
-{                                                                           \
-public:                                                                     \
-    NAME() : GUICommand()                                                   \
+#define MK_GUI_COMMAND(NAME, COMMAND, VARS) MK_SUPER_PLUGIN(NAME,NAME,GUICommand, \
+    virtual void setupCommands()                                            \
     {                                                                       \
-        setupCommands();                                                    \
-        GUI.RegisterCommand( getShortName().append( "." ).append( #COMMAND ), NAME::callback, this );        \
+        Plugin::setupCommands();                                            \
+        GUI.RegisterCommand( getShortName().append( "." ).append( #COMMAND ), GUICommand::callback, this ); \
     };                                                                      \
-    virtual ~NAME() {};                                                     \
-    virtual std::string getShortName()                                      \
-    {                                                                       \
-        return #NAME;                                                       \
-    };                                                                      \
-    static NAME* instance;                                                  \
 protected:                                                                  \
     virtual void call( std::string params ) { COMMAND( params ); };         \
     void COMMAND( std::string params );                                     \
     VARS                                                                    \
-};                                                                          \
-NAME* NAME::instance = new NAME();
+)
 
 #endif	/* _GUICOMMAND_H */
 

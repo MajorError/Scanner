@@ -17,14 +17,33 @@ class Tool : public Plugin {
 public:
     Tool() : Plugin() {
         Tool::list.push_back( this );
+        enabled = false;
     };
     virtual ~Tool() {};
-    virtual void processClick() {
-        if ( enabled )
-            click();
+    static void callback( void* obj, std::string cmd, std::string params ) {
+        if ( cmd.substr( cmd.length() - 8 ) == "activate" ) {
+            for( unsigned int i = 0; i < Tool::list.size(); i++ )
+                Tool::list[i]->enabled = false;
+            static_cast<Tool*>( obj )->enabled = true;
+        } else {
+            static_cast<Tool*>( obj )->processClick();
+        }
     };
-    virtual std::string getName(){ return "TNULL"; };
-    virtual std::string getShortName(){ return "TNULL"; };
+    /**
+     * We will always process the click if we are explicitly enabled.
+     * Beyond this, if we are the only Tool assigned a given hotkey, we will
+     * process regardless of the state of enabled; activation only modifies
+     * behaviour for overloaded keys
+     */
+    void processClick() {
+        if ( !enabled )
+            for( unsigned int i = 0; i < Tool::list.size(); i++ )
+                if ( Tool::list[i] != this && Tool::list[i]->getHotKey() == getHotKey() )
+                    return;
+        click();
+    };
+    virtual std::string getShortName() { return "TNULL"; };
+    virtual std::string getHotKey() { return "TNULL"; };
     /**
      * A static list of all plugins currently loaded into the system, generated
      * at initialisation time.
@@ -38,8 +57,14 @@ protected:
 
 std::vector<Tool*> Tool::list;
 
-#define MK_TOOL_PLUGIN(TYPE,SHORTNAME) MK_SUPER_PLUGIN(TYPE,SHORTNAME,Tool, \
-   virtual void click(); \
+#define MK_TOOL_PLUGIN(TYPE,HOTKEY) MK_SUPER_PLUGIN(TYPE,TYPE,Tool, \
+    virtual void click();                                           \
+    virtual std::string getHotKey(){ return HOTKEY; };             \
+    virtual void setupCommands()                                            \
+    {                                                                       \
+        Plugin::setupCommands();                                            \
+        GUI.RegisterCommand( getShortName().append( ".activate" ), Tool::callback, this ); \
+    };                                                                      \
 )
 
 #endif	/* _TOOL_H */

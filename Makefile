@@ -29,7 +29,6 @@ OBJECTS=	main.o\
 		MiniPatch.o\
 		MapViewer.o\
 		ARDriver.o\
-		EyeGame.o\
 		ARPointRenderer.o\
 		Tracker.o\
 		Environment.o

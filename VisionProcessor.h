@@ -19,12 +19,11 @@ public:
         VisionPlugin::list.push_back( this );
     };
     virtual ~VisionPlugin() {};
-    virtual void process( CVD::Image<CVD::byte>& sceneBW, CVD::Image< CVD::Rgb<CVD::byte> >& sceneRGB ) {
+    void process( CVD::Image<CVD::byte>& sceneBW, CVD::Image< CVD::Rgb<CVD::byte> >& sceneRGB ) {
         if ( enabled )
             doProcessing( sceneBW, sceneRGB );
     };
-    virtual std::string getName(){ return "VNULL"; };
-    virtual std::string getShortName(){ return "VNULL"; };
+    virtual std::string getShortName() { return "VNULL"; };
     /**
      * A static list of all plugins currently loaded into the system, generated
      * at initialisation time.
@@ -43,7 +42,7 @@ protected:
 
 std::vector<VisionPlugin*> VisionPlugin::list;
 
-#define MK_VISION_PLUGIN(TYPE,SHORTNAME,VARS) MK_SUPER_PLUGIN(TYPE,SHORTNAME,VisionPlugin, \
+#define MK_VISION_PLUGIN(TYPE,VARS) MK_SUPER_PLUGIN(TYPE,TYPE,VisionPlugin, \
    virtual void doProcessing( CVD::Image<CVD::byte>& sceneBW, CVD::Image< CVD::Rgb<CVD::byte> >& sceneRGB ); \
 protected:              \
     VARS                \
