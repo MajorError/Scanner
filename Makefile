@@ -31,7 +31,9 @@ OBJECTS=	main.o\
 		ARDriver.o\
 		ARPointRenderer.o\
 		Tracker.o\
-		Environment.o
+		Environment.o\
+		Point.o\
+		Edge.o
 
 CALIB_OBJECTS=	GLWindow2.o\
 		GLWindowMenu.o\

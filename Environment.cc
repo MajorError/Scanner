@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "Environment.h"
+#include "Point.h"
 
 Vector<3> Environment::v;
 Vector<3> Environment::o;
@@ -36,11 +37,19 @@ SE3<> Environment::getCameraPose() {
     return cameraPose;
 };
 
-void Environment::addPoint( Vector<3> point ) {
+void Environment::setSceneSize( ImageRef size ) {
+    sceneSize = size;
+};
+
+ImageRef& Environment::getSceneSize() {
+    return sceneSize;
+};
+
+void Environment::addPoint( Point* point ) {
     points.push_back( point );
 };
 
-std::vector< Vector<3> >& Environment::getPoints() {
+std::vector< Point* >& Environment::getPoints() {
     return points;
 };
 
@@ -71,10 +80,14 @@ std::vector< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, dou
     return out;
 };
 
-bool Environment::closer( Vector<3> a, Vector<3> b ) {
+bool Environment::closer( Point* a, Point* b ) {
+    return closerVec( *a->getPosition(), *b->getPosition() );
+};
+
+bool Environment::closerVec( Vector<3> a, Vector<3> b ) {
     return MAG3( ((a - Environment::o) ^ (a - Environment::v)) )
             < MAG3( ((b - Environment::o) ^ (b - Environment::v)) );
-}
+};
 
 std::vector< Vector<3> > Environment::getFeaturesSorted( SE3<> camera, double tol ) {
     Matrix<> rot = camera.get_rotation().get_matrix();
@@ -86,6 +99,6 @@ std::vector< Vector<3> > Environment::getFeaturesSorted( Vector<3> o, Vector<3> 
     Environment::v = v;
     Environment::o = o;
     std::vector< Vector<3> > out( getFeatures( o, v, tol ) );
-    std::sort( out.begin(), out.end(), Environment::closer );
+    std::sort( out.begin(), out.end(), Environment::closerVec );
     return out;
 };

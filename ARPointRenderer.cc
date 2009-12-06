@@ -49,7 +49,7 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     glColor4d(0.92, 0.9, 0.85,1);
     for ( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
         glLoadIdentity();
-        glTranslate<3>( env->getPoints()[i] );
+        glTranslate<3>( env->getPoints()[i]->getPosition() );
         glScaled( ds, ds, ds );
         DrawSphere();
     }

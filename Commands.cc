@@ -1,5 +1,10 @@
 
 
+
+#include "Point.h"
+#include "Environment.h"
+#include "GUICommand.h"
+
 MK_GUI_COMMAND(key, handle,)
 void key::handle( string s ) {
     for( unsigned int i = 0; i < Tool::list.size(); i++ ) {
@@ -28,7 +33,7 @@ void target::create( string params ) {
         v = features[0];
         cout << "target.create " << v[0] << ' ' << v[1] << ' ' << v[2] << endl;
     }
-    environment->addPoint( v );
+    environment->addPoint( new Point( v ) );
 }
 
 MK_GUI_COMMAND(point, move, SE3<> start; bool working; pthread_t mover; static void* moveProcessor( void* ptr );)
@@ -53,8 +58,9 @@ void* point::moveProcessor( void* ptr ) {
     Environment::v = camera.get_translation();
     Environment::o = camera.get_translation() + view;
     std::sort( p->environment->getPoints().begin(), p->environment->getPoints().end(), Environment::closer );
+    Point* target = p->environment->getPoints()[0];
     // start point on vector ~ camera + view*t
-    projection = p->environment->getPoints()[0];
+    projection = *target->getPosition();
     projection -= camera.get_translation();
     projection[0] /= view[0];
     projection[1] /= view[1];
@@ -69,7 +75,7 @@ void* point::moveProcessor( void* ptr ) {
         tmp[0] += rot[0][2] * projection[0];
         tmp[1] += rot[1][2] * projection[1];
         tmp[2] += rot[2][2] * projection[2];
-        p->environment->getPoints()[0] = tmp;
+        target->setPosition( tmp );
     }
     return NULL;
 }

@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
     Environment env;
     VisionPlugin::setEnvironment( &env );
     GUICommand::setEnvironment( &env );
+    Tool::setEnvironment( &env );
 
     // Main system loop
     while( true ) {

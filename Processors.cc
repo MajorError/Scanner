@@ -1,5 +1,8 @@
 
 
+
+#include <cvd/image.h>
+
 MK_VISION_PLUGIN( cam, bool init; VideoSource videoSource; );
 void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     if ( !init ) {
@@ -51,6 +54,7 @@ void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
         GLWindow2 &glw = *glWindow;
         ATANCamera &camera = *environment->getCamera();
         ard = new ARDriver( camera, sceneRGB.size(), glw, environment );
+        environment->setSceneSize( sceneRGB.size() );
 
         GUI.ParseLine("GLWindow.AddMenu Menu Menu");
         GUI.ParseLine("Menu.ShowMenu Root");

@@ -11,8 +11,11 @@
 #include "ATANCamera.h"
 #include "TooN/TooN.h"
 #include "TooN/se3.h"
+#include "cvd/image_ref.h"
+#include "Point.h"
 using namespace TooN;
 using namespace std;
+using namespace CVD;
 
 
 class Environment {
@@ -26,8 +29,11 @@ public:
     void setCameraPose( SE3<> pose );
     SE3<> getCameraPose();
 
-    void addPoint( Vector<3> point );
-    std::vector< Vector<3> > &getPoints();
+    void setSceneSize( ImageRef size );
+    ImageRef& getSceneSize();
+
+    void addPoint( Point* point );
+    std::vector< Point* > &getPoints();
 
     void clearFeatures();
     void addFeature( Vector<3> feature );
@@ -41,12 +47,14 @@ public:
     std::vector< Vector<3> > getFeaturesSorted( Vector<3> o, Vector<3> v, double tol );
 
     static Vector<3> v, o;
-    static bool closer( Vector<3> a, Vector<3> b );
+    static bool closer( Point* a, Point* b );
+    static bool closerVec( Vector<3> a, Vector<3> b );
     
 private:
     ATANCamera* camera;
     SE3<> cameraPose;
-    std::vector< Vector<3> > points;
+    ImageRef sceneSize;
+    std::vector< Point* > points;
     std::vector< Vector<3> > features;
 
 };
