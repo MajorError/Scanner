@@ -52,19 +52,14 @@ void* point::moveProcessor( void* ptr ) {
     point *p = static_cast<point*>( ptr );
     Vector<3> projection;
     SE3<> camera( p->environment->getCameraPose() );
-    Matrix<> rot = camera.get_rotation().get_matrix();
-    Vector<3> view = makeVector( rot[0][2], rot[1][2], rot[2][2] );
-    // Set up and perform the sort
-    Environment::v = camera.get_translation();
-    Environment::o = camera.get_translation() + view;
-    std::sort( p->environment->getPoints().begin(), p->environment->getPoints().end(), Environment::closer );
-    Point* target = p->environment->getPoints()[0];
+    Point* target = p->environment->sortPoints( camera )[0];
     // start point on vector ~ camera + view*t
-    projection = *target->getPosition();
+    Matrix<> rot = camera.get_rotation().get_matrix();
+    projection = target->getPosition();
     projection -= camera.get_translation();
-    projection[0] /= view[0];
-    projection[1] /= view[1];
-    projection[2] /= view[2];
+    projection[0] /= rot[0][2];
+    projection[1] /= rot[1][2];
+    projection[2] /= rot[2][2];
     cerr << "Move Factor: " << projection << endl;
     while( p->working ) {
         camera = p->environment->getCameraPose();
@@ -78,4 +73,18 @@ void* point::moveProcessor( void* ptr ) {
         target->setPosition( tmp );
     }
     return NULL;
+}
+
+MK_GUI_COMMAND(edge, connect, Point* from; bool complete; )
+void edge::connect( string params ) {
+    if ( environment->getPoints().size() < 2 )
+         return;
+    if ( !complete ) {
+        from = environment->sortPoints( environment->getCameraPose() )[0];
+        complete = true;
+    } else {
+        Point* to = environment->sortPoints( environment->getCameraPose() )[0];
+        environment->addEdge( from, to );
+        complete = false;
+    }
 }

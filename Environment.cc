@@ -53,6 +53,33 @@ std::vector< Point* >& Environment::getPoints() {
     return points;
 };
 
+std::vector< Point* >& Environment::sortPoints( SE3<> camera ) {
+    Matrix<> rot = camera.get_rotation().get_matrix();
+    return sortPoints( camera.get_translation(), camera.get_translation()
+            + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+};
+
+std::vector< Point* >& Environment::sortPoints( Vector<3> o, Vector<3> v ) {
+    Environment::o = o;
+    Environment::v = v;
+    std::sort( points.begin(), points.end(), Environment::closer );
+    return points;
+};
+
+void Environment::addEdge( Edge* edge ) {
+};
+
+void Environment::addEdge( Point* from, Point* to ) {
+    Edge* e = new Edge( from, to );
+    edges.push_back( e );
+    from->addEdge( e );
+    to->addEdge( e );
+};
+
+std::vector< Edge* > &Environment::getEdges() {
+    return edges;
+};
+
 void Environment::clearFeatures() {
     features.clear();
 };
@@ -81,7 +108,7 @@ std::vector< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, dou
 };
 
 bool Environment::closer( Point* a, Point* b ) {
-    return closerVec( *a->getPosition(), *b->getPosition() );
+    return closerVec( a->getPosition(), b->getPosition() );
 };
 
 bool Environment::closerVec( Vector<3> a, Vector<3> b ) {

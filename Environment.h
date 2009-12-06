@@ -34,7 +34,13 @@ public:
 
     void addPoint( Point* point );
     std::vector< Point* > &getPoints();
+    std::vector< Point* > &sortPoints( SE3<> camera );
+    std::vector< Point* > &sortPoints( Vector<3> o, Vector<3> v );
 
+    void addEdge( Edge* edge );
+    void addEdge( Point* from, Point* to );
+    std::vector< Edge* > &getEdges();
+    
     void clearFeatures();
     void addFeature( Vector<3> feature );
     std::vector< Vector<3> > &getFeatures();
@@ -55,6 +61,7 @@ private:
     SE3<> cameraPose;
     ImageRef sceneSize;
     std::vector< Point* > points;
+    std::vector< Edge* > edges;
     std::vector< Vector<3> > features;
 
 };

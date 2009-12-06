@@ -44,7 +44,19 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
 
     glMatrixMode(GL_MODELVIEW);
-    // Draw Points
+
+    DrawPoints();
+    DrawPolys();
+    DrawFeatures( camera );
+    DrawTarget( camera );
+    
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+};
+
+void ARPointRenderer::DrawPoints() {
     double ds = GV3::get<double>( "ptSize", 0.05 );
     glColor4d(0.92, 0.9, 0.85,1);
     for ( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
@@ -53,9 +65,10 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
         glScaled( ds, ds, ds );
         DrawSphere();
     }
-    
-    // Draw Features
-    ds = GV3::get<double>( "ftSize", 0.01 );
+};
+
+void ARPointRenderer::DrawFeatures( SE3<> camera ) {
+    double ds = GV3::get<double>( "ftSize", 0.01 );
     double rad = GV3::get<double>( "ftRadius", 1.0 );
 
     glColor4d(0.9, 0.2, 0.2, 1.0);
@@ -68,18 +81,30 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
         glColor4d(0.2, 0.2, 0.9, 1.0);
         ds *= 0.8;
     }
+};
 
-    // Draw a target ball
+void ARPointRenderer::DrawTarget( SE3<> camera ) {
+    double ds = GV3::get<double>( "ftSize", 0.01 );
     glLoadIdentity();
     glColor4d(0.2, 0.9, 0.2, 0.4);
     Matrix<> rot = camera.get_rotation().get_matrix();
     glTranslate<3>( camera.get_translation() + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
     glScaled( ds/2, ds/2, ds/2 );
     DrawSphere();
+};
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+void ARPointRenderer::DrawPolys() {
+    //set<int> visited;
+    //pair<set<int>::iterator,bool> ret;
+    // TODO: Draw shaded polys, not just lines
+    glLoadIdentity();
+    glColor4d(0.2, 0.2, 0.9, 1.0);
+    glBegin( GL_LINES );
+    for( unsigned int i = 0; i < env->getEdges().size(); ++i ) {
+        glVertex( env->getEdges()[i]->getStart()->getPosition() );
+        glVertex( env->getEdges()[i]->getEnd()->getPosition() );
+    }
+    glEnd();
 };
 
 void ARPointRenderer::DrawSphere()

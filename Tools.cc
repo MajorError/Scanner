@@ -67,3 +67,8 @@ MK_TOOL_PLUGIN( mover, "Space", );
 void mover::click() {
     GUI.ParseLine( "point.move" );
 };
+
+MK_TOOL_PLUGIN( connect, "Space", );
+void connect::click() {
+    GUI.ParseLine( "edge.connect" );
+};

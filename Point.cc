@@ -12,8 +12,8 @@ vector<Edge*>* Point::getEdges() {
     return &edges;
 };
 
-Vector<3>* Point::getPosition(){
-    return &position;
+Vector<3> Point::getPosition(){
+    return position;
 };
 
 void Point::setPosition( double x, double y, double z ){

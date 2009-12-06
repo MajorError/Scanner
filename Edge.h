@@ -15,6 +15,9 @@ public:
     Edge(Point* f, Point* t) : from( f ), to( t ){};
     virtual ~Edge(){};
 
+    Point* getStart();
+    Point* getEnd();
+
 protected:
     Point* from;
     Point* to;

@@ -21,7 +21,7 @@ public:
 
     void addEdge( Edge* e );
     vector<Edge*>* getEdges();
-    Vector<3>* getPosition();
+    Vector<3> getPosition();
     void setPosition( double x, double y, double z );
     void setPosition( Vector<3> pos );
 
