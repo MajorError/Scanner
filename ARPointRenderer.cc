@@ -13,16 +13,16 @@ ARPointRenderer::ARPointRenderer( Environment *e ) : env( e ) {
 }
 
 void ARPointRenderer::DrawStuff(SE3<> camera) {
-
-    glDisable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_NORMALIZE);
-    glEnable(GL_COLOR_MATERIAL);
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glEnable( GL_CULL_FACE );
+    glFrontFace( GL_CW );
+    glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_LEQUAL );
+    glEnable( GL_LIGHTING );
+    glEnable( GL_LIGHT0 );
+    glEnable( GL_NORMALIZE );
+    glEnable( GL_COLOR_MATERIAL );
 
     GLfloat af[4];
     af[0] = 0.5;
@@ -78,7 +78,7 @@ void ARPointRenderer::DrawFeatures( SE3<> camera ) {
         glTranslate<3>( features[i] );
         glScaled( ds, ds, ds );
         DrawSphere();
-        glColor4d(0.2, 0.2, 0.9, 1.0);
+        glColor4d(0.2, 0.2, 0.9, 0.8);
         ds *= 0.8;
     }
 };
@@ -86,7 +86,7 @@ void ARPointRenderer::DrawFeatures( SE3<> camera ) {
 void ARPointRenderer::DrawTarget( SE3<> camera ) {
     double ds = GV3::get<double>( "ftSize", 0.01 );
     glLoadIdentity();
-    glColor4d(0.2, 0.9, 0.2, 0.4);
+    glColor4d(0.2, 0.9, 0.2, 1.0);
     Matrix<> rot = camera.get_rotation().get_matrix();
     glTranslate<3>( camera.get_translation() + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
     glScaled( ds/2, ds/2, ds/2 );
@@ -103,28 +103,23 @@ void ARPointRenderer::DrawPolys() {
     }
     glEnd();
 
-    set<int> visited;
-    pair<set<int>::iterator,bool> ret;
     glColor4d(0.2, 0.2, 0.6, 0.1);
     glBegin( GL_TRIANGLES );
     glLoadIdentity();
+    // Walk the graph of edges (max four deep) to find a cycle back to the start
+    //  point, this marks a triangle. Draw it.
     for( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
         Point* start = env->getPoints()[i];
-        cerr << "Start: " << start->getPosition() << endl;
         for( unsigned int j = 0; j < start->getEdges().size(); ++j ) {
             Edge* e = start->getEdges()[j];
             Point* mid1 = e->getStart() == start ? e->getEnd() : e->getStart();
-            cerr << "\tMid: " << mid1->getPosition() << endl;
             for( unsigned int k = 0; k < mid1->getEdges().size(); ++k ) {
                 Edge* e2 = mid1->getEdges()[k];
                 Point* mid2 = e2->getStart() == mid1 ? e2->getEnd() : e2->getStart();
-                cerr << "\tMid2: " << mid1->getPosition() << endl;
                 for( unsigned int j = 0; j < mid2->getEdges().size(); ++j ) {
                     Edge* e3 = mid2->getEdges()[j];
                     Point* end = e3->getStart() == mid2 ? e3->getEnd() : e3->getStart();
-                    cerr << "\t\tEnd: " << mid2->getPosition() << endl;
                     if ( end == start ) {
-                        cerr << "\t\t >> DRAW << " << endl;
                         glVertex( start->getPosition() );
                         glVertex( mid1->getPosition() );
                         glVertex( mid2->getPosition() );
