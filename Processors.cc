@@ -1,7 +1,6 @@
 
-
-
 #include <cvd/image.h>
+#include <gvars3/instances.h>
 
 MK_VISION_PLUGIN( cam, bool init; VideoSource videoSource; );
 void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
@@ -60,6 +59,7 @@ void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
         GUI.ParseLine("Menu.ShowMenu Root");
     }
 
+    glWindow->swap_buffers();
     glWindow->SetupViewport();
     glWindow->SetupVideoOrtho();
     glWindow->SetupVideoRasterPosAndZoom();
@@ -68,6 +68,27 @@ void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
 
     // (TODO?) No message at this time... glWindow->DrawCaption( sCaption );
     glWindow->DrawMenus();
-    glWindow->swap_buffers();
     glWindow->HandlePendingEvents();
 };
+
+MK_VISION_PLUGIN( commandList, bool init; static vector<string> commands; static pthread_mutex_t mutex; public: static void exec( string cmd ); );
+void commandList::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    if ( !init ) {
+        init = true;
+    }
+
+    pthread_mutex_lock( &mutex );
+    for( unsigned int i = 0; i < commands.size(); i++ ) {
+        GUI.ParseLine( commands[i] );
+    }
+    commands.clear();
+    pthread_mutex_unlock( &mutex );
+};
+
+void commandList::exec( string cmd ) {
+    pthread_mutex_lock( &mutex );
+    commands.push_back( cmd );
+    pthread_mutex_unlock( &mutex );
+};
+vector<string> commandList::commands;
+pthread_mutex_t commandList::mutex = PTHREAD_MUTEX_INITIALIZER;

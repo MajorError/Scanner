@@ -1,5 +1,4 @@
-
-
+#include <GL/gl.h>
 
 #include "Point.h"
 #include "Environment.h"
@@ -12,7 +11,7 @@ void key::handle( string s ) {
             Tool::list[i]->processClick();
     }
     // Chain all commands through to super KeyPress method (from PTAM)
-    GUI.ParseLine( "KeyPress "+s );
+    commandList::exec( "KeyPress "+s );
 }
 
 MK_GUI_COMMAND(target, create,)
@@ -87,4 +86,19 @@ void edge::connect( string params ) {
         environment->addEdge( from, to );
         complete = false;
     }
+}
+
+MK_GUI_COMMAND(text, draw,)
+void text::draw( string text ) {
+    ImageRef centre( environment->getSceneSize() );
+    centre *= 0.5;
+    centre.y += 10;
+    centre.x -= text.length();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glTranslate(centre);
+    glScalef(8,-8,1);
+    glColor4d( 1.0, 1.0, 1.0, 1.0 );
+    glDrawText(text, FILL, 1.6, 0.1);
+    glPopMatrix();
 }
