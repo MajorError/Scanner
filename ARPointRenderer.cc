@@ -94,15 +94,44 @@ void ARPointRenderer::DrawTarget( SE3<> camera ) {
 };
 
 void ARPointRenderer::DrawPolys() {
-    //set<int> visited;
-    //pair<set<int>::iterator,bool> ret;
-    // TODO: Draw shaded polys, not just lines
     glLoadIdentity();
     glColor4d(0.2, 0.2, 0.9, 1.0);
     glBegin( GL_LINES );
     for( unsigned int i = 0; i < env->getEdges().size(); ++i ) {
         glVertex( env->getEdges()[i]->getStart()->getPosition() );
         glVertex( env->getEdges()[i]->getEnd()->getPosition() );
+    }
+    glEnd();
+
+    set<int> visited;
+    pair<set<int>::iterator,bool> ret;
+    glColor4d(0.2, 0.2, 0.6, 0.1);
+    glBegin( GL_TRIANGLES );
+    glLoadIdentity();
+    for( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
+        Point* start = env->getPoints()[i];
+        cerr << "Start: " << start->getPosition() << endl;
+        for( unsigned int j = 0; j < start->getEdges().size(); ++j ) {
+            Edge* e = start->getEdges()[j];
+            Point* mid1 = e->getStart() == start ? e->getEnd() : e->getStart();
+            cerr << "\tMid: " << mid1->getPosition() << endl;
+            for( unsigned int k = 0; k < mid1->getEdges().size(); ++k ) {
+                Edge* e2 = mid1->getEdges()[k];
+                Point* mid2 = e2->getStart() == mid1 ? e2->getEnd() : e2->getStart();
+                cerr << "\tMid2: " << mid1->getPosition() << endl;
+                for( unsigned int j = 0; j < mid2->getEdges().size(); ++j ) {
+                    Edge* e3 = mid2->getEdges()[j];
+                    Point* end = e3->getStart() == mid2 ? e3->getEnd() : e3->getStart();
+                    cerr << "\t\tEnd: " << mid2->getPosition() << endl;
+                    if ( end == start ) {
+                        cerr << "\t\t >> DRAW << " << endl;
+                        glVertex( start->getPosition() );
+                        glVertex( mid1->getPosition() );
+                        glVertex( mid2->getPosition() );
+                    }
+                }
+            }
+        }
     }
     glEnd();
 };

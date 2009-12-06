@@ -8,8 +8,8 @@ void Point::addEdge( Edge* e ) {
     edges.push_back( e );
 };
 
-vector<Edge*>* Point::getEdges() {
-    return &edges;
+vector<Edge*>& Point::getEdges() {
+    return edges;
 };
 
 Vector<3> Point::getPosition(){
