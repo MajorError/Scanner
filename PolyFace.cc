@@ -21,12 +21,29 @@ Point* PolyFace::getP1() {
     return p1;
 };
 
+Vector<2> PolyFace::getP1Coord() {
+    return makeVector( 0.0, 0.0 );
+};
+
 Point* PolyFace::getP2() {
     return p2;
 };
 
+Vector<2> PolyFace::getP2Coord() {
+    return makeVector( 0.0, 1.0 );
+};
+
 Point* PolyFace::getP3() {
     return p3;
+};
+
+Vector<2> PolyFace::getP3Coord() {
+    return makeVector( 1.0, 1.0 );
+};
+
+SubImage< Rgb< byte > > PolyFace::getTexture() {
+    Image< Rgb< byte > > out( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) );
+    return out;
 };
 
 bool PolyFace::operator()( PolyFace* a, PolyFace* p ) const {

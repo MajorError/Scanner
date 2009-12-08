@@ -9,7 +9,13 @@
 #define	_POLYFACE_H
 
 #include "Edge.h"
+#include <cvd/image.h>
+#include <cvd/rgb.h>
+#include <cvd/byte.h>
+#include <TooN/TooN.h>
 
+using namespace CVD;
+using namespace TooN;
 
 class PolyFace {
 public:
@@ -17,8 +23,12 @@ public:
     PolyFace( Point* a, Point* b, Point* c );
     virtual ~PolyFace() {};
     Point* getP1();
+    Vector<2> getP1Coord();
     Point* getP2();
+    Vector<2> getP2Coord();
     Point* getP3();
+    Vector<2> getP3Coord();
+    SubImage< Rgb< byte > > getTexture();
     bool operator()( PolyFace* a, PolyFace* b ) const;
 protected:
     Point* p1;

@@ -59,7 +59,6 @@ void* point::moveProcessor( void* ptr ) {
     projection[0] /= rot[0][2];
     projection[1] /= rot[1][2];
     projection[2] /= rot[2][2];
-    cerr << "Move Factor: " << projection << endl;
     while( p->working ) {
         camera = p->environment->getCameraPose();
         rot = camera.get_rotation().get_matrix();
