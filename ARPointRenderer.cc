@@ -106,27 +106,33 @@ void ARPointRenderer::DrawPolys() {
     glColor4d(0.2, 0.2, 0.6, 0.1);
     glBegin( GL_TRIANGLES );
     glLoadIdentity();
-    // Walk the graph of edges (max four deep) to find a cycle back to the start
-    //  point, this marks a triangle. Draw it.
-    for( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
-        Point* start = env->getPoints()[i];
-        for( unsigned int j = 0; j < start->getEdges().size(); ++j ) {
-            Edge* e = start->getEdges()[j];
-            Point* mid1 = e->getStart() == start ? e->getEnd() : e->getStart();
-            for( unsigned int k = 0; k < mid1->getEdges().size(); ++k ) {
-                Edge* e2 = mid1->getEdges()[k];
-                Point* mid2 = e2->getStart() == mid1 ? e2->getEnd() : e2->getStart();
-                for( unsigned int j = 0; j < mid2->getEdges().size(); ++j ) {
-                    Edge* e3 = mid2->getEdges()[j];
-                    Point* end = e3->getStart() == mid2 ? e3->getEnd() : e3->getStart();
-                    if ( end == start ) {
-                        glVertex( start->getPosition() );
-                        glVertex( mid1->getPosition() );
-                        glVertex( mid2->getPosition() );
-                    }
-                }
-            }
-        }
+    for( set<PolyFace*>::iterator it = env->getFaces().begin();
+            it != env->getFaces().end(); it++ ) {
+        if ( (*it) == NULL )
+            continue;
+        glVertex( (*it)->getP1()->getPosition() );
+        glVertex( (*it)->getP2()->getPosition() );
+        glVertex( (*it)->getP3()->getPosition() );
+
+        glVertex( (*it)->getP1()->getPosition() );
+        glVertex( (*it)->getP3()->getPosition() );
+        glVertex( (*it)->getP2()->getPosition() );
+
+        glVertex( (*it)->getP3()->getPosition() );
+        glVertex( (*it)->getP1()->getPosition() );
+        glVertex( (*it)->getP2()->getPosition() );
+
+        glVertex( (*it)->getP3()->getPosition() );
+        glVertex( (*it)->getP2()->getPosition() );
+        glVertex( (*it)->getP1()->getPosition() );
+
+        glVertex( (*it)->getP2()->getPosition() );
+        glVertex( (*it)->getP1()->getPosition() );
+        glVertex( (*it)->getP3()->getPosition() );
+
+        glVertex( (*it)->getP2()->getPosition() );
+        glVertex( (*it)->getP3()->getPosition() );
+        glVertex( (*it)->getP1()->getPosition() );
     }
     glEnd();
 };

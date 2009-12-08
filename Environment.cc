@@ -9,6 +9,7 @@
 
 #include "Environment.h"
 #include "Point.h"
+#include "PolyFace.h"
 
 Vector<3> Environment::v;
 Vector<3> Environment::o;
@@ -66,18 +67,33 @@ std::vector< Point* >& Environment::sortPoints( Vector<3> o, Vector<3> v ) {
     return points;
 };
 
-void Environment::addEdge( Edge* edge ) {
-};
-
 void Environment::addEdge( Point* from, Point* to ) {
     Edge* e = new Edge( from, to );
     edges.push_back( e );
+    // Add the edge to the points
     from->addEdge( e );
     to->addEdge( e );
+    // Check if we've generated any new faces, and if so add to the set
+    for( unsigned int k = 0; k < to->getEdges().size(); ++k ) {
+        Edge* e2 = to->getEdges()[k];
+        Point* mid = e2->getStart() == to ? e2->getEnd() : e2->getStart();
+        for( unsigned int j = 0; j < mid->getEdges().size(); ++j ) {
+            Edge* e3 = mid->getEdges()[j];
+            Point* end = e3->getStart() == mid ? e3->getEnd() : e3->getStart();
+            if ( end == from ) {
+                cerr << "Inserting new polyface" << endl;
+                faces.insert( new PolyFace( from, to, mid ) );
+            }
+        }
+    }
 };
 
 std::vector< Edge* > &Environment::getEdges() {
     return edges;
+};
+
+std::set< PolyFace*, PolyFace > &Environment::getFaces() {
+    return faces;
 };
 
 void Environment::clearFeatures() {

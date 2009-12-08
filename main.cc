@@ -39,9 +39,9 @@ using namespace GVars3;
  void* safeCommandParser(void* ptr) {
      string line;
      while( true ) {
+         cout << "> ";
          cin >> line;
          commandList::exec( line );
-         cout << "> ";
      }
      return ptr;
  };

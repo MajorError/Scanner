@@ -33,7 +33,8 @@ OBJECTS=	main.o\
 		Tracker.o\
 		Environment.o\
 		Point.o\
-		Edge.o
+		Edge.o\
+		PolyFace.o
 
 CALIB_OBJECTS=	GLWindow2.o\
 		GLWindowMenu.o\
