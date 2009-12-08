@@ -93,12 +93,12 @@ void text::draw( string text ) {
     ImageRef centre( environment->getSceneSize() );
     centre *= 0.5;
     centre.y += 10;
-    centre.x -= text.length();
+    centre.x -= text.length() / 2;
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glTranslate(centre);
-    glScalef(8,-8,1);
+    glScalef(10,-10,1);
     glColor4d( 1.0, 1.0, 1.0, 1.0 );
-    glDrawText(text, FILL, 1.6, 0.1);
+    glDrawText(text, FILL, 1.8, 0.2);
     glPopMatrix();
 }

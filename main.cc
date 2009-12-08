@@ -35,25 +35,45 @@ using namespace GVars3;
 #include "Commands.cc"
 #include "Tools.cc"
 
+
+ void* safeCommandParser(void* ptr) {
+     string line;
+     while( true ) {
+         cin >> line;
+         commandList::exec( line );
+         cout << "> ";
+     }
+     return ptr;
+ };
+
+void callback( void* obj, std::string cmd, std::string params ) {
+    if( cmd == "exit" || cmd == "quit" ) {
+        exit(0);
+    }
+};
+
+
 int main(int argc, char** argv) {
     Image<CVD::byte> bw;
     Image< CVD::Rgb<CVD::byte> > rgb;
-
-    //GUI.StartParserThread();
 
     Environment env;
     VisionPlugin::setEnvironment( &env );
     GUICommand::setEnvironment( &env );
     Tool::setEnvironment( &env );
 
+    pthread_t commandParser;
+    pthread_create( &commandParser, NULL, safeCommandParser, NULL );
+
+    GUI.RegisterCommand( "exit", &callback );
+    GUI.RegisterCommand( "quit", &callback );
+
     // Main system loop
     while( true ) {
         for( unsigned int i = 0; i < VisionPlugin::list.size(); i++ ) {
             VisionPlugin::list[i]->process( bw, rgb );
         }
-        //if ( !cin.eof() )
-        //    GUI.ParseStream( cin );
     }
-    return (EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }
 
