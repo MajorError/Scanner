@@ -1,6 +1,13 @@
-
 #include <cvd/image.h>
 #include <gvars3/instances.h>
+
+#include "VisionProcessor.h"
+#include "Environment.h"
+
+using namespace CVD;
+using namespace GVars3;
+using namespace TooN;
+using namespace std;
 
 MK_VISION_PLUGIN( cam, bool init; VideoSource videoSource; );
 void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
@@ -92,3 +99,22 @@ void commandList::exec( string cmd ) {
 };
 vector<string> commandList::commands;
 pthread_mutex_t commandList::mutex = PTHREAD_MUTEX_INITIALIZER;
+
+MK_VISION_PLUGIN( textureExtractor, inline double sqDistance( Vector<3> v1, Vector<3> v2 ); );
+void textureExtractor::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    SE3<> camera = environment->getCameraPose();
+    for( set<PolyFace*>::iterator it = environment->getFaces().begin();
+            it != environment->getFaces().end(); it++ ) {
+        SE3<>& curr = (*it)->getTextureViewpoint();
+        Vector<3> centre = (*it)->getFaceCentre();
+        // TODO: Consider angle, and whether we can see the whole poly.
+        // (we may prefer a more distant image, with a more direct view, in some cases?)
+        if ( sqDistance( camera.get_translation(), centre ) < sqDistance( curr.get_translation(), centre ) ) {
+            (*it)->setTexture( sceneRGB, camera );
+        }
+    }
+};
+
+double textureExtractor::sqDistance( Vector<3> v1, Vector<3> v2 ) {
+    return (v1[0]-v2[0]) * (v1[0]-v2[0]) + (v1[1]-v2[1]) * (v1[1]-v2[1]) + (v1[2]-v2[2]) * (v1[2]-v2[2]);
+}

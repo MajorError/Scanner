@@ -13,6 +13,7 @@
 #include <cvd/rgb.h>
 #include <cvd/byte.h>
 #include <TooN/TooN.h>
+#include <TooN/se3.h>
 
 using namespace CVD;
 using namespace TooN;
@@ -28,12 +29,17 @@ public:
     Vector<2> getP2Coord();
     Point* getP3();
     Vector<2> getP3Coord();
-    SubImage< Rgb< byte > > getTexture();
+    void setTexture( Image< Rgb< byte > > t, SE3<> vp );
+    SubImage< Rgb< byte > >& getTexture();
+    SE3<>& getTextureViewpoint();
+    Vector<3> getFaceCentre();
     bool operator()( PolyFace* a, PolyFace* b ) const;
 protected:
     Point* p1;
     Point* p2;
     Point* p3;
+    SE3<> textureViewpoint;
+    Image< Rgb< byte > > texture;
 
 };
 

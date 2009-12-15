@@ -103,19 +103,19 @@ void ARPointRenderer::DrawPolys() {
     }
     glEnd();
 
-    glColor4d(0.2, 0.2, 0.6, 0.3);
-    glEnable(GL_TEXTURE_RECTANGLE_ARB);
+    glColor4d(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_TEXTURE_2D);
     glDisable(GL_POLYGON_SMOOTH);
     
     glLoadIdentity();
     GLuint currTex;
-    glGenTextures( 1, &currTex );
+    /*glGenTextures( 1, &currTex );
     glBindTexture( GL_TEXTURE_RECTANGLE_ARB, currTex );
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
     glTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
-    glTexImage2D( Image< Rgb< byte > >( ImageRef( 640, 480 ), Rgb<byte>( 0, 0, 0 ) ), 0, GL_TEXTURE_RECTANGLE_ARB );
+    glTexImage2D( Image< Rgb< byte > >( ImageRef( 640, 480 ), Rgb<byte>( 0, 0, 0 ) ), 0, GL_TEXTURE_RECTANGLE_ARB );*/
 
     for( set<PolyFace*>::iterator it = env->getFaces().begin();
             it != env->getFaces().end(); it++ ) {
@@ -124,8 +124,18 @@ void ARPointRenderer::DrawPolys() {
             continue;
         
         // Set up texture info
-        glBindTexture( GL_TEXTURE_RECTANGLE_ARB, currTex );
-        glTexImage2D( (*it)->getTexture(), 0, GL_TEXTURE_RECTANGLE_ARB );
+        glGenTextures( 1, &currTex );
+        glPrintErrors();
+        glBindTexture( GL_TEXTURE_2D, currTex );
+        glPrintErrors();
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glPrintErrors();
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glPrintErrors();
+        glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+        glPrintErrors();
+        glTexImage2D( (*it)->getTexture(), 0, GL_TEXTURE_2D );
+        glPrintErrors();
         
         glBegin( GL_TRIANGLES );
 
@@ -135,11 +145,13 @@ void ARPointRenderer::DrawPolys() {
         glTexCoord( (*it)->getP2Coord() ); glVertex( (*it)->getP2()->getPosition() );
         glTexCoord( (*it)->getP3Coord() ); glVertex( (*it)->getP3()->getPosition() );
 
-        glTexCoord( (*it)->getP3Coord() ); glVertex( (*it)->getP3()->getPosition() );
+        /*glTexCoord( (*it)->getP3Coord() ); glVertex( (*it)->getP3()->getPosition() );
         glTexCoord( (*it)->getP2Coord() ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP1Coord() ); glVertex( (*it)->getP1()->getPosition() );
+        glTexCoord( (*it)->getP1Coord() ); glVertex( (*it)->getP1()->getPosition() );*/
 
         glEnd();
+        glDeleteTextures( 1, &currTex );
+        glPrintErrors();
     }
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
 };

@@ -9,6 +9,7 @@
 #define	_POINT_H
 
 #include <TooN/TooN.h>
+#include <vector>
 #include "Edge.h"
 using namespace TooN;
 using namespace std;
