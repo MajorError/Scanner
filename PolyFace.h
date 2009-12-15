@@ -40,6 +40,8 @@ protected:
     Point* p3;
     SE3<> textureViewpoint;
     Image< Rgb< byte > > texture;
+    double scale;
+    double offset;
 
 };
 
