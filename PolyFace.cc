@@ -36,9 +36,8 @@ Vector<2> PolyFace::getP1Coord() {
     scale = max( p1[0], max( p1[1], max( p2[0], max( p2[1], max( p3[0], p3[1] ) ) ) ) );
     offset = min( p1[0], min( p1[1], min( p2[0], min( p2[1], min( p3[0], p3[1] ) ) ) ) );
     scale -= offset;
-    offset *= -1;
     // End special case code
-    return makeVector( offset + p1[0], offset + p1[1] ) / scale;
+    return makeVector( p1[0] - offset, p1[1] - offset ) / scale;
 };
 
 Point* PolyFace::getP2() {
@@ -48,7 +47,7 @@ Point* PolyFace::getP2() {
 Vector<2> PolyFace::getP2Coord() {
     Vector<3> v = (p2->getPosition() - textureViewpoint.get_translation()) * textureViewpoint.get_rotation().inverse();
 
-    return makeVector( offset + v[0]/v[2], offset + v[1]/v[2] ) / scale;
+    return makeVector( v[0]/v[2] - offset, v[1]/v[2] - offset ) / scale;
 };
 
 Point* PolyFace::getP3() {
@@ -58,7 +57,7 @@ Point* PolyFace::getP3() {
 Vector<2> PolyFace::getP3Coord() {
     Vector<3> v = (p3->getPosition() - textureViewpoint.get_translation()) * textureViewpoint.get_rotation().inverse();
 
-    return makeVector( offset + v[0]/v[2], offset + v[1]/v[2] ) / scale;
+    return makeVector( v[0]/v[2] - offset, v[1]/v[2] - offset ) / scale;
 };
 
 void PolyFace::setTexture( Image< Rgb< byte > > t, SE3<> vp ) {
