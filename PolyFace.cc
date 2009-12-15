@@ -25,7 +25,11 @@ Point* PolyFace::getP1() {
 };
 
 Vector<2> PolyFace::getP1Coord() {
-    return makeVector( 0.1, 0.1 );
+    // x = model_x / distance_to_point
+    Vector<3> v = p1->getPosition();
+    v -= textureViewpoint.get_translation() * textureViewpoint.get_rotation().inverse();
+
+    return makeVector( v[0]/v[2], v[1]/v[2] );
 };
 
 Point* PolyFace::getP2() {
@@ -33,7 +37,10 @@ Point* PolyFace::getP2() {
 };
 
 Vector<2> PolyFace::getP2Coord() {
-    return makeVector( 0.1, 0.9 );
+    Vector<3> v = p2->getPosition();
+    v -= textureViewpoint.get_translation() * textureViewpoint.get_rotation().inverse();
+
+    return makeVector( v[0]/v[2], v[1]/v[2] );
 };
 
 Point* PolyFace::getP3() {
@@ -41,7 +48,10 @@ Point* PolyFace::getP3() {
 };
 
 Vector<2> PolyFace::getP3Coord() {
-    return makeVector( 0.9, 0.0 );
+    Vector<3> v = p3->getPosition();
+    v -= textureViewpoint.get_translation() * textureViewpoint.get_rotation().inverse();
+
+    return makeVector( v[0]/v[2], v[1]/v[2] );
 };
 
 void PolyFace::setTexture( Image< Rgb< byte > > t, SE3<> vp ) {
