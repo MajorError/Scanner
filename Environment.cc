@@ -81,7 +81,7 @@ void Environment::addEdge( Point* from, Point* to ) {
         for( unsigned int j = 0; j < mid->getEdges().size(); ++j ) {
             Edge* e3 = mid->getEdges()[j];
             Point* end = e3->getStart() == mid ? e3->getEnd() : e3->getStart();
-            if ( end == from ) {
+            if ( end == from && end != mid && from != mid && to != mid && from != to ) {
                 cerr << "Inserting new polyface...";
                 oldSize = faces.size();
                 faces.insert( new PolyFace( from, to, mid ) );

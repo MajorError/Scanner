@@ -25,11 +25,19 @@ Point* PolyFace::getP1() {
 };
 
 Vector<2> PolyFace::getP1Coord() {
-    // x = model_x / distance_to_point
-    Vector<3> v = p1->getPosition();
-    v -= textureViewpoint.get_translation() * textureViewpoint.get_rotation().inverse();
+    Vector<3> v = (p1->getPosition() - textureViewpoint.get_translation()) * textureViewpoint.get_rotation().inverse();
 
-    return makeVector( v[0]/v[2], v[1]/v[2] );
+    Vector<2> p1 = makeVector( v[0]/v[2], v[1]/v[2] );
+    // Assume this co-ordinate is asked for first...thus we can normalise
+    scale = 1;
+    offset = 0;
+    Vector<2> p2 = getP2Coord();
+    Vector<2> p3 = getP3Coord();
+    scale = max( p1[0], max( p1[1], max( p2[0], max( p2[1], max( p3[0], p3[1] ) ) ) ) );
+    offset = min( p1[0], min( p1[1], min( p2[0], min( p2[1], min( p3[0], p3[1] ) ) ) ) );
+    scale -= offset;
+    // End special case code
+    return makeVector( p1[0] - offset, p1[1] - offset ) / scale;
 };
 
 Point* PolyFace::getP2() {
@@ -37,10 +45,9 @@ Point* PolyFace::getP2() {
 };
 
 Vector<2> PolyFace::getP2Coord() {
-    Vector<3> v = p2->getPosition();
-    v -= textureViewpoint.get_translation() * textureViewpoint.get_rotation().inverse();
+    Vector<3> v = (p2->getPosition() - textureViewpoint.get_translation()) * textureViewpoint.get_rotation().inverse();
 
-    return makeVector( v[0]/v[2], v[1]/v[2] );
+    return makeVector( v[0]/v[2] - offset, v[1]/v[2] - offset ) / scale;
 };
 
 Point* PolyFace::getP3() {
@@ -48,10 +55,9 @@ Point* PolyFace::getP3() {
 };
 
 Vector<2> PolyFace::getP3Coord() {
-    Vector<3> v = p3->getPosition();
-    v -= textureViewpoint.get_translation() * textureViewpoint.get_rotation().inverse();
+    Vector<3> v = (p3->getPosition() - textureViewpoint.get_translation()) * textureViewpoint.get_rotation().inverse();
 
-    return makeVector( v[0]/v[2], v[1]/v[2] );
+    return makeVector( v[0]/v[2] - offset, v[1]/v[2] - offset ) / scale;
 };
 
 void PolyFace::setTexture( Image< Rgb< byte > > t, SE3<> vp ) {

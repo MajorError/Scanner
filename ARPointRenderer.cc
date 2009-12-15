@@ -141,6 +141,10 @@ void ARPointRenderer::DrawPolys() {
 
         // Render the face in both directions, so that it is visible from both
         //  sides (OpenGL will generate opposite normal vectors)
+        cerr << (*it)->getP1()->getPosition() << " = " << (*it)->getP1Coord() << ",\t";
+        cerr << (*it)->getP2()->getPosition() << " = " << (*it)->getP2Coord() << ",\t";
+        cerr << (*it)->getP3()->getPosition() << " = " << (*it)->getP3Coord() << endl;
+        
         glTexCoord( (*it)->getP1Coord() ); glVertex( (*it)->getP1()->getPosition() );
         glTexCoord( (*it)->getP2Coord() ); glVertex( (*it)->getP2()->getPosition() );
         glTexCoord( (*it)->getP3Coord() ); glVertex( (*it)->getP3()->getPosition() );
