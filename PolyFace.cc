@@ -71,9 +71,7 @@ void PolyFace::testAndSetTexture( Image< Rgb< byte > > t, SE3<> vp, ATANCamera* 
     p2 = getP2Coord( cam );
     p3 = getP3Coord( cam );
     double newArea = (p2 - p1) * (p3 - p1);
-    cerr << "Cmp " << oldArea << " / " << newArea << endl;
-    cerr << p1 << "\t" << p2 << "\t" << p3 << endl;
-    if ( newArea > oldArea && 
+    if ( (newArea < 0 ? -newArea : newArea) > (oldArea < 0 ? -oldArea : oldArea) &&
             min( min( p1[0], p1[1] ), min( min( p2[0], p2[1] ), min( p3[0], p3[1] ) ) ) >= 0 &&
             max( max( p1[0], p1[1] ), max( max( p2[0], p2[1] ), max( p3[0], p3[1] ) ) ) <= 1 )
         setTexture( t, vp );
