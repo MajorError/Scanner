@@ -141,17 +141,17 @@ void ARPointRenderer::DrawPolys() {
 
         // Render the face in both directions, so that it is visible from both
         //  sides (OpenGL will generate opposite normal vectors)
-        cerr << (*it)->getP1()->getPosition() << " = " << (*it)->getP1Coord( env ) << ",\t";
-        cerr << (*it)->getP2()->getPosition() << " = " << (*it)->getP2Coord( env ) << ",\t";
-        cerr << (*it)->getP3()->getPosition() << " = " << (*it)->getP3Coord( env ) << endl;
+        /*cerr << (*it)->getP1()->getPosition() << " = " << (*it)->getP1Coord( env->getCamera() ) << ",\t";
+        cerr << (*it)->getP2()->getPosition() << " = " << (*it)->getP2Coord( env->getCamera() ) << ",\t";
+        cerr << (*it)->getP3()->getPosition() << " = " << (*it)->getP3Coord( env->getCamera() ) << endl;*/
         
-        glTexCoord( (*it)->getP1Coord( env ) ); glVertex( (*it)->getP1()->getPosition() );
-        glTexCoord( (*it)->getP2Coord( env ) ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP3Coord( env ) ); glVertex( (*it)->getP3()->getPosition() );
+        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
 
-        glTexCoord( (*it)->getP3Coord( env ) ); glVertex( (*it)->getP3()->getPosition() );
-        glTexCoord( (*it)->getP2Coord( env ) ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP1Coord( env ) ); glVertex( (*it)->getP1()->getPosition() );
+        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
 
         glEnd();
         glDeleteTextures( 1, &currTex );

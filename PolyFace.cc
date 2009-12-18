@@ -23,33 +23,25 @@ Point* PolyFace::getP1() {
     return p1;
 };
 
-Vector<2> PolyFace::getP1Coord( Environment* env ) {
+Vector<2> PolyFace::getP1Coord( ATANCamera* cam ) {
     Vector<3> v = textureViewpoint.get_rotation().inverse() * (p1->getPosition() - textureViewpoint.get_translation());
 
-    Vector<2> p1 = env->getCamera()->Project( makeVector( v[0]/v[2], v[1]/v[2] ) );
-    // Assume this co-ordinate is asked for first...thus we can normalise
-    scale = 1;
-    offset = 0;
-    Vector<2> p2 = getP2Coord( env );
-    Vector<2> p3 = getP3Coord( env );
-    scale = max( p1[0], max( p1[1], max( p2[0], max( p2[1], max( p3[0], p3[1] ) ) ) ) );
-    offset = min( p1[0], min( p1[1], min( p2[0], min( p2[1], min( p3[0], p3[1] ) ) ) ) );
-    scale -= offset;
-    // End special case code
-    return makeVector( p1[0] - offset, p1[1] - offset ) / scale;
+    Vector<2> out = cam->Project( makeVector( v[0]/v[2], v[1]/v[2] ) );
+    out[0] /= cam->GetImageSize()[0];
+    out[1] /= cam->GetImageSize()[1];
+    return out;
 };
 
 Point* PolyFace::getP2() {
     return p2;
 };
 
-Vector<2> PolyFace::getP2Coord( Environment* env ) {
+Vector<2> PolyFace::getP2Coord( ATANCamera* cam ) {
     Vector<3> v = textureViewpoint.get_rotation().inverse() * (p2->getPosition() - textureViewpoint.get_translation());
 
-    Vector<2> out = env->getCamera()->Project( makeVector( v[0]/v[2], v[1]/v[2] ) );
-    out[0] -= offset;
-    out[1] -= offset;
-    out /= scale;
+    Vector<2> out = cam->Project( makeVector( v[0]/v[2], v[1]/v[2] ) );
+    out[0] /= cam->GetImageSize()[0];
+    out[1] /= cam->GetImageSize()[1];
     return out;
 };
 
@@ -57,13 +49,12 @@ Point* PolyFace::getP3() {
     return p3;
 };
 
-Vector<2> PolyFace::getP3Coord( Environment* env ) {
+Vector<2> PolyFace::getP3Coord( ATANCamera* cam ) {
     Vector<3> v = textureViewpoint.get_rotation().inverse() * (p3->getPosition() - textureViewpoint.get_translation());
 
-    Vector<2> out = env->getCamera()->Project( makeVector( v[0]/v[2], v[1]/v[2] ) );
-    out[0] -= offset;
-    out[1] -= offset;
-    out /= scale;
+    Vector<2> out = cam->Project( makeVector( v[0]/v[2], v[1]/v[2] ) );
+    out[0] /= cam->GetImageSize()[0];
+    out[1] /= cam->GetImageSize()[1];
     return out;
 };
 

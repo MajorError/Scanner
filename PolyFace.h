@@ -19,23 +19,17 @@
 using namespace CVD;
 using namespace TooN;
 
-// Forward decl - ugly, but it'll do for now
-// TODO: Clean me!
-class Environment {
-public: ATANCamera* getCamera();
-};
-
 class PolyFace {
 public:
     PolyFace() : p1( NULL ), p2( NULL ), p3( NULL ) {};
     PolyFace( Point* a, Point* b, Point* c );
     virtual ~PolyFace() {};
     Point* getP1();
-    Vector<2> getP1Coord( Environment* env );
+    Vector<2> getP1Coord( ATANCamera* cam );
     Point* getP2();
-    Vector<2> getP2Coord( Environment* env );
+    Vector<2> getP2Coord( ATANCamera* cam );
     Point* getP3();
-    Vector<2> getP3Coord( Environment* env );
+    Vector<2> getP3Coord( ATANCamera* cam );
     void setTexture( Image< Rgb< byte > > t, SE3<> vp );
     SubImage< Rgb< byte > >& getTexture();
     SE3<>& getTextureViewpoint();
