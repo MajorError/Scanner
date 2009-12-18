@@ -58,6 +58,29 @@ Vector<2> PolyFace::getP3Coord( ATANCamera* cam ) {
     return out;
 };
 
+void PolyFace::testAndSetTexture( Image< Rgb< byte > > t, SE3<> vp, ATANCamera* cam ) {
+    SE3<> old = textureViewpoint;
+    // Don't bother taking the half, or the sqrt here
+    Vector<2> p1 = getP1Coord( cam );
+    Vector<2> p2 = getP2Coord( cam );
+    Vector<2> p3 = getP3Coord( cam );
+    double oldArea = (p2 - p1) * (p3 - p1);
+
+    textureViewpoint = vp;
+    p1 = getP1Coord( cam );
+    p2 = getP2Coord( cam );
+    p3 = getP3Coord( cam );
+    double newArea = (p2 - p1) * (p3 - p1);
+    cerr << "Cmp " << oldArea << " / " << newArea << endl;
+    cerr << p1 << "\t" << p2 << "\t" << p3 << endl;
+    if ( newArea > oldArea && 
+            min( min( p1[0], p1[1] ), min( min( p2[0], p2[1] ), min( p3[0], p3[1] ) ) ) >= 0 &&
+            max( max( p1[0], p1[1] ), max( max( p2[0], p2[1] ), max( p3[0], p3[1] ) ) ) <= 1 )
+        setTexture( t, vp );
+    else
+        textureViewpoint = old;
+};
+
 void PolyFace::setTexture( Image< Rgb< byte > > t, SE3<> vp ) {
     texture.copy_from( t );
     textureViewpoint = vp;

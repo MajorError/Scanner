@@ -105,14 +105,9 @@ void textureExtractor::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& s
     SE3<> camera = environment->getCameraPose();
     for( set<PolyFace*>::iterator it = environment->getFaces().begin();
             it != environment->getFaces().end(); it++ ) {
-        SE3<>& curr = (*it)->getTextureViewpoint();
-        Vector<3> centre = (*it)->getFaceCentre();
-        // TODO: Consider angle, and whether we can see the whole poly.
-        // (we may prefer a more distant image, with a more direct view, in some cases?)
-        if ( true || sqDistance( camera.get_translation(), centre ) < sqDistance( curr.get_translation(), centre ) ) {
-            
-            (*it)->setTexture( sceneRGB, camera );
-        }
+        /*SE3<>& curr = (*it)->getTextureViewpoint();
+        Vector<3> centre = (*it)->getFaceCentre();*/
+        (*it)->testAndSetTexture( sceneRGB, camera, environment->getCamera() );
     }
 };
 
