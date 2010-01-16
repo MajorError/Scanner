@@ -82,7 +82,12 @@ void PolyFace::testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera*
     Vector<2> p1 = getP1Coord( cam );
     Vector<2> p2 = getP2Coord( cam );
     Vector<2> p3 = getP3Coord( cam );
-    double oldArea = (p2 - p1) * (p3 - p1);
+    // oldArea set to 0.0 if one of the points is out of bounds. This way we
+    //   replace the bad texture frame ASAP.
+    double oldArea = 0.0;
+    if ( min( min( p1[0], p1[1] ), min( min( p2[0], p2[1] ), min( p3[0], p3[1] ) ) ) >= 0 &&
+            max( max( p1[0], p1[1] ), max( max( p2[0], p2[1] ), max( p3[0], p3[1] ) ) ) <= 1 )
+        oldArea = (p2 - p1) * (p3 - p1);
 
     textureViewpoint = vp;
     p1 = getP1Coord( cam );
