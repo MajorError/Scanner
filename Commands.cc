@@ -163,3 +163,70 @@ void textures::clean( string args ) {
         }
     }
 }
+
+MK_GUI_COMMAND(textureBoundary, blend,)
+void textureBoundary::blend( string args ) {
+    int ncp; // number of co-occurrent points
+    for( set<PolyFace*>::iterator curr = environment->getFaces().begin();
+            curr != environment->getFaces().end(); curr++ ) {
+        // Look at all other texture frames, and find those which are adjacent
+        //   and different
+        for( set<PolyFace*>::iterator inner = environment->getFaces().begin();
+                inner != environment->getFaces().end(); inner++ ) {
+            if ( (*inner)->getTextureSource() == (*curr)->getTextureSource() )
+                continue;
+            ncp = 0;
+            if ( (*curr)->getP1() == (*inner)->getP1()
+                    || (*curr)->getP1() == (*inner)->getP2()
+                    || (*curr)->getP1() == (*inner)->getP3() )
+                ncp++;
+            if ( (*curr)->getP2() == (*inner)->getP1()
+                    || (*curr)->getP2() == (*inner)->getP2()
+                    || (*curr)->getP2() == (*inner)->getP3() )
+                ncp++;
+            if ( (*curr)->getP3() == (*inner)->getP1()
+                    || (*curr)->getP3() == (*inner)->getP2()
+                    || (*curr)->getP3() == (*inner)->getP3() )
+                ncp++;
+            // ncp > 1 -> co-occurrent edge, so perform blend
+            if ( ncp > 1 ) {
+                // First, save the source texture viewpoints
+                SE3<> vp1 = (*curr)->getTextureViewpoint();
+                SE3<> vp2 = (*inner)->getTextureViewpoint();
+                // Now, calculate P1, P2, P3 for the CURRENT texture
+                Vector<2> currP1 = (*curr)->getP1Coord( environment->getCamera() );
+                Vector<2> currP2 = (*curr)->getP2Coord( environment->getCamera() );
+                Vector<2> currP3 = (*curr)->getP3Coord( environment->getCamera() );
+                Vector<2> innerP1 = (*inner)->getP1Coord( environment->getCamera() );
+                Vector<2> innerP2 = (*inner)->getP2Coord( environment->getCamera() );
+                Vector<2> innerP3 = (*inner)->getP3Coord( environment->getCamera() );
+                // Next, calculate P1, P2, P3 for the OTHER texture
+                (*curr)->setTexture( (*curr)->getTexture(), vp2 );
+                (*inner)->setTexture( (*inner)->getTexture(), vp1 );
+                Vector<2> currP1o = (*curr)->getP1Coord( environment->getCamera() );
+                Vector<2> currP2o = (*curr)->getP2Coord( environment->getCamera() );
+                Vector<2> currP3o = (*curr)->getP3Coord( environment->getCamera() );
+                Vector<2> innerP1o = (*inner)->getP1Coord( environment->getCamera() );
+                Vector<2> innerP2o = (*inner)->getP2Coord( environment->getCamera() );
+                Vector<2> innerP3o = (*inner)->getP3Coord( environment->getCamera() );
+                (*curr)->setTexture( (*curr)->getTexture(), vp1 );
+                (*inner)->setTexture( (*inner)->getTexture(), vp2 );
+                // Blend textures onto each other, simultaneously
+                Image< Rgb<byte> > ctOrig;
+                Image< Rgb<byte> > itOrig;
+                ctOrig.copy_from( (*curr)->getTexture() );
+                itOrig.copy_from( (*inner)->getTexture() );
+                double lerp = 0; // Lerp factor
+                for( int i = 0; i < ctOrig.size()[0]; i++ ) {
+                    for( int j = 0; j < ctOrig.size()[1]; j++ ) {
+                        lerp = 1;
+                        (*curr)->getTexture()[i][j] = lerp * ctOrig[i][j] + (1 - lerp) * itOrig[i][j];
+
+                        lerp = 1;
+                        (*inner)->getTexture()[i][j] = lerp * itOrig[i][j] + (1 - lerp) * ctOrig[i][j];
+                    }
+                }
+            }
+        }
+    }
+}
