@@ -32,7 +32,9 @@ public:
     Vector<2> getP3Coord( ATANCamera* cam );
     void testAndSetTexture( Image< Rgb< byte > > t, SE3<> vp, ATANCamera* cam );
     void setTexture( Image< Rgb< byte > > t, SE3<> vp );
-    SubImage< Rgb< byte > >& getTexture();
+    void setTexture( Image< Rgb< byte > >* t, SE3<> vp );
+    Image< Rgb< byte > >& getTexture();
+    Image< Rgb< byte > >* getTextureSource();
     SE3<>& getTextureViewpoint();
     Vector<3> getFaceCentre();
     bool operator()( PolyFace* a, PolyFace* b ) const;
@@ -42,6 +44,7 @@ protected:
     Point* p3;
     SE3<> textureViewpoint;
     Image< Rgb< byte > > texture;
+    Image< Rgb< byte > >* textureSource;
     double scale;
     double offset;
 

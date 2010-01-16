@@ -101,3 +101,63 @@ void text::draw( string text ) {
     glDrawText(text, FILL, 1.8, 0.2);
     glPopMatrix();
 }
+
+MK_GUI_COMMAND(textures, clean,)
+void textures::clean( string args ) {
+    double tol = GV3::get<double>( "texTolerance1", 1.0 );
+
+    // Set common texture (by ref) based on camera distance
+    for( set<PolyFace*>::iterator curr = environment->getFaces().begin();
+            curr != environment->getFaces().end(); curr++ ) {
+        // Look at all other texture frames; if it was taken from a
+        // sufficiently similar camera angle, use common image
+        for( set<PolyFace*>::iterator inner = environment->getFaces().begin();
+                inner != environment->getFaces().end(); inner++ ) {
+            Vector<3> v = (*inner)->getTextureViewpoint().get_translation() - (*curr)->getTextureViewpoint().get_translation();
+            if ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] < tol ) {
+                (*inner)->setTexture( &(*curr)->getTexture(), (*curr)->getTextureViewpoint() );
+            }
+        }
+    }
+
+    tol = GV3::get<double>( "texTolerance2", 3.0 );
+    int ncp; // number of co-occurrent points
+    vector<PolyFace*> faces; // adjacent faces
+    for( set<PolyFace*>::iterator curr = environment->getFaces().begin();
+            curr != environment->getFaces().end(); curr++ ) {
+        faces.clear();
+        // Look at adjacent bits of texture to (*it); if it was taken from a
+        // sufficiently similar camera angle, choose whichever image gives the
+        // most coverage
+        for( set<PolyFace*>::iterator inner = environment->getFaces().begin();
+                inner != environment->getFaces().end(); inner++ ) {
+            if ( (*inner)->getTextureSource() == (*curr)->getTextureSource() )
+                continue;
+            ncp = 0;
+            if ( (*curr)->getP1() == (*inner)->getP1()
+                    || (*curr)->getP1() == (*inner)->getP2()
+                    || (*curr)->getP1() == (*inner)->getP3() )
+                ncp++;
+            if ( (*curr)->getP2() == (*inner)->getP1()
+                    || (*curr)->getP2() == (*inner)->getP2()
+                    || (*curr)->getP2() == (*inner)->getP3() )
+                ncp++;
+            if ( (*curr)->getP3() == (*inner)->getP1()
+                    || (*curr)->getP3() == (*inner)->getP2()
+                    || (*curr)->getP3() == (*inner)->getP3() )
+                ncp++;
+            // ncr > 1 -> co-occurrent edge
+            if ( ncp > 1 )
+                faces.push_back( *inner );
+        }
+        // If we're bounded on at least 2 sides, and we're within tolerance2,
+        //  homogenise textures
+        if ( faces.size() > 1 ) {
+            Vector<3> v = faces[0]->getTextureViewpoint().get_translation() - (*curr)->getTextureViewpoint().get_translation();
+            if ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] < tol ) {
+                (*curr)->setTexture( &faces[0]->getTexture(), faces[0]->getTextureViewpoint() );
+            }
+        }
+            
+    }
+}

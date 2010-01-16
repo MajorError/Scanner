@@ -15,7 +15,8 @@ PolyFace::PolyFace( Point* a, Point* b, Point* c ) :
         p1( min( a, min( b, c ) ) ),
         p3( max( a, max( b, c ) ) ),
         textureViewpoint( SO3<>(), makeVector( numeric_limits<double>::max(), numeric_limits<double>::max(), numeric_limits<double>::max() ) ),
-        texture( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) ){
+        texture( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) ),
+        textureSource( &texture ) {
     p2 = p1 == a ? (p3 == b ? c : b) : (p3 == a ? b : a);
 };
 
@@ -84,8 +85,17 @@ void PolyFace::setTexture( Image< Rgb< byte > > t, SE3<> vp ) {
     textureViewpoint = vp;
 };
 
-SubImage< Rgb< byte > >& PolyFace::getTexture() {
+void PolyFace::setTexture( Image< Rgb< byte > >* t, SE3<> vp ) {
+    textureSource = t;
+    setTexture( *t, vp );
+};
+
+Image< Rgb< byte > >& PolyFace::getTexture() {
     return texture;
+};
+
+Image< Rgb< byte > >* PolyFace::getTextureSource() {
+    return textureSource;
 };
 
 SE3<>& PolyFace::getTextureViewpoint() {
