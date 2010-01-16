@@ -115,7 +115,8 @@ void textures::clean( string args ) {
                 inner != environment->getFaces().end(); inner++ ) {
             Vector<3> v = (*inner)->getTextureViewpoint().get_translation() - (*curr)->getTextureViewpoint().get_translation();
             if ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] < tol ) {
-                (*inner)->setTexture( &(*curr)->getTexture(), (*curr)->getTextureViewpoint() );
+                (*inner)->testBoundsAndSetTexture( &(*curr)->getTexture(),
+                        (*curr)->getTextureViewpoint(), environment->getCamera() );
             }
         }
     }
@@ -155,7 +156,8 @@ void textures::clean( string args ) {
         if ( faces.size() > 1 ) {
             Vector<3> v = faces[0]->getTextureViewpoint().get_translation() - (*curr)->getTextureViewpoint().get_translation();
             if ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] < tol ) {
-                (*curr)->setTexture( &faces[0]->getTexture(), faces[0]->getTextureViewpoint() );
+                (*curr)->testBoundsAndSetTexture( &faces[0]->getTexture(),
+                        faces[0]->getTextureViewpoint(), environment->getCamera() );
             }
         }
             

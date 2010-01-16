@@ -30,8 +30,9 @@ public:
     Vector<2> getP2Coord( ATANCamera* cam );
     Point* getP3();
     Vector<2> getP3Coord( ATANCamera* cam );
-    void testAndSetTexture( Image< Rgb< byte > > t, SE3<> vp, ATANCamera* cam );
-    void setTexture( Image< Rgb< byte > > t, SE3<> vp );
+    void testBoundsAndSetTexture( Image< Rgb< byte > >* t, SE3<> vp, ATANCamera* cam );
+    void testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera* cam );
+    void setTexture( Image< Rgb< byte > >& t, SE3<> vp );
     void setTexture( Image< Rgb< byte > >* t, SE3<> vp );
     Image< Rgb< byte > >& getTexture();
     Image< Rgb< byte > >* getTextureSource();
