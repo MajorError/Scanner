@@ -7,3 +7,8 @@ Point* Edge::getStart() {
 Point* Edge::getEnd() {
     return to;
 };
+
+void Edge::reset( Point* f, Point* t ) {
+    from = f;
+    to = t;
+}

@@ -21,14 +21,14 @@ public:
     virtual ~Point() {};
 
     void addEdge( Edge* e );
-    vector<Edge*>& getEdges();
+    std::list<Edge*>& getEdges();
     Vector<3> getPosition();
     void setPosition( double x, double y, double z );
     void setPosition( Vector<3> pos );
 
 private:
     Vector<3> position;
-    vector<Edge*> edges;
+    std::list<Edge*> edges;
 };
 
 #endif	/* _POINT_H */

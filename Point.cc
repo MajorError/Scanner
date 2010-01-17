@@ -1,5 +1,5 @@
 
-#include <vector>
+#include <list>
 
 #include "Point.h"
 using namespace std;
@@ -8,7 +8,7 @@ void Point::addEdge( Edge* e ) {
     edges.push_back( e );
 };
 
-vector<Edge*>& Point::getEdges() {
+std::list<Edge*>& Point::getEdges() {
     return edges;
 };
 

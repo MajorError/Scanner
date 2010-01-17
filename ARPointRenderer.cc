@@ -63,9 +63,10 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
 void ARPointRenderer::DrawPoints() {
     double ds = GV3::get<double>( "ptSize", 0.05 );
     glColor4d(0.92, 0.9, 0.85,1);
-    for ( unsigned int i = 0; i < env->getPoints().size(); ++i ) {
+    for ( list<Point*>::iterator curr = env->getPoints().begin();
+            curr != env->getPoints().end(); curr++ ) {
         glLoadIdentity();
-        glTranslate<3>( env->getPoints()[i]->getPosition() );
+        glTranslate<3>( (*curr)->getPosition() );
         glScaled( ds, ds, ds );
         DrawSphere();
     }
@@ -76,10 +77,12 @@ void ARPointRenderer::DrawFeatures( SE3<> camera ) {
     double rad = GV3::get<double>( "ftRadius", 1.0 );
 
     glColor4d(0.9, 0.2, 0.2, 1.0);
-    std::vector< Vector<3> > features( env->getFeaturesSorted( camera, rad ) );
-    for ( unsigned int i = 0; i < features.size() && i < 5; ++i ) {
+    std::list< Vector<3> > features( env->getFeaturesSorted( camera, rad ) );
+    int num = 0;
+    for ( list< Vector<3> >::iterator curr = features.begin();
+            curr != features.end() && num < 5; curr++, num++ ) {
         glLoadIdentity();
-        glTranslate<3>( features[i] );
+        glTranslate<3>( *curr );
         glScaled( ds, ds, ds );
         DrawSphere();
         glColor4d(0.2, 0.2, 0.9, 0.8);
@@ -101,9 +104,10 @@ void ARPointRenderer::DrawPolys() {
     glLoadIdentity();
     glColor4d(0.2, 0.2, 0.9, 1.0);
     glBegin( GL_LINES );
-    for( unsigned int i = 0; i < env->getEdges().size(); ++i ) {
-        glVertex( env->getEdges()[i]->getStart()->getPosition() );
-        glVertex( env->getEdges()[i]->getEnd()->getPosition() );
+    for(  list<Edge*>::iterator curr = env->getEdges().begin();
+            curr != env->getEdges().end(); curr++ ) {
+        glVertex( (*curr)->getStart()->getPosition() );
+        glVertex( (*curr)->getEnd()->getPosition() );
     }
     glEnd();
 

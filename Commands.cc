@@ -27,11 +27,11 @@ namespace vtx1 {
             v = makeVector( d[0], d[1], d[2] );
         } else {
             double rad = GV3::get<double>( "ftRadius", 1.0 );
-            std::vector< Vector<3> > features( environment->getFeaturesSorted( environment->getCameraPose(), rad ) );
+            std::list< Vector<3> > features( environment->getFeaturesSorted( environment->getCameraPose(), rad ) );
             if ( features.size() < 1 )
                 return;
-            v = features[0];
-            cout << "target.create " << v[0] << ' ' << v[1] << ' ' << v[2] << endl;
+            v = features.front();
+            cout << "vertex.create " << v[0] << ' ' << v[1] << ' ' << v[2] << endl;
         }
         environment->addPoint( new Point( v ) );
     }
@@ -54,8 +54,8 @@ namespace vtx2 {
         vertex *p = static_cast<vertex*>( ptr );
         Vector<3> projection;
         SE3<> camera( p->environment->getCameraPose() );
-        Point* target = p->environment->sortPoints( camera )[0];
-        // start point on vector ~ camera + view*t
+        Point* target = p->environment->sortPoints( camera ).front();
+        // start point on list ~ camera + view*t
         Matrix<> rot = camera.get_rotation().get_matrix();
         projection = target->getPosition();
         projection -= camera.get_translation();
@@ -66,7 +66,7 @@ namespace vtx2 {
             camera = p->environment->getCameraPose();
             rot = camera.get_rotation().get_matrix();
             // Now project as camera + view * startPt
-            // Calculate in a separate vector to prevent flickering
+            // Calculate in a separate list to prevent flickering
             Vector<3> tmp( camera.get_translation() );
             tmp[0] += rot[0][2] * projection[0];
             tmp[1] += rot[1][2] * projection[1];
@@ -78,17 +78,19 @@ namespace vtx2 {
 }
 
 namespace edge1 {
-    MK_GUI_COMMAND(edge, connect, Point* from; bool complete; )
+    MK_GUI_COMMAND(edge, connect, Point* from; bool start; )
     void edge::connect( string params ) {
         if ( environment->getPoints().size() < 2 )
              return;
-        if ( !complete ) {
-            from = environment->sortPoints( environment->getCameraPose() )[0];
-            complete = true;
+        if ( start ) {
+            cerr << "edge.connect A" << endl;
+            from = environment->sortPoints( environment->getCameraPose() ).front();
+            start = false;
         } else {
-            Point* to = environment->sortPoints( environment->getCameraPose() )[0];
+            cerr << "edge.connect B" << endl;
+            Point* to = environment->sortPoints( environment->getCameraPose() ).front();
             environment->addEdge( from, to );
-            complete = false;
+            start = true;
         }
     }
 }
@@ -96,8 +98,49 @@ namespace edge1 {
 namespace edge2 {
     MK_GUI_COMMAND(edge, bisect, )
     void edge::bisect( string params ) {
-        if ( environment->getPoints().size() < 2 )
-             return;
+        Edge* target = NULL;
+        Vector<3> bisection = makeVector( 0, 0, 0 );
+        double tol = GV3::get<double>( "bisectTolerance", 0.5 );
+        std::list<Edge*>::iterator curr;
+        for( curr = environment->getEdges().begin();
+                curr != environment->getEdges().end(); curr++ ) {
+            // Find closest distance between edge and look-list
+            target = *curr;
+            break; // FIXME
+        }
+        // if we found a valid target, bisect it
+        if( target != NULL ) {
+            cerr << "Found target " << target << endl;
+            Point* mid = new Point( bisection );
+            Point* from = target->getStart();
+            Point* to = target->getEnd();
+
+            cerr << "Removing...";
+            environment->removeEdge( target );
+             // target = NULL; has been deleted
+            cerr << "Done" << endl;
+            
+            environment->addPoint( mid );
+            environment->addEdge( from, mid );
+            environment->addEdge( mid, to );
+
+            cerr << "Connecting" << endl;
+            // If there's a polyface, re-connect 'mid' to third point
+            for( std::list<Edge*>::iterator curr = from->getEdges().begin();
+                    curr != from->getEdges().end(); curr++ ) {
+                cerr << "Add edge1 mid -> " << ((*curr)->getStart() == from ?
+                    (*curr)->getEnd() : (*curr)->getStart()) << endl;
+                environment->addEdge( mid, (*curr)->getStart() == from ?
+                    (*curr)->getEnd() : (*curr)->getStart() );
+            }
+            for( std::list<Edge*>::iterator curr = to->getEdges().begin();
+                    curr != to->getEdges().end(); curr++ ) {
+                cerr << "Add edge2 mid -> " << ((*curr)->getStart() == from ?
+                    (*curr)->getEnd() : (*curr)->getStart()) << endl;
+                environment->addEdge( mid, (*curr)->getStart() == from ?
+                    (*curr)->getEnd() : (*curr)->getStart() );
+            }
+        }
     }
 }
 
@@ -140,7 +183,7 @@ namespace {
 
         tol = GV3::get<double>( "texTolerance2", 3.0 );
         int ncp; // number of co-occurrent points
-        vector<PolyFace*> faces; // adjacent faces
+        std::list<PolyFace*> faces; // adjacent faces
         // Reduce the number of region boundaries as much as possible
         for( set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++ ) {
@@ -171,11 +214,11 @@ namespace {
             }
             // If we're bounded on at least 2 sides by the *same* texture, and
             //   we're within tolerance2, homogenise textures
-            if ( faces.size() > 1 && faces[0]->getTextureSource() == faces[1]->getTextureSource() ) {
-                Vector<3> v = faces[0]->getTextureViewpoint().get_translation() - (*curr)->getTextureViewpoint().get_translation();
+            if ( faces.size() > 1 && faces.front()->getTextureSource() == (*(++faces.begin()))->getTextureSource() ) {
+                Vector<3> v = faces.front()->getTextureViewpoint().get_translation() - (*curr)->getTextureViewpoint().get_translation();
                 if ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] < tol ) {
-                    (*curr)->testBoundsAndSetTexture( &faces[0]->getTexture(),
-                            faces[0]->getTextureViewpoint(), environment->getCamera() );
+                    (*curr)->testBoundsAndSetTexture( &faces.front()->getTexture(),
+                            faces.front()->getTextureViewpoint(), environment->getCamera() );
                 }
             }
         }

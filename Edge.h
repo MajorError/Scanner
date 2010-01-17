@@ -18,6 +18,8 @@ public:
     Point* getStart();
     Point* getEnd();
 
+    void reset( Point* f, Point* t );
+
 protected:
     Point* from;
     Point* to;

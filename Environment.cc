@@ -50,20 +50,20 @@ void Environment::addPoint( Point* point ) {
     points.push_back( point );
 };
 
-std::vector< Point* >& Environment::getPoints() {
+std::list< Point* >& Environment::getPoints() {
     return points;
 };
 
-std::vector< Point* >& Environment::sortPoints( SE3<> camera ) {
+std::list< Point* >& Environment::sortPoints( SE3<> camera ) {
     Matrix<> rot = camera.get_rotation().get_matrix();
     return sortPoints( camera.get_translation(), camera.get_translation()
             + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
 };
 
-std::vector< Point* >& Environment::sortPoints( Vector<3> o, Vector<3> v ) {
+std::list< Point* >& Environment::sortPoints( Vector<3> o, Vector<3> v ) {
     Environment::o = o;
     Environment::v = v;
-    std::sort( points.begin(), points.end(), Environment::closer );
+    points.sort( Environment::closer );
     return points;
 };
 
@@ -75,12 +75,12 @@ void Environment::addEdge( Point* from, Point* to ) {
     to->addEdge( e );
     unsigned int oldSize = 0;
     // Check if we've generated any new faces, and if so add to the set
-    for( unsigned int k = 0; k < to->getEdges().size(); ++k ) {
-        Edge* e2 = to->getEdges()[k];
-        Point* mid = e2->getStart() == to ? e2->getEnd() : e2->getStart();
-        for( unsigned int j = 0; j < mid->getEdges().size(); ++j ) {
-            Edge* e3 = mid->getEdges()[j];
-            Point* end = e3->getStart() == mid ? e3->getEnd() : e3->getStart();
+    for( list<Edge*>::iterator curr = to->getEdges().begin();
+            curr != to->getEdges().end(); curr++ ) {
+        Point* mid = (*curr)->getStart() == to ? (*curr)->getEnd() : (*curr)->getStart();
+        for( list<Edge*>::iterator curr2 = mid->getEdges().begin();
+            curr2 != mid->getEdges().end(); curr2++ ) {
+            Point* end = (*curr2)->getStart() == mid ? (*curr2)->getEnd() : (*curr2)->getStart();
             if ( end == from && end != mid && from != mid && to != mid && from != to ) {
                 cerr << "Inserting new polyface...";
                 oldSize = faces.size();
@@ -91,7 +91,51 @@ void Environment::addEdge( Point* from, Point* to ) {
     }
 };
 
-std::vector< Edge* > &Environment::getEdges() {
+void Environment::removeEdge( Edge* e ) {
+    edges.remove( e );
+    cerr << "Culling faces" << endl;
+    // Remove any faces containing this edge
+    for( set<PolyFace*>::iterator curr = faces.begin();
+            curr != faces.end(); curr++ ) {
+        if( ((*curr)->getP1() == e->getStart()
+                || (*curr)->getP2() == e->getStart()
+                || (*curr)->getP3() == e->getStart())
+            && ((*curr)->getP1() == e->getEnd()
+                || (*curr)->getP2() == e->getEnd()
+                || (*curr)->getP3() == e->getEnd()) ) {
+            delete (*curr);
+            faces.erase( curr );
+        }
+    }
+    cerr << "Culling from start/end" << endl;
+    e->getStart()->getEdges().remove( e );
+    e->getEnd()->getEdges().remove( e );
+    // Remove edge from start and end bundles
+    /*list<Edge*> startEdges = (*it)->getStart()->getEdges();
+    startEdges.remove( (*it) );
+    (*it)->getStart()->getEdges() = startEdges;
+    list<Edge*> endEdges = (*it)->getEnd()->getEdges();
+    endEdges.remove( (*it) );
+    (*it)->getEnd()->getEdges() = startEdges;*/
+    /*for( list<Edge*>::iterator curr = e->getStart()->getEdges().begin();
+            curr != e->getStart()->getEdges().end(); curr++ ) {
+        cerr << "Examine " << (*curr) << endl;
+        if( (*curr) == e ) {
+            cerr << "\tERASE" << endl;
+            curr = e->getStart()->getEdges().erase( curr );
+        }
+    }
+    cerr << "Culling from end" << endl;
+    for( list<Edge*>::iterator curr = e->getEnd()->getEdges().begin();
+            curr != e->getEnd()->getEdges().end(); curr++ ) {
+        if( (*curr) == e )
+            curr = e->getEnd()->getEdges().erase( curr );
+    }*/
+    cerr << "Deleting pointer..." << endl;
+    delete e;
+};
+
+std::list< Edge* > &Environment::getEdges() {
     return edges;
 };
 
@@ -107,21 +151,22 @@ void Environment::addFeature( Vector<3> feature ) {
     features.push_back( feature );
 };
 
-std::vector< Vector<3> >& Environment::getFeatures() {
+std::list< Vector<3> >& Environment::getFeatures() {
     return features;
 };
 
 #define MAG3(v) v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
-std::vector< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, double tol ) {
+std::list< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, double tol ) {
     double d; // the square of the distance
-    std::vector< Vector<3> > out;
+    std::list< Vector<3> > out;
     //tol *= tol;
-    for( unsigned int i = 0; i < features.size(); i++ ) {
+    for( list< Vector<3> >::iterator curr = features.begin();
+            curr != features.end(); curr++ ) {
         // o = x1, v = x2, feature = x0
         // d =	(|(x_0-x_1)x(x_0-x_2)|)/(|x_2-x_1|)
-        d = MAG3( ((features[i] - o) ^ (features[i] - v)) ) / MAG3( (v - o) );
+        d = MAG3( (((*curr) - o) ^ ((*curr) - v)) ) / MAG3( (v - o) );
         if ( d <= tol )
-            out.push_back( features[i] );
+            out.push_back( (*curr) );
     }
     return out;
 };
@@ -135,16 +180,16 @@ bool Environment::closerVec( Vector<3> a, Vector<3> b ) {
             < MAG3( ((b - Environment::o) ^ (b - Environment::v)) );
 };
 
-std::vector< Vector<3> > Environment::getFeaturesSorted( SE3<> camera, double tol ) {
+std::list< Vector<3> > Environment::getFeaturesSorted( SE3<> camera, double tol ) {
     Matrix<> rot = camera.get_rotation().get_matrix();
     Vector<3> view = makeVector( rot[0][2], rot[1][2], rot[2][2] );
     return getFeaturesSorted( camera.get_translation(), camera.get_translation() + view, tol );
 };
 
-std::vector< Vector<3> > Environment::getFeaturesSorted( Vector<3> o, Vector<3> v, double tol ) {
+std::list< Vector<3> > Environment::getFeaturesSorted( Vector<3> o, Vector<3> v, double tol ) {
     Environment::v = v;
     Environment::o = o;
-    std::vector< Vector<3> > out( getFeatures( o, v, tol ) );
-    std::sort( out.begin(), out.end(), Environment::closerVec );
+    std::list< Vector<3> > out( getFeatures( o, v, tol ) );
+    out.sort( Environment::closerVec );
     return out;
 };
