@@ -118,7 +118,7 @@ void ARPointRenderer::DrawPolys() {
         Vector<3> pt;
         double d = numeric_limits<double>::max();
         Edge* best = env->findClosestEdge( pt, d );
-        if ( d < GV3::get<double>( "closestEdgeTol", 0.5 ) ) {
+        if ( d < GV3::get<double>( "edgeTolerance", 0.5 ) ) {
             glVertex( best->getStart()->getPosition() );
             glVertex( best->getEnd()->getPosition() );
         }

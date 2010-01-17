@@ -63,9 +63,14 @@ void connect::click() {
     commandList::exec( "edge.connect" );
 };
 
-MK_TOOL_PLUGIN( bisect, "Space", );
-void bisect::click() {
+MK_TOOL_PLUGIN( edge_bisect, "Space", );
+void edge_bisect::click() {
     commandList::exec( "edge.bisect" );
+};
+
+MK_TOOL_PLUGIN( edge_remove, "Space", );
+void edge_remove::click() {
+    commandList::exec( "edge.remove" );
 };
 
 MK_TOOL_PLUGIN( toggleBG, "b", );

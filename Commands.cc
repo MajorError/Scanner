@@ -101,8 +101,7 @@ namespace edge2 {
         Vector<3> bisection = makeVector( 0, 0, 0 );
         double d = numeric_limits<double>::max();
         Edge* target = environment->findClosestEdge( bisection, d );
-        cerr << "Found target " << target << " @ " << bisection << ", d = " << d << endl;
-        if ( d > GV3::get<double>( "bisectTolerance", 0.5 ) )
+        if ( target == NULL || d > GV3::get<double>( "edgeTolerance", 0.5 ) )
             return;
 
         // if we found a valid target, bisect it
@@ -110,31 +109,37 @@ namespace edge2 {
         Point* from = target->getStart();
         Point* to = target->getEnd();
 
-        cerr << "Removing...";
         environment->removeEdge( target );
          // target = NULL; has been deleted
-        cerr << "Done" << endl;
 
         environment->addPoint( mid );
         environment->addEdge( from, mid );
         environment->addEdge( mid, to );
 
-        cerr << "Connecting" << endl;
         // If there's a polyface, re-connect 'mid' to third point
         for( std::list<Edge*>::iterator curr = from->getEdges().begin();
                 curr != from->getEdges().end(); curr++ ) {
-            cerr << "Add edge1 mid -> " << ((*curr)->getStart() == from ?
-                (*curr)->getEnd() : (*curr)->getStart()) << endl;
             environment->addEdge( mid, (*curr)->getStart() == from ?
                 (*curr)->getEnd() : (*curr)->getStart() );
         }
         for( std::list<Edge*>::iterator curr = to->getEdges().begin();
                 curr != to->getEdges().end(); curr++ ) {
-            cerr << "Add edge2 mid -> " << ((*curr)->getStart() == from ?
-                (*curr)->getEnd() : (*curr)->getStart()) << endl;
             environment->addEdge( mid, (*curr)->getStart() == from ?
                 (*curr)->getEnd() : (*curr)->getStart() );
         }
+    }
+}
+
+namespace edge3 {
+    MK_GUI_COMMAND(edge, remove, )
+    void edge::remove( string params ) {
+        Vector<3> bisection = makeVector( 0, 0, 0 );
+        double d = numeric_limits<double>::max();
+        Edge* target = environment->findClosestEdge( bisection, d );
+        if ( target == NULL || d > GV3::get<double>( "edgeTolerance", 0.5 ) )
+            return;
+
+        environment->removeEdge( target );
     }
 }
 
