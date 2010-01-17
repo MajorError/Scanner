@@ -212,18 +212,34 @@ void textureBoundary::blend( string args ) {
                 (*curr)->setTexture( (*curr)->getTexture(), vp1 );
                 (*inner)->setTexture( (*inner)->getTexture(), vp2 );
                 // Blend textures onto each other, simultaneously
-                Image< Rgb<byte> > ctOrig;
-                Image< Rgb<byte> > itOrig;
-                ctOrig.copy_from( (*curr)->getTexture() );
-                itOrig.copy_from( (*inner)->getTexture() );
-                double lerp = 0; // Lerp factor
+                Image< Rgb<byte> > ctOrig( (*curr)->getTexture().copy_from_me() );
+                Image< Rgb<byte> > itOrig( (*inner)->getTexture().copy_from_me() );
+                // Before we blend, work out how to map (x,y) on original to (x',y') on target
+                double amt = 0; // Lerp factor
+                int i0 = 0; // i projected on the first image
+                int j0 = 0; // j projected on the first image
+                int i1 = 0; // i projected on the other image
+                int j1 = 0; // j projected on the other image
                 for( int i = 0; i < ctOrig.size()[0]; i++ ) {
                     for( int j = 0; j < ctOrig.size()[1]; j++ ) {
-                        lerp = 1;
-                        (*curr)->getTexture()[i][j] = lerp * ctOrig[i][j] + (1 - lerp) * itOrig[i][j];
+                        // Work out (i0,j0) -> (i1,j1)
+                        i0 = i;
+                        j0 = j;
+                        i1 = i;
+                        j1 = j;
+                        // lerp should be zero at and beyond the boundary
+                        // should blend to 1 before the far corner of the triangle
+                        amt = 1;
+                        // Apply lerp
+                        (*curr)->getTexture()[i0][j0] = amt * ctOrig[i0][j0] + (1 - amt) * itOrig[i1][j1];
 
-                        lerp = 1;
-                        (*inner)->getTexture()[i][j] = lerp * itOrig[i][j] + (1 - lerp) * ctOrig[i][j];
+                        // Same process, in reverse
+                        i0 = i;
+                        j0 = j;
+                        i1 = i;
+                        j1 = j;
+                        amt = 1;
+                        (*inner)->getTexture()[i0][j0] = amt * itOrig[i0][j0] + (1 - amt) * ctOrig[i1][j1];
                     }
                 }
             }
