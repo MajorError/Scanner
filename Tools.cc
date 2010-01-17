@@ -50,17 +50,22 @@ void toolselproc::click() {
 
 MK_TOOL_PLUGIN( creator, "Space", );
 void creator::click() {
-    commandList::exec( "target.create" );
+    commandList::exec( "vertex.create" );
 };
 
 MK_TOOL_PLUGIN( mover, "Space", );
 void mover::click() {
-    commandList::exec( "point.move" );
+    commandList::exec( "vertex.move" );
 };
 
 MK_TOOL_PLUGIN( connect, "Space", );
 void connect::click() {
     commandList::exec( "edge.connect" );
+};
+
+MK_TOOL_PLUGIN( bisect, "Space", );
+void bisect::click() {
+    commandList::exec( "edge.bisect" );
 };
 
 MK_TOOL_PLUGIN( toggleBG, "b", );
