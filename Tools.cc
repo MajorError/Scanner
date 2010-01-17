@@ -22,8 +22,9 @@ void toolsel::click() {
         running = true;
         pthread_create( &display, NULL, toolsel::displayTimeout, (void*)this );
     } else {
-        curr++;
-        curr = std::min( (int)Tool::list.size()-1, std::max( 2, curr % (int)Tool::list.size() ) );
+        curr = std::min( (int)Tool::list.size()-1, std::max( 2, (curr+1) % (int)Tool::list.size() ) );
+        while( Tool::list[curr]->getHotKey() != "Space" )
+            curr = std::min( (int)Tool::list.size()-1, std::max( 2, (curr+1) % (int)Tool::list.size() ) );
     }
     commandList::exec( "toolselproc.activate" );
 };
@@ -60,4 +61,24 @@ void mover::click() {
 MK_TOOL_PLUGIN( connect, "Space", );
 void connect::click() {
     commandList::exec( "edge.connect" );
+};
+
+MK_TOOL_PLUGIN( toggleBG, "b", );
+void toggleBG::click() {
+    commandList::exec( string( "drawBackground=" )+(GV3::get<bool>( "drawBackground", true ) ? "0" : "1") );
+};
+
+MK_TOOL_PLUGIN( toggleModel, "m", );
+void toggleModel::click() {
+    commandList::exec( string( "drawModel=" )+(GV3::get<bool>( "drawModel", true ) ? "0" : "1") );
+};
+
+MK_TOOL_PLUGIN( toggleVertices, "v", );
+void toggleVertices::click() {
+    commandList::exec( string( "drawPoints=" )+(GV3::get<bool>( "drawPoints", true ) ? "0" : "1") );
+};
+
+MK_TOOL_PLUGIN( toggleGrid, "g", );
+void toggleGrid::click() {
+    commandList::exec( string( "drawGrid=" )+(GV3::get<bool>( "drawGrid", true ) ? "0" : "1") );
 };
