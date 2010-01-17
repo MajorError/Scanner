@@ -85,7 +85,8 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 		  mirFrameSize.x, mirFrameSize.y,
 		  GL_RGB,
 		  GL_UNSIGNED_BYTE,
-		  imFrame.data());
+		  GV3::get<bool>( "drawBackground", true ) ? 
+                      imFrame.data() : Image< Rgb<byte> >( imFrame.size(), Rgb<byte>( 0, 0, 0 ) ).data() );
 
   // Set up rendering to go the FBO, draw undistorted video frame into BG
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,mnFrameBuffer);
@@ -228,6 +229,8 @@ void ARDriver::DrawDistortedFB()
 
 void ARDriver::DrawFadingGrid()
 {
+  if ( !GV3::get<bool>( "drawGrid", true ) )
+    return;
   double dStrength( 0.8 );
   /*if(mnCounter >= 60)
     return;

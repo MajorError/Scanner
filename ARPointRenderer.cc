@@ -45,10 +45,14 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
 
     glMatrixMode(GL_MODELVIEW);
 
-    DrawPoints();
-    DrawPolys();
-    DrawFeatures( camera );
-    DrawTarget( camera );
+    if ( GV3::get<bool>( "drawPoints", true ) )
+        DrawPoints();
+    if ( GV3::get<bool>( "drawModel", true ) )
+        DrawPolys();
+    if ( GV3::get<bool>( "drawFeatures", true ) )
+        DrawFeatures( camera );
+    if ( GV3::get<bool>( "drawTarget", true ) )
+        DrawTarget( camera );
     
 
     glDisable(GL_LIGHTING);
