@@ -97,37 +97,30 @@ Edge* Environment::findClosestEdge( Vector<3> &pointOnEdge, double& bestDistance
 
     Vector<3> p0( cameraPose.get_translation() );
     Matrix<> rot = cameraPose.get_rotation().get_matrix();
-    Vector<3> p1( cameraPose.get_translation()
-                + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+    Vector<3> u = makeVector( rot[0][2], rot[1][2], rot[2][2] );
 
     // Now find the closest distance between L1 and L2, given that
-    // L1 = p0 + mu0(p1 - p0), and L2 = p2 + mu1(p3 - p2)
+    // L1 = p0 + mu0*u, and L2 = q0 + mu1*v
     // Based on http://softsurfer.com/Archive/algorithm_0106/algorithm_0106.htm
-    Vector<3> u = makeVector( rot[0][2], rot[1][2], rot[2][2] );
     for( list<Edge*>::iterator curr = edges.begin();
             curr != edges.end(); curr++ ) {
-        Vector<3> p2( (*curr)->getStart()->getPosition() );
-        Vector<3> p3( (*curr)->getEnd()->getPosition() );
-        Vector<3> v = p3 - p2;
-        Vector<3> w0 = p0 - p2;
+        Vector<3> q0( (*curr)->getStart()->getPosition() );
+        Vector<3> v = (*curr)->getEnd()->getPosition() - q0;
 
+        Vector<3> w0 = p0 - q0;
         double a = u * u;
         double b = u * v;
         double c = v * v;
         double d = u * w0;
         double e = v * w0;
 
-        cerr << "a = " << a << ", b = " << b << ", c = " << c << ", d = " << d << ", e = " << e << endl;
-        cerr << "ac - bb = " << (a*c - b*b) << endl;
-
         if ( (a*c - b*b) > 0 ) {
             // Calculate points
-            Vector<3> edgePt = p2 + v * (a*e - b*d) / (a*c - b*b);
-            Vector<3> targetPt = p0 = u * (b*e - c*d) / (a*c - b*b);
+            Vector<3> edgePt = q0 + v * (a*e - b*d) / (a*c - b*b);
+            Vector<3> targetPt = p0 + u * (b*e - c*d) / (a*c - b*b);
             // ... test if it's our best match yet
             double dist = MAG3( (targetPt - edgePt) );
             dist = dist < 0 ? -dist : dist;
-            cerr << "Distance: " << dist << " / " << d << endl;
             if ( dist < bestDistance ) {
                 bestDistance = dist;
                 pointOnEdge = edgePt;
@@ -141,7 +134,6 @@ Edge* Environment::findClosestEdge( Vector<3> &pointOnEdge, double& bestDistance
 void Environment::removeEdge( Edge* e ) {
     edges.remove( e );
     // Remove any faces containing this edge
-    cerr << "Culling faces" << endl;
     for( set<PolyFace*>::iterator curr = faces.begin();
             curr != faces.end(); curr++ ) {
         if( ((*curr)->getP1() == e->getStart()
@@ -155,10 +147,8 @@ void Environment::removeEdge( Edge* e ) {
         }
     }
     // Remove edge from start and end bundles
-    cerr << "Culling from start/end" << endl;
     e->getStart()->getEdges().remove( e );
     e->getEnd()->getEdges().remove( e );
-    cerr << "Deleting pointer..." << endl;
     delete e;
 };
 
