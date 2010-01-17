@@ -46,7 +46,7 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     glMatrixMode(GL_MODELVIEW);
 
     if ( GV3::get<bool>( "drawPoints", true ) )
-        DrawPoints();
+        DrawPoints( camera );
     if ( GV3::get<bool>( "drawModel", true ) )
         DrawPolys();
     if ( GV3::get<bool>( "drawFeatures", true ) )
@@ -60,15 +60,19 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     glDisable(GL_CULL_FACE);
 };
 
-void ARPointRenderer::DrawPoints() {
+void ARPointRenderer::DrawPoints( SE3<> camera ) {
     double ds = GV3::get<double>( "ptSize", 0.05 );
-    glColor4d(0.92, 0.9, 0.85,1);
+    if ( GV3::get<bool>( "drawClosestPoint", true ) ) {
+        glColor4d(1.0, 0.4, 0.0, 1.0);
+        env->sortPoints( camera );
+    }
     for ( list<Point*>::iterator curr = env->getPoints().begin();
             curr != env->getPoints().end(); curr++ ) {
         glLoadIdentity();
         glTranslate<3>( (*curr)->getPosition() );
         glScaled( ds, ds, ds );
         DrawSphere();
+        glColor4d(0.92, 0.9, 0.85,1);
     }
 };
 
@@ -104,10 +108,20 @@ void ARPointRenderer::DrawPolys() {
     glLoadIdentity();
     glColor4d(0.2, 0.2, 0.9, 1.0);
     glBegin( GL_LINES );
-    for(  list<Edge*>::iterator curr = env->getEdges().begin();
+    for( list<Edge*>::iterator curr = env->getEdges().begin();
             curr != env->getEdges().end(); curr++ ) {
         glVertex( (*curr)->getStart()->getPosition() );
         glVertex( (*curr)->getEnd()->getPosition() );
+    }
+    if ( GV3::get<bool>( "drawClosestEdge", true ) ) {
+        glColor4d(1.0, 0.4, 0.0, 1.0);
+        Vector<3> pt;
+        double d = numeric_limits<double>::max();
+        Edge* best = env->findClosestEdge( pt, d );
+        if ( d < GV3::get<double>( "closestEdgeTol", 0.5 ) ) {
+            glVertex( best->getStart()->getPosition() );
+            glVertex( best->getEnd()->getPosition() );
+        }
     }
     glEnd();
 
@@ -117,13 +131,6 @@ void ARPointRenderer::DrawPolys() {
     
     glLoadIdentity();
     GLuint currTex;
-    /*glGenTextures( 1, &currTex );
-    glBindTexture( GL_TEXTURE_RECTANGLE_ARB, currTex );
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    glTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
-    glTexImage2D( Image< Rgb< byte > >( ImageRef( 640, 480 ), Rgb<byte>( 0, 0, 0 ) ), 0, GL_TEXTURE_RECTANGLE_ARB );*/
 
     for( set<PolyFace*>::iterator it = env->getFaces().begin();
             it != env->getFaces().end(); it++ ) {

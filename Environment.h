@@ -41,6 +41,7 @@ public:
     void addEdge( Point* from, Point* to );
     void removeEdge( Edge* it );
     list< Edge* > &getEdges();
+    Edge* findClosestEdge( Vector<3> &pointOnEdge, double& d );
     set< PolyFace*, PolyFace > &getFaces();
     
     void clearFeatures();

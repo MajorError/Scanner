@@ -21,7 +21,7 @@ public:
     virtual void DrawStuff(SE3<> camera);
 
 protected:
-    void DrawPoints();
+    void DrawPoints( SE3<> camera );
     void DrawPolys();
     void DrawFeatures( SE3<> camera );
     void DrawTarget( SE3<> camera );

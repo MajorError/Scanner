@@ -98,48 +98,42 @@ namespace edge1 {
 namespace edge2 {
     MK_GUI_COMMAND(edge, bisect, )
     void edge::bisect( string params ) {
-        Edge* target = NULL;
         Vector<3> bisection = makeVector( 0, 0, 0 );
-        double tol = GV3::get<double>( "bisectTolerance", 0.5 );
-        std::list<Edge*>::iterator curr;
-        for( curr = environment->getEdges().begin();
-                curr != environment->getEdges().end(); curr++ ) {
-            // Find closest distance between edge and look-list
-            target = *curr;
-            break; // FIXME
-        }
+        double d = numeric_limits<double>::max();
+        Edge* target = environment->findClosestEdge( bisection, d );
+        cerr << "Found target " << target << " @ " << bisection << ", d = " << d << endl;
+        if ( d > GV3::get<double>( "bisectTolerance", 0.5 ) )
+            return;
+
         // if we found a valid target, bisect it
-        if( target != NULL ) {
-            cerr << "Found target " << target << endl;
-            Point* mid = new Point( bisection );
-            Point* from = target->getStart();
-            Point* to = target->getEnd();
+        Point* mid = new Point( bisection );
+        Point* from = target->getStart();
+        Point* to = target->getEnd();
 
-            cerr << "Removing...";
-            environment->removeEdge( target );
-             // target = NULL; has been deleted
-            cerr << "Done" << endl;
-            
-            environment->addPoint( mid );
-            environment->addEdge( from, mid );
-            environment->addEdge( mid, to );
+        cerr << "Removing...";
+        environment->removeEdge( target );
+         // target = NULL; has been deleted
+        cerr << "Done" << endl;
 
-            cerr << "Connecting" << endl;
-            // If there's a polyface, re-connect 'mid' to third point
-            for( std::list<Edge*>::iterator curr = from->getEdges().begin();
-                    curr != from->getEdges().end(); curr++ ) {
-                cerr << "Add edge1 mid -> " << ((*curr)->getStart() == from ?
-                    (*curr)->getEnd() : (*curr)->getStart()) << endl;
-                environment->addEdge( mid, (*curr)->getStart() == from ?
-                    (*curr)->getEnd() : (*curr)->getStart() );
-            }
-            for( std::list<Edge*>::iterator curr = to->getEdges().begin();
-                    curr != to->getEdges().end(); curr++ ) {
-                cerr << "Add edge2 mid -> " << ((*curr)->getStart() == from ?
-                    (*curr)->getEnd() : (*curr)->getStart()) << endl;
-                environment->addEdge( mid, (*curr)->getStart() == from ?
-                    (*curr)->getEnd() : (*curr)->getStart() );
-            }
+        environment->addPoint( mid );
+        environment->addEdge( from, mid );
+        environment->addEdge( mid, to );
+
+        cerr << "Connecting" << endl;
+        // If there's a polyface, re-connect 'mid' to third point
+        for( std::list<Edge*>::iterator curr = from->getEdges().begin();
+                curr != from->getEdges().end(); curr++ ) {
+            cerr << "Add edge1 mid -> " << ((*curr)->getStart() == from ?
+                (*curr)->getEnd() : (*curr)->getStart()) << endl;
+            environment->addEdge( mid, (*curr)->getStart() == from ?
+                (*curr)->getEnd() : (*curr)->getStart() );
+        }
+        for( std::list<Edge*>::iterator curr = to->getEdges().begin();
+                curr != to->getEdges().end(); curr++ ) {
+            cerr << "Add edge2 mid -> " << ((*curr)->getStart() == from ?
+                (*curr)->getEnd() : (*curr)->getStart()) << endl;
+            environment->addEdge( mid, (*curr)->getStart() == from ?
+                (*curr)->getEnd() : (*curr)->getStart() );
         }
     }
 }

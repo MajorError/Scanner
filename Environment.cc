@@ -11,6 +11,7 @@
 #include "Point.h"
 #include "PolyFace.h"
 
+#define MAG3(v) v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
 Vector<3> Environment::v;
 Vector<3> Environment::o;
 
@@ -91,10 +92,56 @@ void Environment::addEdge( Point* from, Point* to ) {
     }
 };
 
+Edge* Environment::findClosestEdge( Vector<3> &pointOnEdge, double& bestDistance ) {
+    Edge* best = NULL;
+
+    Vector<3> p0( cameraPose.get_translation() );
+    Matrix<> rot = cameraPose.get_rotation().get_matrix();
+    Vector<3> p1( cameraPose.get_translation()
+                + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+
+    // Now find the closest distance between L1 and L2, given that
+    // L1 = p0 + mu0(p1 - p0), and L2 = p2 + mu1(p3 - p2)
+    // Based on http://softsurfer.com/Archive/algorithm_0106/algorithm_0106.htm
+    Vector<3> u = makeVector( rot[0][2], rot[1][2], rot[2][2] );
+    for( list<Edge*>::iterator curr = edges.begin();
+            curr != edges.end(); curr++ ) {
+        Vector<3> p2( (*curr)->getStart()->getPosition() );
+        Vector<3> p3( (*curr)->getEnd()->getPosition() );
+        Vector<3> v = p3 - p2;
+        Vector<3> w0 = p0 - p2;
+
+        double a = u * u;
+        double b = u * v;
+        double c = v * v;
+        double d = u * w0;
+        double e = v * w0;
+
+        cerr << "a = " << a << ", b = " << b << ", c = " << c << ", d = " << d << ", e = " << e << endl;
+        cerr << "ac - bb = " << (a*c - b*b) << endl;
+
+        if ( (a*c - b*b) > 0 ) {
+            // Calculate points
+            Vector<3> edgePt = p2 + v * (a*e - b*d) / (a*c - b*b);
+            Vector<3> targetPt = p0 = u * (b*e - c*d) / (a*c - b*b);
+            // ... test if it's our best match yet
+            double dist = MAG3( (targetPt - edgePt) );
+            dist = dist < 0 ? -dist : dist;
+            cerr << "Distance: " << dist << " / " << d << endl;
+            if ( dist < bestDistance ) {
+                bestDistance = dist;
+                pointOnEdge = edgePt;
+                best = (*curr);
+            }
+        }
+    }
+    return best;
+}
+
 void Environment::removeEdge( Edge* e ) {
     edges.remove( e );
-    cerr << "Culling faces" << endl;
     // Remove any faces containing this edge
+    cerr << "Culling faces" << endl;
     for( set<PolyFace*>::iterator curr = faces.begin();
             curr != faces.end(); curr++ ) {
         if( ((*curr)->getP1() == e->getStart()
@@ -107,30 +154,10 @@ void Environment::removeEdge( Edge* e ) {
             faces.erase( curr );
         }
     }
+    // Remove edge from start and end bundles
     cerr << "Culling from start/end" << endl;
     e->getStart()->getEdges().remove( e );
     e->getEnd()->getEdges().remove( e );
-    // Remove edge from start and end bundles
-    /*list<Edge*> startEdges = (*it)->getStart()->getEdges();
-    startEdges.remove( (*it) );
-    (*it)->getStart()->getEdges() = startEdges;
-    list<Edge*> endEdges = (*it)->getEnd()->getEdges();
-    endEdges.remove( (*it) );
-    (*it)->getEnd()->getEdges() = startEdges;*/
-    /*for( list<Edge*>::iterator curr = e->getStart()->getEdges().begin();
-            curr != e->getStart()->getEdges().end(); curr++ ) {
-        cerr << "Examine " << (*curr) << endl;
-        if( (*curr) == e ) {
-            cerr << "\tERASE" << endl;
-            curr = e->getStart()->getEdges().erase( curr );
-        }
-    }
-    cerr << "Culling from end" << endl;
-    for( list<Edge*>::iterator curr = e->getEnd()->getEdges().begin();
-            curr != e->getEnd()->getEdges().end(); curr++ ) {
-        if( (*curr) == e )
-            curr = e->getEnd()->getEdges().erase( curr );
-    }*/
     cerr << "Deleting pointer..." << endl;
     delete e;
 };
@@ -155,7 +182,6 @@ std::list< Vector<3> >& Environment::getFeatures() {
     return features;
 };
 
-#define MAG3(v) v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
 std::list< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, double tol ) {
     double d; // the square of the distance
     std::list< Vector<3> > out;
