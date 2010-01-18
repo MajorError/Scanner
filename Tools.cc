@@ -76,6 +76,11 @@ void edge_remove::click() {
     commandList::exec( "edge.remove" );
 };
 
+MK_TOOL_PLUGIN( texture_clean, "Space", );
+void texture_clean::click() {
+    commandList::exec( "textures.clean" );
+};
+
 MK_TOOL_PLUGIN( toggleBG, "b", );
 void toggleBG::click() {
     commandList::exec( string( "drawBackground=" )+(GV3::get<bool>( "drawBackground", true ) ? "0" : "1") );
