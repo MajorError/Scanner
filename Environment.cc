@@ -129,9 +129,13 @@ Edge* Environment::findClosestEdge( Vector<3> &pointOnEdge, double& bestDistance
             double dist = MAG3( (targetPt - edgePt) );
             dist = dist < 0 ? -dist : dist;
             if ( dist < bestDistance ) {
-                bestDistance = dist;
-                pointOnEdge = edgePt;
-                best = (*curr);
+                // Test to ensure that pointOnEdge would be actually ON edge
+                double dp = v * (edgePt - q0);
+                if ( dp >= 0 && dp < MAG3( v ) ) {
+                    bestDistance = dist;
+                    pointOnEdge = edgePt;
+                    best = (*curr);
+                }
             }
         }
     }
