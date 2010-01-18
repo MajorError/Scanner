@@ -136,7 +136,8 @@ Edge* Environment::findClosestEdge( Vector<3> &pointOnEdge, double& bestDistance
             Vector<3> edgePt = q0 + v * (a*e - b*d) / (a*c - b*b);
             Vector<3> targetPt = p0 + u * (b*e - c*d) / (a*c - b*b);
             // ... test if it's our best match yet
-            double dist = MAG3( (targetPt - edgePt) );
+            Vector<3> res( targetPt - edgePt );
+            double dist = MAG3( res );
             dist = dist < 0 ? -dist : dist;
             if ( dist < bestDistance ) {
                 // Test to ensure that pointOnEdge would be actually ON edge
@@ -201,7 +202,9 @@ std::list< Vector<3> > Environment::getFeatures( Vector<3> o, Vector<3> v, doubl
             curr != features.end(); curr++ ) {
         // o = x1, v = x2, feature = x0
         // d =	(|(x_0-x_1)x(x_0-x_2)|)/(|x_2-x_1|)
-        d = MAG3( (((*curr) - o) ^ ((*curr) - v)) ) / MAG3( (v - o) );
+        Vector<3> a( ((*curr) - o) ^ ((*curr) - v) );
+        Vector<3> b( v - o );
+        d = MAG3( a ) / MAG3( b );
         if ( d <= tol )
             out.push_back( (*curr) );
     }
@@ -213,8 +216,9 @@ bool Environment::closer( Point* a, Point* b ) {
 };
 
 bool Environment::closerVec( Vector<3> a, Vector<3> b ) {
-    return MAG3( ((a - Environment::o) ^ (a - Environment::v)) )
-            < MAG3( ((b - Environment::o) ^ (b - Environment::v)) );
+    Vector<3> lt( (a - Environment::o) ^ (a - Environment::v) );
+    Vector<3> gt( (b - Environment::o) ^ (b - Environment::v) );
+    return MAG3( lt ) < MAG3( gt );
 };
 
 std::list< Vector<3> > Environment::getFeaturesSorted( SE3<> camera, double tol ) {
