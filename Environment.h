@@ -37,6 +37,7 @@ public:
     list< Point* > &getPoints();
     list< Point* > &sortPoints( SE3<> camera );
     list< Point* > &sortPoints( Vector<3> o, Vector<3> v );
+    void removePoint( Point* p );
 
     void addEdge( Point* from, Point* to );
     void removeEdge( Edge* it );

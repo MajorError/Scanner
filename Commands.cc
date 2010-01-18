@@ -86,6 +86,16 @@ namespace vtx2 {
     }
 }
 
+namespace vtx3 {
+    MK_GUI_COMMAND(vertex, remove,)
+    void vertex::remove( string params ) {
+        if ( environment->getPoints().size() < 1 )
+             return;
+        Point* p = environment->sortPoints( environment->getCameraPose() ).front();
+        environment->removePoint( p );
+    }
+}
+
 namespace edge1 {
     MK_GUI_COMMAND(edge, connect, Point* from; bool start; )
     void edge::connect( string params ) {

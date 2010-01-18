@@ -68,6 +68,16 @@ std::list< Point* >& Environment::sortPoints( Vector<3> o, Vector<3> v ) {
     return points;
 };
 
+void Environment::removePoint( Point* p ) {
+    // Leave the work to the edge removal; this will cull faces too
+    while( p->getEdges().size() > 0 )
+        removeEdge( p->getEdges().front() );
+
+    points.remove( p );
+
+    delete p;
+};
+
 void Environment::addEdge( Point* from, Point* to ) {
     // Check if this edge already exists (in either direction)
     for( list<Edge*>::iterator curr = edges.begin();

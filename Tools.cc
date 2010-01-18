@@ -76,6 +76,11 @@ void edge_remove::click() {
     commandList::exec( "edge.remove" );
 };
 
+MK_TOOL_PLUGIN( vertex_remove, "Space", );
+void vertex_remove::click() {
+    commandList::exec( "vertex.remove" );
+};
+
 MK_TOOL_PLUGIN( texture_clean, "Space", );
 void texture_clean::click() {
     commandList::exec( "textures.clean" );
