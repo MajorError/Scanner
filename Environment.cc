@@ -69,6 +69,13 @@ std::list< Point* >& Environment::sortPoints( Vector<3> o, Vector<3> v ) {
 };
 
 void Environment::addEdge( Point* from, Point* to ) {
+    // Check if this edge already exists (in either direction)
+    for( list<Edge*>::iterator curr = edges.begin();
+            curr != edges.end(); curr++ ) {
+        if( ((*curr)->getStart() == from && (*curr)->getEnd() == to)
+                || ((*curr)->getStart() == to && (*curr)->getEnd() == from) )
+            return;
+    }
     Edge* e = new Edge( from, to );
     edges.push_back( e );
     // Add the edge to the points

@@ -14,6 +14,15 @@ void key::handle( string s ) {
     commandList::exec( "KeyPress "+s );
 }
 
+MK_GUI_COMMAND(edgelist, dump,)
+void edgelist::dump( string s ) {
+    cerr << "Edge list:\n" << endl;
+    for( std::list<Edge*>::iterator curr = environment->getEdges().begin();
+            curr != environment->getEdges().end(); curr++ ) {
+        cerr << '\t' << (*curr)->getStart() << " -> " << (*curr)->getEnd() << endl;
+    }
+}
+
 namespace vtx1 {
     MK_GUI_COMMAND(vertex, create,)
     void vertex::create( string params ) {
