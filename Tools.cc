@@ -19,6 +19,9 @@ void toolsel::click() {
     }
     if( !running ) {
         curr = 2;
+        for ( curr = Tool::list.size()-1; curr > 2; curr-- )
+            if ( Tool::list[curr]->isEnabled() )
+                break;
         running = true;
         pthread_create( &display, NULL, toolsel::displayTimeout, (void*)this );
     } else {

@@ -44,6 +44,9 @@ public:
     };
     virtual std::string getShortName() { return "TNULL"; };
     virtual std::string getHotKey() { return "TNULL"; };
+    bool isEnabled() {
+        return enabled;
+    };
     /**
      * A static list of all plugins currently loaded into the system, generated
      * at initialisation time.
