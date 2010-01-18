@@ -86,22 +86,47 @@ void texture_clean::click() {
     commandList::exec( "textures.clean" );
 };
 
-MK_TOOL_PLUGIN( toggleBG, "b", );
-void toggleBG::click() {
-    commandList::exec( string( "drawBackground=" )+(GV3::get<bool>( "drawBackground", true ) ? "0" : "1") );
-};
+namespace toggles {
 
-MK_TOOL_PLUGIN( toggleModel, "m", );
-void toggleModel::click() {
-    commandList::exec( string( "drawModel=" )+(GV3::get<bool>( "drawModel", true ) ? "0" : "1") );
-};
+    void* displayTimeout( void* ptr ) {
+        string* text = static_cast<string*>( ptr );
+        time_t start = time( NULL );
+        while( time( NULL ) < start + 1 ) {
+            commandList::exec( "text.draw " + *text );
+            usleep(10);
+        }
+        delete text;
+        return NULL;
+    };
 
-MK_TOOL_PLUGIN( toggleVertices, "v", );
-void toggleVertices::click() {
-    commandList::exec( string( "drawPoints=" )+(GV3::get<bool>( "drawPoints", true ) ? "0" : "1") );
-};
+    void toggleVar( string varName ) {
+        string* text = new string( "Toggle " + varName + " to " + (GV3::get<bool>( varName, true ) ? "0" : "1") );
+        pthread_t t;
+        commandList::exec( varName+"="+(GV3::get<bool>( varName, true ) ? "0" : "1") );
+        pthread_create( &t, NULL, displayTimeout, text );
+    };
+    MK_TOOL_PLUGIN( toggleBG, "b", );
+    void toggleBG::click() {
+        toggleVar( "drawBackground" );
+    };
 
-MK_TOOL_PLUGIN( toggleGrid, "g", );
-void toggleGrid::click() {
-    commandList::exec( string( "drawGrid=" )+(GV3::get<bool>( "drawGrid", true ) ? "0" : "1") );
-};
+    MK_TOOL_PLUGIN( toggleModel, "m", );
+    void toggleModel::click() {
+        toggleVar( "drawModel" );
+    };
+
+    MK_TOOL_PLUGIN( toggleVertices, "v", );
+    void toggleVertices::click() {
+        toggleVar( "drawPoints" );
+    };
+
+    MK_TOOL_PLUGIN( toggleEdges, "e", );
+    void toggleEdges::click() {
+        toggleVar( "drawEdges" );
+    };
+
+    MK_TOOL_PLUGIN( toggleGrid, "g", );
+    void toggleGrid::click() {
+        toggleVar( "drawGrid" );
+    };
+}

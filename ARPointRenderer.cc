@@ -45,8 +45,7 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
 
     glMatrixMode(GL_MODELVIEW);
 
-    if ( GV3::get<bool>( "drawPoints", true ) )
-        DrawPoints( camera );
+    DrawPoints( camera );
     if ( GV3::get<bool>( "drawModel", true ) )
         DrawPolys();
     if ( GV3::get<bool>( "drawFeatures", true ) )
@@ -65,14 +64,22 @@ void ARPointRenderer::DrawPoints( SE3<> camera ) {
     if ( GV3::get<bool>( "drawClosestPoint", true ) ) {
         glColor4d(1.0, 0.4, 0.0, 1.0);
         env->sortPoints( camera );
+        if ( !GV3::get<bool>( "drawPoints", true ) ) {
+            glLoadIdentity();
+            glTranslate<3>( env->getPoints().front()->getPosition() );
+            glScaled( ds, ds, ds );
+            DrawSphere();
+        }
     }
-    for ( list<Point*>::iterator curr = env->getPoints().begin();
-            curr != env->getPoints().end(); curr++ ) {
-        glLoadIdentity();
-        glTranslate<3>( (*curr)->getPosition() );
-        glScaled( ds, ds, ds );
-        DrawSphere();
-        glColor4d(0.92, 0.9, 0.85,1);
+    if ( GV3::get<bool>( "drawPoints", true ) ) {
+        for ( list<Point*>::iterator curr = env->getPoints().begin();
+                curr != env->getPoints().end(); curr++ ) {
+            glLoadIdentity();
+            glTranslate<3>( (*curr)->getPosition() );
+            glScaled( ds, ds, ds );
+            DrawSphere();
+            glColor4d(0.92, 0.9, 0.85,1);
+        }
     }
 };
 
@@ -105,13 +112,15 @@ void ARPointRenderer::DrawTarget( SE3<> camera ) {
 };
 
 void ARPointRenderer::DrawPolys() {
-    glLoadIdentity();
-    glColor4d(0.2, 0.2, 0.9, 1.0);
-    glBegin( GL_LINES );
-    for( list<Edge*>::iterator curr = env->getEdges().begin();
-            curr != env->getEdges().end(); curr++ ) {
-        glVertex( (*curr)->getStart()->getPosition() );
-        glVertex( (*curr)->getEnd()->getPosition() );
+    if ( GV3::get<bool>( "drawEdges", true ) ) {
+        glLoadIdentity();
+        glColor4d(0.2, 0.2, 0.9, 1.0);
+        glBegin( GL_LINES );
+        for( list<Edge*>::iterator curr = env->getEdges().begin();
+                curr != env->getEdges().end(); curr++ ) {
+            glVertex( (*curr)->getStart()->getPosition() );
+            glVertex( (*curr)->getEnd()->getPosition() );
+        }
     }
     if ( GV3::get<bool>( "drawClosestEdge", true ) ) {
         glColor4d(1.0, 0.4, 0.0, 1.0);
