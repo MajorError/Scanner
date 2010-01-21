@@ -66,9 +66,18 @@ void connect::click() {
     commandList::exec( "edge.connect" );
 };
 
-MK_TOOL_PLUGIN( edge_bisect, "Space", );
+MK_TOOL_PLUGIN( edge_bisect, "Space", bool startBisect;);
 void edge_bisect::click() {
-    commandList::exec( "edge.bisect" );
+    // Thanks to randomly assigned values in memory locations (startBisect is
+    //  uninitialised), we have to assign values directly here.
+    if ( startBisect ) {
+        commandList::exec( "edge.bisect" );
+        commandList::exec( "vertex.move" );
+        startBisect = false;
+    } else {
+        commandList::exec( "vertex.move" );
+        startBisect = true;
+    }
 };
 
 MK_TOOL_PLUGIN( edge_remove, "Space", );
