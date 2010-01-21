@@ -136,15 +136,16 @@ namespace edge2 {
         environment->addEdge( mid, to );
 
         // If there's a polyface, re-connect 'mid' to third point
+        // Only connect to points that are in *both* edge-sets
         for( std::list<Edge*>::iterator curr = from->getEdges().begin();
                 curr != from->getEdges().end(); curr++ ) {
-            environment->addEdge( mid, (*curr)->getStart() == from ?
-                (*curr)->getEnd() : (*curr)->getStart() );
-        }
-        for( std::list<Edge*>::iterator curr = to->getEdges().begin();
-                curr != to->getEdges().end(); curr++ ) {
-            environment->addEdge( mid, (*curr)->getStart() == from ?
-                (*curr)->getEnd() : (*curr)->getStart() );
+            Point* p1 = (*curr)->getStart() == from ? (*curr)->getEnd() : (*curr)->getStart();
+            for( std::list<Edge*>::iterator inner = to->getEdges().begin();
+                    inner != to->getEdges().end(); inner++ ) {
+                if ( ((*inner)->getStart() == to ?
+                    (*inner)->getEnd() : (*inner)->getStart()) == p1 )
+                    environment->addEdge( mid, p1 );
+            }
         }
     }
 }
