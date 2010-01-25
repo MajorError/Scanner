@@ -38,6 +38,7 @@ public:
     Image< Rgb< byte > >* getTextureSource();
     SE3<>& getTextureViewpoint();
     Vector<3> getFaceCentre();
+    Vector<3> getFaceNormal();
     bool operator()( PolyFace* a, PolyFace* b ) const;
 protected:
     Point* p1;

@@ -95,6 +95,11 @@ void texture_clean::click() {
     commandList::exec( "textures.clean" );
 };
 
+MK_TOOL_PLUGIN( shrink_wrap, "Space", );
+void shrink_wrap::click() {
+    commandList::exec( "shrinkwrap.exec" );
+};
+
 namespace toggles {
 
     void* displayTimeout( void* ptr ) {

@@ -37,10 +37,10 @@ using namespace GVars3;
 
 
  void* safeCommandParser(void* ptr) {
-     string line;
+     char line[2048];
      while( true ) {
          cout << "> ";
-         cin >> line;
+         cin.getline( line, (long int)2048 );
          commandList::exec( line );
      }
      return ptr;

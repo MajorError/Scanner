@@ -119,9 +119,22 @@ namespace edge2 {
     void edge::bisect( string params ) {
         Vector<3> bisection = makeVector( 0, 0, 0 );
         double d = numeric_limits<double>::max();
-        Edge* target = environment->findClosestEdge( bisection, d );
-        if ( target == NULL || d > GV3::get<double>( "edgeTolerance", 0.5 ) )
-            return;
+        Edge* target;
+        if ( params.length() > 0 ) {
+            stringstream paramStream( params );
+            int idx = -1;
+            paramStream >> idx >> bisection;
+            if ( idx < 0 || idx > static_cast<int>( environment->getEdges().size() ) ) {
+                cerr << "Invalid index, " << idx << " at " << bisection << endl;
+                return;
+            }
+            cerr << "Using index " << idx << " at " << bisection << endl;
+            target = *(environment->getEdges().begin().operator ++(idx));
+        } else {
+            target = environment->findClosestEdge( bisection, d );
+            if ( target == NULL || d > GV3::get<double>( "edgeTolerance", 0.5 ) )
+                return;
+        }
 
         // if we found a valid target, bisect it
         Point* mid = new Point( bisection );
@@ -326,5 +339,68 @@ namespace {
                 }
             }
         }
+    }
+}
+
+namespace {
+    MK_GUI_COMMAND(shrinkwrap, exec,)
+    void shrinkwrap::exec( string args ) {
+        double tol = GV3::get<double>( "shrinkwrapTolerance", 0.001 );
+        int idx = 0;
+        
+        std::list<int> edges;
+        std::list< Vector<3> > features;
+        for( std::list<Edge*>::iterator curr = environment->getEdges().begin();
+                curr != environment->getEdges().end(); curr++, idx++ ) {
+            cerr << "Examine " << *curr << " (" << idx << ")";
+            // Get all features within the given tol distance to this vector
+            std::list< Vector<3> > sorted = environment->getFeaturesSorted(
+                    (*curr)->getStart()->getPosition(),
+                    (*curr)->getEnd()->getPosition(), tol );
+            cerr << ": Got " << sorted.size() << " features." << endl;
+            Vector<3> vStart = (*curr)->getStart()->getPosition();
+            Vector<3> v = (*curr)->getEnd()->getPosition() - vStart;
+            for( std::list< Vector<3> >::iterator feat = sorted.begin();
+                    feat != sorted.end(); feat++ ) {
+                // Now check the the feature lies within the bounds of (*curr)
+                        cerr << "Looking at " << *feat;
+                if ( (v * ((*feat) - vStart)) >= 0 ) {
+                    // As this is the case, bisect the current edge and create
+                    //  a point on *feat
+                    cerr << ": BISECT";
+                    edges.push_back( idx );
+                    features.push_back( (*feat) );
+                }
+                cerr << "... DONE!" << endl;
+            }
+        }
+        std::list<int>::iterator currEdge = edges.begin();
+        std::list< Vector<3> >::iterator currFeat = features.begin();
+        int startPt = environment->getPoints().size();
+        int startEdge = environment->getEdges().size();
+        for( ; currEdge != edges.end() && currFeat != features.end(); currEdge++, currFeat++ ) {
+            bool exec = true;
+            // First, check if we already have a point close to the target
+            for( std::list<Point*>::iterator currPt = environment->getPoints().begin();
+                    exec && currPt != environment->getPoints().end(); currPt++ ) {
+                Vector<3> v( (*currFeat) - (*currPt)->getPosition() );
+                if ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] < tol )
+                    exec = false;
+            }
+            // Next, check if the point is close to the surface of an existing face
+            for( std::set<PolyFace*>::iterator currFace = environment->getFaces().begin();
+                    exec && currFace != environment->getFaces().end(); currFace++ ) {
+                // Calculate unit normal vector
+                if( (*currFace)->getFaceNormal() * ((*currFeat) - (*currFace)->getP1()->getPosition()) < tol )
+                    exec = false;
+            }
+            if ( exec ) {
+                stringstream cmdStream;
+                cmdStream << "edge.bisect " << *currEdge << ' ' << *currFeat << endl;
+                GUI.ParseLine( cmdStream.str() );
+            }
+        }
+        cerr << "From " << startPt << " to " << environment->getPoints().size() << " points" << endl;
+        cerr << "From " << startEdge << " to " << environment->getEdges().size() << " edges" << endl;
     }
 }

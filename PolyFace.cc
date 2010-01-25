@@ -130,6 +130,11 @@ Vector<3> PolyFace::getFaceCentre() {
     return out;
 };
 
+Vector<3> PolyFace::getFaceNormal() {
+    Vector<3> n = (p2->getPosition() - p1->getPosition()) ^ (p3->getPosition() - p1->getPosition());
+    return n / (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+};
+
 bool PolyFace::operator()( PolyFace* a, PolyFace* p ) const {
     return a->p1 < p->p1 || a->p2 < p->p2 || a->p3 < p->p3;
 };
