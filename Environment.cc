@@ -182,6 +182,46 @@ std::set< PolyFace*, PolyFace > &Environment::getFaces() {
     return faces;
 };
 
+PolyFace* Environment::findClosestFace( Vector<3> &pointOnFace ) {
+    PolyFace* best = NULL;
+    double bestDistance = numeric_limits<double>::max();
+
+    Vector<3> p0( cameraPose.get_translation() );
+    Matrix<> rot = cameraPose.get_rotation().get_matrix();
+    Vector<3> u = makeVector( rot[0][2], rot[1][2], rot[2][2] );
+
+    for( set<PolyFace*>::iterator curr = faces.begin(); curr != faces.end(); curr++ ) {
+        // Find the point of intersection with view axis and face
+        Vector<3> n = (*curr)->getFaceNormal();
+        double td = n * u;
+        if ( td == 0 ) // view axis is parallel to plane
+            continue;
+        double t = (n * ((*curr)->getP1()->getPosition() - p0)) / td;
+        Vector<3> d = t * u;
+        // Test distance to camera against bestDistance
+        double distanceToCamera = MAG3( d );
+        if ( distanceToCamera < bestDistance ) {
+            // Test if intersection point is within PolyFace boundaries
+            Vector<3> intersection = p0 + d;
+            double xLower = min( (*curr)->getP1()->getPosition()[0], min( (*curr)->getP2()->getPosition()[0], (*curr)->getP3()->getPosition()[0] ) );
+            double xUpper = max( (*curr)->getP1()->getPosition()[0], max( (*curr)->getP2()->getPosition()[0], (*curr)->getP3()->getPosition()[0] ) );
+            double yLower = min( (*curr)->getP1()->getPosition()[1], min( (*curr)->getP2()->getPosition()[1], (*curr)->getP3()->getPosition()[1] ) );
+            double yUpper = max( (*curr)->getP1()->getPosition()[1], max( (*curr)->getP2()->getPosition()[1], (*curr)->getP3()->getPosition()[1] ) );
+            double zLower = min( (*curr)->getP1()->getPosition()[2], min( (*curr)->getP2()->getPosition()[2], (*curr)->getP3()->getPosition()[2] ) );
+            double zUpper = max( (*curr)->getP1()->getPosition()[2], max( (*curr)->getP2()->getPosition()[2], (*curr)->getP3()->getPosition()[2] ) );
+            if ( xLower < intersection[0] && xUpper > intersection[0]
+                    && yLower < intersection[1] && yUpper > intersection[1]
+                    && zLower < intersection[2] && zUpper > intersection[2] ) {
+                best = (*curr);
+                pointOnFace = intersection;
+                bestDistance = distanceToCamera;
+            }
+        }
+    }
+
+    return best;
+}
+
 void Environment::clearFeatures() {
     features.clear();
 };

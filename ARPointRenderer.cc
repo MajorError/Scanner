@@ -182,6 +182,24 @@ void ARPointRenderer::DrawPolys() {
         glPrintErrors();
     }
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
+    if ( GV3::get<bool>( "drawClosestFace", true ) ) {
+        glColor4d(1.0, 0.4, 0.0, 0.6);
+        Vector<3> pt;
+        PolyFace* best = env->findClosestFace( pt );
+        if ( best != NULL ) {
+
+            glBegin( GL_TRIANGLES );
+            glVertex( best->getP1()->getPosition() );
+            glVertex( best->getP2()->getPosition() );
+            glVertex( best->getP3()->getPosition() );
+
+            glVertex( best->getP2()->getPosition() );
+            glVertex( best->getP1()->getPosition() );
+            glVertex( best->getP3()->getPosition() );
+            glEnd();
+        }
+        
+    }
 };
 
 void ARPointRenderer::DrawSphere()
