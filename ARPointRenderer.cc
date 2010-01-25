@@ -173,9 +173,25 @@ void ARPointRenderer::DrawPolys() {
         glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
         glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
 
+        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+
+        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+
+        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+
         glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
         glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
         glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+
+        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
 
         glEnd();
         glDeleteTextures( 1, &currTex );

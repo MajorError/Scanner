@@ -177,6 +177,67 @@ namespace edge3 {
 }
 
 namespace {
+    MK_GUI_COMMAND(plane, move, SE3<> start; bool working; pthread_t mover; static void* moveProcessor( void* ptr );)
+    void plane::move( string params ) {
+        if ( !working ) {
+            start = environment->getCameraPose();
+            working = true;
+            pthread_create( &mover, NULL, plane::moveProcessor, (void*)this );
+        } else if ( environment->getPoints().size() > 0 ) {
+            working = false;
+            pthread_join( mover, NULL );
+        }
+    }
+
+    void* plane::moveProcessor( void* ptr ) {
+        plane *p = static_cast<plane*>( ptr );
+        SE3<> camera( p->environment->getCameraPose() );
+
+        Vector<3> pointOnFace;
+        PolyFace* startTarget = p->environment->findClosestFace( pointOnFace );
+        
+        // start point on list ~ camera + view*t
+        Matrix<> rot = camera.get_rotation().get_matrix();
+        Vector<3> startCentre = startTarget->getFaceCentre();
+        Vector<3> projection = startCentre;
+        projection -= camera.get_translation();
+        projection[0] /= rot[0][2];
+        projection[1] /= rot[1][2];
+        projection[2] /= rot[2][2];
+
+        // Populate a set of the faces and points contained in the current plane
+        set<PolyFace*> targets;
+        set<Point*> targetPoints;
+        p->environment->findPlanarFaces( startTarget, GV3::get<double>( "planeTolerance", 0.1 ), targets );
+        for( set<PolyFace*>::iterator curr = targets.begin(); curr != targets.end(); curr++ ) {
+            targetPoints.insert( (*curr)->getP1() );
+            targetPoints.insert( (*curr)->getP2() );
+            targetPoints.insert( (*curr)->getP3() );
+        }
+
+        while( p->working ) {
+            camera = p->environment->getCameraPose();
+            rot = camera.get_rotation().get_matrix();
+            // Now project as camera + view * startPt
+            // Calculate in a separate list to prevent flickering
+            Vector<3> tmp( camera.get_translation() );
+            tmp[0] += rot[0][2] * projection[0];
+            tmp[1] += rot[1][2] * projection[1];
+            tmp[2] += rot[2][2] * projection[2];
+            tmp -= startCentre;
+
+            // Now tmp contains the vector of movement; apply it to each of
+            //   the points on each of the faces
+            for( set<Point*>::iterator curr = targetPoints.begin(); curr != targetPoints.end(); curr++ ) {
+                (*curr)->setPosition( (*curr)->getPosition() + tmp );
+            }
+            startCentre = startTarget->getFaceCentre();
+        }
+        return NULL;
+    }
+}
+
+namespace {
     MK_GUI_COMMAND(text, draw,)
     void text::draw( string text ) {
         ImageRef centre( environment->getSceneSize() );

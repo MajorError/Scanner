@@ -45,6 +45,7 @@ public:
     Edge* findClosestEdge( Vector<3> &pointOnEdge, double& bestDistance );
     set< PolyFace*, PolyFace > &getFaces();
     PolyFace* findClosestFace( Vector<3> &pointOnFace );
+    void findPlanarFaces( PolyFace* target, double tol, set<PolyFace*>& faces );
     
     void clearFeatures();
     void addFeature( Vector<3> feature );

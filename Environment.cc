@@ -11,6 +11,7 @@
 #include "Point.h"
 #include "PolyFace.h"
 
+#define PI 3.14159265
 #define MAG3(v) v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
 Vector<3> Environment::v;
 Vector<3> Environment::o;
@@ -220,7 +221,37 @@ PolyFace* Environment::findClosestFace( Vector<3> &pointOnFace ) {
     }
 
     return best;
-}
+};
+
+void Environment::findPlanarFaces( PolyFace* target, double tol, set<PolyFace*>& planarFaces ) {
+    // Base case: we've already visited this face
+    if ( planarFaces.count( target ) > 0 )
+        return;
+    // Add the face, search its siblings
+    planarFaces.insert( target );
+    Vector<3> n = target->getFaceNormal();
+    for( set<PolyFace*>::iterator curr = faces.begin(); curr != faces.end(); curr++ ) {
+        int ncp = 0;
+        
+        if ( (*curr)->getP1() == target->getP1()
+                || (*curr)->getP1() == target->getP2()
+                || (*curr)->getP1() == target->getP3() )
+            ncp++;
+        if ( (*curr)->getP2() == target->getP1()
+                || (*curr)->getP2() == target->getP2()
+                || (*curr)->getP2() == target->getP3() )
+            ncp++;
+        if ( (*curr)->getP3() == target->getP1()
+                || (*curr)->getP3() == target->getP2()
+                || (*curr)->getP3() == target->getP3() )
+            ncp++;
+        // If ncp > 1 we have a co-ocurrent face. Don't bother taking acos,
+        //   since we can readily map our tolerance onto a graph of y = |cos(x)|
+        double cosAlpha = n * (*curr)->getFaceNormal();
+        if( ncp > 1 && 1 - (cosAlpha < 0 ? -cosAlpha : cosAlpha) < tol )
+            findPlanarFaces( (*curr), tol, planarFaces );
+    }
+};
 
 void Environment::clearFeatures() {
     features.clear();

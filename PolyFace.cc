@@ -132,7 +132,7 @@ Vector<3> PolyFace::getFaceCentre() {
 
 Vector<3> PolyFace::getFaceNormal() {
     Vector<3> n = (p2->getPosition() - p1->getPosition()) ^ (p3->getPosition() - p1->getPosition());
-    return n / (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+    return n / sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
 };
 
 bool PolyFace::operator()( PolyFace* a, PolyFace* p ) const {

@@ -56,9 +56,14 @@ void creator::click() {
     commandList::exec( "vertex.create" );
 };
 
-MK_TOOL_PLUGIN( mover, "Space", );
-void mover::click() {
+MK_TOOL_PLUGIN( point_mover, "Space", );
+void point_mover::click() {
     commandList::exec( "vertex.move" );
+};
+
+MK_TOOL_PLUGIN( plane_mover, "Space", );
+void plane_mover::click() {
+    commandList::exec( "plane.move" );
 };
 
 MK_TOOL_PLUGIN( connect, "Space", );
