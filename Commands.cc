@@ -254,9 +254,9 @@ namespace {
     }
 }
 
-namespace {
-    MK_GUI_COMMAND(textures, clean,)
-    void textures::clean( string args ) {
+namespace tex1 {
+    MK_GUI_COMMAND(texture, clean,)
+    void texture::clean( string args ) {
         double tol = GV3::get<double>( "texTolerance1", 1.0 );
 
         // Set common texture (by ref) based on camera distance
@@ -315,6 +315,23 @@ namespace {
                 }
             }
         }
+    }
+}
+
+
+namespace tex2 {
+    MK_GUI_COMMAND(texture, clear,)
+    void texture::clear( string args ) {
+        Vector<3> pt;
+        PolyFace* f = environment->findClosestFace( pt );
+        if ( f == NULL )
+            return;
+        Image< Rgb<byte> > i( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) );
+        SE3<> trans = makeVector( numeric_limits<double>::max(),
+                numeric_limits<double>::max(), numeric_limits<double>::max(),
+                numeric_limits<double>::max(), numeric_limits<double>::max(),
+                numeric_limits<double>::max() );
+        f->setTexture( i, trans );
     }
 }
 

@@ -61,14 +61,14 @@ void point_mover::click() {
     commandList::exec( "vertex.move" );
 };
 
-MK_TOOL_PLUGIN( plane_mover, "Space", );
-void plane_mover::click() {
-    commandList::exec( "plane.move" );
-};
-
 MK_TOOL_PLUGIN( connect, "Space", );
 void connect::click() {
     commandList::exec( "edge.connect" );
+};
+
+MK_TOOL_PLUGIN( plane_mover, "Space", );
+void plane_mover::click() {
+    commandList::exec( "plane.move" );
 };
 
 MK_TOOL_PLUGIN( edge_bisect, "Space", bool startBisect;);
@@ -97,7 +97,12 @@ void vertex_remove::click() {
 
 MK_TOOL_PLUGIN( texture_clean, "Space", );
 void texture_clean::click() {
-    commandList::exec( "textures.clean" );
+    commandList::exec( "texture.clean" );
+};
+
+MK_TOOL_PLUGIN( texture_delete, "Space", );
+void texture_delete::click() {
+    commandList::exec( "texture.clear" );
 };
 
 MK_TOOL_PLUGIN( shrink_wrap, "Space", );
