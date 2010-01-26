@@ -10,6 +10,8 @@
 \usepackage[dvips]{hyperref}
 \usepackage[dcucite]{harvard}
 \usepackage{wrapfig}
+\usepackage{tikz}
+\usetikzlibrary{calc,mindmap,backgrounds}
 
 \renewcommand{\topfraction}{0.85}
 \renewcommand{\textfraction}{0.1}
@@ -19,7 +21,7 @@
 \vspace{30pt}}
 \author{Peter Coetzee\\Supervisor: Andrew Davison
 \vspace{30pt}}
-\date{December 2009}
+\date{June 2010}
 
 \begin{document}
 \maketitle
@@ -223,44 +225,80 @@ The modelling process itself should be as general as possible; models should con
 
 It should be possible for the system to use some of the vision techniques above to improve its results - for example, texture extraction may be fully automated. It is important that any vision techniques that are used do not interfere with the will of the user; it must be possible to override their results. A likely example is that of vertex positioning - augmenting the user's input with information about features in the scene can make the task of placing points in 3D space much easier. However, the user \textit{must} have the option of placing points at features that are not detected by vision algorithms. Another useful example of where vision techniques may enhance the modelling process is in edge-fitting; if the user joins two vertices, and the edge is found to run along an edge in the image, the edge that is created in the model may, perhaps, insert extra points in order to better follow the contours of the image. The precise vision techniques that may be applied should be investigated and evaluated for their validity and utility in their particular use cases.
 
-\section{Specification}
-\subsection{Overview}
-Having discussed the background, and broad description of the system to be created, the following section gives a detailed and precise set of both functional- and non-functional requirements for the system to follow.
+\section{Implementation}
+\subsection{Architecture}
 
-\subsection{Requirements}
-\begin{itemize}
-\item{User input is to be limited to a maximum of two keys; one to select their ``tool" of choice, one to invoke it}
-\item{All other input is to be taken from a single video camera - minimal requirement here is support for the UniBrain Fire-i, Video4Linux support is to be considered optional but desirable}
-\item{Unix platform support is required, at minimum; it is considered a boon if the software also works on recent Windows platforms}
-\item{The User Interface should present a single window, with as few visual controls as possible}
-\item{The UI window should present a live video feed from the camera}
-\item{Relevant markers may be shown on this video feed to indicate highlighted features}
-\item{Further overlay must include the current state of the user's modelling efforts at all times}
-\item{It is important that the user can still see their target object on the screen; it may be desirable to be able to toggle the display of the model, or at minimum to render it alpha-blended with the original scene}
-\item{The frame-rate of this overlay window should not drop below an average of 20fps during processing; it is important that the user experiences a real-time workflow}
-\item{The system will perform continuous localisation and tracking using the PTAM framework}
-\item{Tools in the system must operate on triangular polygons in the model; either to create, delete, or manipulate them}
-\item{It is vital that tools exist to correct any mistakes the user may make before they continue; the workflow should be non-linear, and up to the user's choice as to which order they use the tools}
-\item{Tools may operate at the complete model, polygon face, edge, or vertex level}
-\item{The system must extract texture data from the visual scene to continuously enhance its model; it should use the best available historical texture for each face of the model}
-\item{It is acceptable to use tools in the system to perform enhanced processing on the model; for example, to perform texture homogenisation across faces}
-\item{The system must be capable of exporting 3D model data, texture data, and UV maps to a common standard for import into a 3D modelling package}
-\item{There should be at least one file format that the system is capable of importing back into a new scene; issues of scale will need to be dealt with here}
-\item{The system should provide a command-line scripting style interface so that the model may be manipulated manually by a more technical user, or potentially scripted using shell redirection}
-\item{This scripting interface should permit all aspects of the model to be manipulated in a consistent manner; be this through vertex identifiers, or another scheme}
-\item{Configuration and scripting commands should be handled by the GVars3 interface, as used by LibCVD and PTAM, which will already be in use in the system, in order to reduce dependency creep}
-\item{Any computer vision augmentation, scene processors, etc must be optional; they must either offer a means for the user to disable them, or an alternate version which does not use vision-based techniques}
-\item{It must be possible for the user to model a given object from all angles, regardless of the shape of the object (i.e. concave as well as convex hulls)}
-\item{The system's memory footprint should be proportional to the complexity of the model; it is vital that it does not ``leak" memory over time, as complex modelling may take a considerable period of time}
-\item{The architecture of the final product must be carefully planned, such that individual components may be swapped out in favour of new approaches at any time; to this end, some form of extensibility is required}
-\end{itemize}
+\begin{tikzpicture}[>=latex]
 
-\subsection{Documentation}
-As well as source code for a working product fitting all of the above requirements, a number of documentation requirements must be met. As one might expect, some form of on- or off-line guide for using the product would be invaluable in helping others to learn how to use it. This should cover (at minimum) the basics of modelling, how to correct mistakes, and troubleshooting for when things go wrong. It should also cover technique for camera calibration, and how to get the most out of the vision-augmented toolset (a user who is not familiar with vision algorithms may find this non-intuitive).
+\tikzstyle{state} = [draw, very thick, fill=white, rectangle, minimum height=3em, minimum width=7em, node distance=8em, font={\sffamily\bfseries}]
+\tikzstyle{stateEdgePortion} = [black,thick];
+\tikzstyle{stateEdge} = [stateEdgePortion,->];
+\tikzstyle{edgeLabel} = [pos=0.5, text centered, font={\sffamily\small}];
+\node[state, name=user] {User};
+\node[state, name=view, below of=user] {View};
+\node[state, name=controller, below of=view, right of=view, yshift=-4em, xshift=4em] {Controller};
+\node[state, name=model, left of=controller, xshift=-16em] {Model};
 
-The second, and altogether more important form of documentation is a complete report covering the problem, the rationale for the approach, and details of the implementation. This is deliverable as \LaTeX~source, along with full cross-referencing to a bibtex reference file. When describing the problem, it is vital to consider the current state of the art, and justify the approach taken. This should make extensive reference to relevant publications. The solution developed should show that it has assimilated this collective background experience, and enhanced the results shown in these papers using the approach described previously. It is anticipated that this section be based on the Background and Approach outlined in this document. The main focus of the report, however, should to be on the details of the implementation. This should include architectural rationale (with diagrams, where applicable) as well as details of the vision algorithms used. It should focus on the core implementation of the product, and then on the enhancements to the user experience created by application of vision techniques.
+\draw ($(view.north) + (-.5em,0)$)
+edge[stateEdge] node[edgeLabel, xshift=3em]{\emph{interacts}}
+($(user.south) + (-.5em,0)$);
 
-The methodology for evaluation is discussed in the next section. However, the report should include a critical evaluation of the software against its goals. Ideally, the numerical techniques described below should be used to quantify and evaluate the various vision-based enhancements the solution develops to include. Finally, the report should be concluded with a critical discussion of the success of the final product, when measured against the influences and prior work discussed in the background section, as well as suggestions on future work and research approaches that could enhance the work already completed.
+\draw ($(user.south) + (.5em,0)$)
+edge[stateEdge] node[edgeLabel, xshift=-3em]{\emph{informs}}
+($(view.north) + (.5em,0)$);
+
+\draw ($(view.east) + (0,0)$)
+edge[stateEdge, bend left=30] node[edgeLabel, xshift=2em, yshift=1em]{requests}
+($(controller.north) + (0,0)$);
+
+\draw ($(controller.west) + (0,0)$)
+edge[stateEdge] node[edgeLabel, xshift=0, yshift=-1em]{manipulates}
+($(model.east) + (0,0)$);
+
+\draw ($(view.west) + (0,0)$)
+edge[stateEdge, bend right=30] node[edgeLabel, xshift=-2em, yshift=1em]{adapts}
+($(model.north) + (0,0)$);
+%
+\end{tikzpicture} 
+
+\subsection{Model}
+{\centering \begin{tikzpicture}
+  \path[mindmap,concept color=green!50!black,text=black]
+    node[concept] {Environment}
+    [clockwise from=180]
+    child[concept color=blue] {
+      node[concept] (proc) {Vision Processors} 
+      [clockwise from=-45]  
+      child[concept color=red] {
+        node [concept] {PTAM}
+        [clockwise from=-45]
+        child[concept color=orange] {
+          node[concept] (gvar) {GVars3} 
+        }
+        child[concept color=orange,sibling angle=90] { 
+          node[concept] (cvd) {libCVD} 
+        }
+      }
+    }  
+    child[concept color=blue] {
+      node[concept] (ren) {AR Rendering}
+    }
+    child[concept color=blue] {
+      node[concept] (tool) {Tools}
+    }
+    child[concept color=blue] {
+      node[concept] (cmd) {Commands}
+    };
+    \path (cmd) to[circle connection bar switch color=from (blue) to (orange)] (gvar);
+    \path (tool) to[circle connection bar switch color=from (blue) to (blue)] (cmd);
+\end{tikzpicture} }
+
+
+\subsection{Augmented Reality Rendering \& User Experience}
+
+\subsection{Vision Processors}
+
+\subsection{Toolset}
 
 \section{Evaluation}
 In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the system simply accomplishes the above goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
