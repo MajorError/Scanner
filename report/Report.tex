@@ -228,39 +228,6 @@ It should be possible for the system to use some of the vision techniques above 
 \section{Implementation}
 \subsection{Architecture}
 
-\begin{tikzpicture}[>=latex]
-
-\tikzstyle{state} = [draw, very thick, fill=white, rectangle, minimum height=3em, minimum width=7em, node distance=8em, font={\sffamily\bfseries}]
-\tikzstyle{stateEdgePortion} = [black,thick];
-\tikzstyle{stateEdge} = [stateEdgePortion,->];
-\tikzstyle{edgeLabel} = [pos=0.5, text centered, font={\sffamily\small}];
-\node[state, name=user] {User};
-\node[state, name=view, below of=user] {View};
-\node[state, name=controller, below of=view, right of=view, yshift=-4em, xshift=4em] {Controller};
-\node[state, name=model, left of=controller, xshift=-16em] {Model};
-
-\draw ($(view.north) + (-.5em,0)$)
-edge[stateEdge] node[edgeLabel, xshift=3em]{\emph{interacts}}
-($(user.south) + (-.5em,0)$);
-
-\draw ($(user.south) + (.5em,0)$)
-edge[stateEdge] node[edgeLabel, xshift=-3em]{\emph{informs}}
-($(view.north) + (.5em,0)$);
-
-\draw ($(view.east) + (0,0)$)
-edge[stateEdge, bend left=30] node[edgeLabel, xshift=2em, yshift=1em]{requests}
-($(controller.north) + (0,0)$);
-
-\draw ($(controller.west) + (0,0)$)
-edge[stateEdge] node[edgeLabel, xshift=0, yshift=-1em]{manipulates}
-($(model.east) + (0,0)$);
-
-\draw ($(view.west) + (0,0)$)
-edge[stateEdge, bend right=30] node[edgeLabel, xshift=-2em, yshift=1em]{adapts}
-($(model.north) + (0,0)$);
-%
-\end{tikzpicture} 
-
 \subsection{Model}
 {\centering \begin{tikzpicture}
   \path[mindmap,concept color=green!50!black,text=black]
