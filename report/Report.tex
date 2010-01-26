@@ -228,8 +228,9 @@ It should be possible for the system to use some of the vision techniques above 
 \section{Implementation}
 \subsection{Architecture}
 
-\subsection{Model}
-{\centering \begin{tikzpicture}
+\begin{figure}
+  \begin{center}
+	\begin{tikzpicture}
   \path[mindmap,concept color=green!50!black,text=black]
     node[concept] {Environment}
     [clockwise from=180]
@@ -258,7 +259,13 @@ It should be possible for the system to use some of the vision techniques above 
     };
     \path (cmd) to[circle connection bar switch color=from (blue) to (orange)] (gvar);
     \path (tool) to[circle connection bar switch color=from (blue) to (blue)] (cmd);
-\end{tikzpicture} }
+	\end{tikzpicture}
+  \end{center}
+  \caption{Architecture mindmap?}
+  \label{archmindmap}
+\end{figure}
+
+\subsection{Model}
 
 
 \subsection{Augmented Reality Rendering \& User Experience}
