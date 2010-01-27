@@ -90,6 +90,18 @@ void edge_remove::click() {
     commandList::exec( "edge.remove" );
 };
 
+MK_TOOL_PLUGIN( extrude, "Space", bool startExtrude;);
+void extrude::click() {
+    if ( startExtrude ) {
+        commandList::exec( "plane.extrude" );
+        commandList::exec( "plane.move" );
+        startExtrude = false;
+    } else {
+        commandList::exec( "plane.move" );
+        startExtrude = true;
+    }
+};
+
 MK_TOOL_PLUGIN( vertex_remove, "Space", );
 void vertex_remove::click() {
     commandList::exec( "vertex.remove" );
@@ -137,6 +149,11 @@ namespace toggles {
     MK_TOOL_PLUGIN( toggleModel, "m", );
     void toggleModel::click() {
         toggleVar( "drawModel" );
+    };
+
+    MK_TOOL_PLUGIN( toggleFaces, "f", );
+    void toggleFaces::click() {
+        toggleVar( "drawFaces" );
     };
 
     MK_TOOL_PLUGIN( toggleVertices, "v", );

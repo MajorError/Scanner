@@ -23,6 +23,26 @@ void edgelist::dump( string s ) {
     }
 }
 
+MK_GUI_COMMAND(pointlist, dump,)
+void pointlist::dump( string s ) {
+    cerr << "Point list:\n" << endl;
+    for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+            curr != environment->getPoints().end(); curr++ ) {
+        cerr << '\t' << (*curr) << " = " << (*curr)->getPosition() << endl;
+    }
+}
+
+
+MK_GUI_COMMAND(polylist, dump,)
+void polylist::dump( string s ) {
+    cerr << "Poly list:\n" << endl;
+    for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+            curr != environment->getFaces().end(); curr++ ) {
+        cerr << '\t' << (*curr) << " = " << (*curr)->getP1() << ", "
+                << (*curr)->getP2() << ", " << (*curr)->getP3() << endl;
+    }
+}
+
 namespace vtx1 {
     MK_GUI_COMMAND(vertex, create,)
     void vertex::create( string params ) {
@@ -176,7 +196,7 @@ namespace edge3 {
     }
 }
 
-namespace {
+namespace plane1 {
     MK_GUI_COMMAND(plane, move, SE3<> start; bool working; pthread_t mover; static void* moveProcessor( void* ptr );)
     void plane::move( string params ) {
         if ( !working ) {
@@ -198,8 +218,7 @@ namespace {
         
         // start point on list ~ camera + view*t
         Matrix<> rot = camera.get_rotation().get_matrix();
-        Vector<3> startCentre = startTarget->getFaceCentre();
-        Vector<3> projection = startCentre;
+        Vector<3> projection = pointOnFace;
         projection -= camera.get_translation();
         projection[0] /= rot[0][2];
         projection[1] /= rot[1][2];
@@ -207,12 +226,12 @@ namespace {
 
         // Populate a set of the faces and points contained in the current plane
         set<PolyFace*> targets;
-        set<Point*> targetPoints;
+        map< Point*, Vector<3> > targetPoints;
         p->environment->findPlanarFaces( startTarget, GV3::get<double>( "planeTolerance", 0.1 ), targets );
         for( set<PolyFace*>::iterator curr = targets.begin(); curr != targets.end(); curr++ ) {
-            targetPoints.insert( (*curr)->getP1() );
-            targetPoints.insert( (*curr)->getP2() );
-            targetPoints.insert( (*curr)->getP3() );
+            targetPoints[(*curr)->getP1()] = (*curr)->getP1()->getPosition() - pointOnFace;
+            targetPoints[(*curr)->getP2()] = (*curr)->getP2()->getPosition() - pointOnFace;
+            targetPoints[(*curr)->getP3()] = (*curr)->getP3()->getPosition() - pointOnFace;
         }
 
         while( p->working ) {
@@ -224,16 +243,91 @@ namespace {
             tmp[0] += rot[0][2] * projection[0];
             tmp[1] += rot[1][2] * projection[1];
             tmp[2] += rot[2][2] * projection[2];
-            tmp -= startCentre;
 
-            // Now tmp contains the vector of movement; apply it to each of
-            //   the points on each of the faces
-            for( set<Point*>::iterator curr = targetPoints.begin(); curr != targetPoints.end(); curr++ ) {
-                (*curr)->setPosition( (*curr)->getPosition() + tmp );
+            // Now tmp contains the vector of new pointOnFace; apply it to
+            //   each of the points on each of the faces
+            for( map< Point*, Vector<3> >::iterator curr = targetPoints.begin(); curr != targetPoints.end(); curr++ ) {
+                curr->first->setPosition( curr->second + tmp );
             }
-            startCentre = startTarget->getFaceCentre();
         }
         return NULL;
+    }
+}
+
+namespace plane2 {
+    MK_GUI_COMMAND(plane, extrude,)
+    void plane::extrude( string params ) {
+        Vector<3> pointOnFace;
+        PolyFace* target = environment->findClosestFace( pointOnFace );
+
+        // Populate a set of the faces contained in the current plane
+        set<PolyFace*> targets;
+        environment->findPlanarFaces( target, GV3::get<double>( "planeTolerance", 0.1 ), targets );
+
+        cerr << "Extrude " << targets.size() << " faces.";
+
+        map<Point*, Point*> pointMap; // Mapping from old -> new point
+        Point* p;
+        // Duplicate points
+        for( set<PolyFace*>::iterator curr = targets.begin(); curr != targets.end(); curr++ ) {
+            if ( pointMap.count( (*curr)->getP1() ) < 1 ) {
+                p = new Point( (*curr)->getP1()->getPosition() );
+                environment->addPoint( p );
+                pointMap[(*curr)->getP1()] = p;
+            }
+            if ( pointMap.count( (*curr)->getP2() ) < 1 ) {
+                p = new Point( (*curr)->getP2()->getPosition() );
+                environment->addPoint( p );
+                pointMap[(*curr)->getP2()] = p;
+            }
+            if ( pointMap.count( (*curr)->getP3() ) < 1 ) {
+                p = new Point( (*curr)->getP3()->getPosition() );
+                environment->addPoint( p );
+                pointMap[(*curr)->getP3()] = p;
+            }
+        }
+        cerr << " Duplicated " << pointMap.size() << " points." << endl;;
+
+        // Connect together new plane's points
+        for( map<Point*, Point*>::iterator curr = pointMap.begin(); curr != pointMap.end(); curr++ ) {
+            environment->addEdge( curr->second, curr->first );
+            for( std::list<Edge*>::iterator e = curr->first->getEdges().begin(); e  != curr->first->getEdges().end(); e++ ) {
+                // Find the other end of this edge
+                p = (*e)->getStart() == curr->first ? (*e)->getEnd() : (*e)->getStart();
+                // If the end is in the pointMap, we should connect
+                // Connection should duplicate existing faces, but also then
+                //  construct polys between source and extruded plane
+                if ( pointMap.count( p ) > 0 ) {
+                    environment->addEdge( curr->second, pointMap[p] );
+
+                    // Test if p already has a connection to the new plane
+                    bool stop = false;
+                    for( std::list<Edge*>::iterator pe = p->getEdges().begin(); !stop && pe != p->getEdges().end(); pe++ ) {
+                        stop = ((*pe)->getStart() == p ? (*pe)->getEnd() : (*pe)->getStart()) == pointMap[p];
+                    }
+                    if ( stop )
+                        continue;
+                    
+                    // Test if the current edge is on the plane boundary
+                    int edgeCount = 0;
+                    for( set<PolyFace*>::iterator f = targets.begin(); edgeCount < 2 && f != targets.end(); f++ ) {
+                        int edgePtCount = 0;
+                        if ( ((*f)->getP1() == p || (*f)->getP1() == curr->first) )
+                            edgePtCount++;
+                        if ( ((*f)->getP2() == p || (*f)->getP2() == curr->first) )
+                            edgePtCount++;
+                        if ( ((*f)->getP3() == p || (*f)->getP3() == curr->first) )
+                            edgePtCount++;
+                        if ( edgePtCount > 1 )
+                            edgeCount++;
+                    }
+                    // If so, connect the new face to the old face
+                    if ( edgeCount <= 1 ) {
+                        environment->addEdge( curr->second, p );
+                    }
+                }
+            }
+        }
     }
 }
 
