@@ -293,6 +293,7 @@ namespace plane2 {
 
         // Connect together new plane's points
         for( map<Point*, Point*>::iterator curr = pointMap.begin(); curr != pointMap.end(); curr++ ) {
+            environment->addEdge( curr->second, curr->first );
             for( std::list<Edge*>::iterator e = curr->first->getEdges().begin(); e  != curr->first->getEdges().end(); e++ ) {
                 // Find the other end of this edge
                 p = (*e)->getStart() == curr->first ? (*e)->getEnd() : (*e)->getStart();
@@ -301,6 +302,15 @@ namespace plane2 {
                 //  construct polys between source and extruded plane
                 if ( pointMap.count( p ) > 0 ) {
                     environment->addEdge( curr->second, pointMap[p] );
+
+                    // Test if p already has a connection to the new plane
+                    bool stop = false;
+                    for( std::list<Edge*>::iterator pe = p->getEdges().begin(); !stop && pe != p->getEdges().end(); pe++ ) {
+                        stop = ((*pe)->getStart() == p ? (*pe)->getEnd() : (*pe)->getStart()) == pointMap[p];
+                    }
+                    if ( stop )
+                        continue;
+                    
                     // Test if the current edge is on the plane boundary
                     int edgeCount = 0;
                     for( set<PolyFace*>::iterator f = targets.begin(); edgeCount < 2 && f != targets.end(); f++ ) {
@@ -316,7 +326,6 @@ namespace plane2 {
                     }
                     // If so, connect the new face to the old face
                     if ( edgeCount <= 1 ) {
-                        environment->addEdge( curr->second, curr->first );
                         environment->addEdge( curr->second, p );
                     }
                 }
