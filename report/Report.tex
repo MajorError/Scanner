@@ -275,22 +275,41 @@ It should be possible for the system to use some of the vision techniques above 
 \subsection{Model}
 
 \begin{tikzpicture}
-  \begin{class}[text width=5cm]{Environment}{0,0}
-%    \attribute{owner : String}
-%    \attribute{balance : Dollars = 0}
-%
-%    \operation{deposit(amount : Dollars)}
-%    \operation[0]{withdrawl(amount : Dollars)}
+  \begin{class}[text width=150px]{Environment}{0,1.7}
+    \attribute{camera : ATANCamera}
+    \attribute{cameraPose : TooN::SE3}
+    \attribute{sceneSize : CVD::ImageRef}
+    \attribute{features : std::list\textless TooN::Vector\textless 3\textgreater\textgreater }
+    
+    \operation{findClosestEdge}
+    \operation{findClosestFace}
+    \operation{findPlanarFaces}
+    \operation{getFeaturesSorted}
+    \operation{sortPoints}
   \end{class}
 
-  \begin{class}[text width=7cm]{PolyFace}{0,-5}
-%    \inherit{BankAccount}
-%    \attribute{insufficientFundsFee : Dollars}
-%
-%    \operation{processCheck ( checkToProcess : Check )}
-%    \operation{withdrawal ( amount : Dollars )}
+  \begin{class}[text width=175px]{PolyFace}{8,-5}
+    \attribute{textureViewpoint : TooN::SE3\textless \textgreater }
+    \attribute{texture : CVD::Image\textless Rgb\textless byte\textgreater \textgreater }
+    
+    \operation{testAndSetTexture}
+    \operation{testBoundsAndSetTexture}
   \end{class}
+
+  \begin{class}[text width=125px]{Point}{8,0}
+    \attribute{position : TooN::Vector\textless 3\textgreater}
+  \end{class}
+
+  \begin{class}[text width=50px]{Edge}{8,5}
+  \end{class}
+  
   \composition{Environment}{faces}{0..*}{PolyFace}
+  \composition{Environment}{edges}{0..*}{Edge}
+  \composition{Environment}{points}{0..*}{Point}
+  
+  \composition{Edge}{}{}{Point}
+  \composition{PolyFace}{}{}{Point}
+  
 \end{tikzpicture}
 \subsection{Augmented Reality Rendering \& User Experience}
 
