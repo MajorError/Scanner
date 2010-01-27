@@ -218,8 +218,7 @@ namespace plane1 {
         
         // start point on list ~ camera + view*t
         Matrix<> rot = camera.get_rotation().get_matrix();
-        Vector<3> startCentre = startTarget->getFaceCentre();
-        Vector<3> projection = startCentre;
+        Vector<3> projection = pointOnFace;
         projection -= camera.get_translation();
         projection[0] /= rot[0][2];
         projection[1] /= rot[1][2];
@@ -227,12 +226,12 @@ namespace plane1 {
 
         // Populate a set of the faces and points contained in the current plane
         set<PolyFace*> targets;
-        set<Point*> targetPoints;
+        map< Point*, Vector<3> > targetPoints;
         p->environment->findPlanarFaces( startTarget, GV3::get<double>( "planeTolerance", 0.1 ), targets );
         for( set<PolyFace*>::iterator curr = targets.begin(); curr != targets.end(); curr++ ) {
-            targetPoints.insert( (*curr)->getP1() );
-            targetPoints.insert( (*curr)->getP2() );
-            targetPoints.insert( (*curr)->getP3() );
+            targetPoints[(*curr)->getP1()] = (*curr)->getP1()->getPosition() - pointOnFace;
+            targetPoints[(*curr)->getP2()] = (*curr)->getP2()->getPosition() - pointOnFace;
+            targetPoints[(*curr)->getP3()] = (*curr)->getP3()->getPosition() - pointOnFace;
         }
 
         while( p->working ) {
@@ -244,14 +243,12 @@ namespace plane1 {
             tmp[0] += rot[0][2] * projection[0];
             tmp[1] += rot[1][2] * projection[1];
             tmp[2] += rot[2][2] * projection[2];
-            tmp -= startCentre;
 
-            // Now tmp contains the vector of movement; apply it to each of
-            //   the points on each of the faces
-            for( set<Point*>::iterator curr = targetPoints.begin(); curr != targetPoints.end(); curr++ ) {
-                (*curr)->setPosition( (*curr)->getPosition() + tmp );
+            // Now tmp contains the vector of new pointOnFace; apply it to
+            //   each of the points on each of the faces
+            for( map< Point*, Vector<3> >::iterator curr = targetPoints.begin(); curr != targetPoints.end(); curr++ ) {
+                curr->first->setPosition( curr->second + tmp );
             }
-            startCentre = startTarget->getFaceCentre();
         }
         return NULL;
     }
