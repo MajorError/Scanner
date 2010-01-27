@@ -302,24 +302,24 @@ namespace plane2 {
                 if ( pointMap.count( p ) > 0 ) {
                     environment->addEdge( curr->second, pointMap[p] );
                     // Test if the current edge is on the plane boundary
-                    int edgePtCount = 0;
-                    for( set<PolyFace*>::iterator f = targets.begin(); f != targets.end(); f++ ) {
+                    int edgeCount = 0;
+                    for( set<PolyFace*>::iterator f = targets.begin(); edgeCount < 2 && f != targets.end(); f++ ) {
+                        int edgePtCount = 0;
                         if ( ((*f)->getP1() == p || (*f)->getP1() == curr->first) )
                             edgePtCount++;
                         if ( ((*f)->getP2() == p || (*f)->getP2() == curr->first) )
                             edgePtCount++;
                         if ( ((*f)->getP3() == p || (*f)->getP3() == curr->first) )
                             edgePtCount++;
-                        if ( edgePtCount > 4 )
-                            break; // Can stop looking and fall out of the loop
+                        if ( edgePtCount > 1 )
+                            edgeCount++;
                     }
                     // If so, connect the new face to the old face
-                    if ( edgePtCount <= 4 ) {
+                    if ( edgeCount <= 1 ) {
                         environment->addEdge( curr->second, curr->first );
                         environment->addEdge( curr->second, p );
                     }
                 }
-
             }
         }
     }
