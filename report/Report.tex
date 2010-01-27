@@ -4,14 +4,20 @@
 \usepackage{ucs}
 \usepackage{caption}
 \usepackage{pst-all}
+
 \usepackage{xcolor}
 \usepackage{fontenc}
 \usepackage{graphicx}
+
 \usepackage[dvips]{hyperref}
 \usepackage[dcucite]{harvard}
+
 \usepackage{wrapfig}
+
 \usepackage{tikz}
-\usetikzlibrary{calc,mindmap,backgrounds}
+\usetikzlibrary{calc,mindmap,backgrounds,arrows,shapes.multipart,fit}
+\usepackage{pgf-umlcd}
+
 
 \renewcommand{\topfraction}{0.85}
 \renewcommand{\textfraction}{0.1}
@@ -228,7 +234,7 @@ It should be possible for the system to use some of the vision techniques above 
 \section{Implementation}
 \subsection{Architecture}
 
-\begin{figure}
+\begin{figure}[h]
   \begin{center}
 	\begin{tikzpicture}
   \path[mindmap,concept color=green!50!black,text=black]
@@ -261,13 +267,31 @@ It should be possible for the system to use some of the vision techniques above 
     \path (tool) to[circle connection bar switch color=from (blue) to (blue)] (cmd);
 	\end{tikzpicture}
   \end{center}
-  \caption{Architecture mindmap?}
+  \caption{Architectural Plan}
   \label{archmindmap}
 \end{figure}
 
+
 \subsection{Model}
 
+\begin{tikzpicture}
+  \begin{class}[text width=5cm]{Environment}{0,0}
+%    \attribute{owner : String}
+%    \attribute{balance : Dollars = 0}
+%
+%    \operation{deposit(amount : Dollars)}
+%    \operation[0]{withdrawl(amount : Dollars)}
+  \end{class}
 
+  \begin{class}[text width=7cm]{PolyFace}{0,-5}
+%    \inherit{BankAccount}
+%    \attribute{insufficientFundsFee : Dollars}
+%
+%    \operation{processCheck ( checkToProcess : Check )}
+%    \operation{withdrawal ( amount : Dollars )}
+  \end{class}
+  \composition{Environment}{faces}{0..*}{PolyFace}
+\end{tikzpicture}
 \subsection{Augmented Reality Rendering \& User Experience}
 
 \subsection{Vision Processors}
