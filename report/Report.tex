@@ -17,6 +17,7 @@
 \usepackage{tikz}
 \usetikzlibrary{calc,mindmap,backgrounds,arrows,shapes.multipart,fit}
 \usepackage{pgf-umlcd}
+\usepackage{scalefnt}
 
 
 \renewcommand{\topfraction}{0.85}
@@ -234,38 +235,40 @@ It should be possible for the system to use some of the vision techniques above 
 \section{Implementation}
 \subsection{Architecture}
 
-\begin{figure}[h]
+\begin{figure}
   \begin{center}
-	\begin{tikzpicture}
-  \path[mindmap,concept color=green!50!black,text=black]
-    node[concept] {Environment}
-    [clockwise from=180]
-    child[concept color=blue] {
-      node[concept] (proc) {Vision Processors} 
-      [clockwise from=-45]  
-      child[concept color=red] {
-        node [concept] {PTAM}
-        [clockwise from=-45]
-        child[concept color=orange] {
-          node[concept] (gvar) {GVars3} 
-        }
-        child[concept color=orange,sibling angle=90] { 
-          node[concept] (cvd) {libCVD} 
-        }
-      }
-    }  
-    child[concept color=blue] {
-      node[concept] (ren) {AR Rendering}
-    }
-    child[concept color=blue] {
-      node[concept] (tool) {Tools}
-    }
-    child[concept color=blue] {
-      node[concept] (cmd) {Commands}
-    };
-    \path (cmd) to[circle connection bar switch color=from (blue) to (orange)] (gvar);
-    \path (tool) to[circle connection bar switch color=from (blue) to (blue)] (cmd);
+	\scalefont{0.9}
+	\begin{tikzpicture}[scale=0.9]
+  	  \path[mindmap,concept color=green!50!black,text=black]
+	    node[concept] {Environment}
+	    [clockwise from=180]
+	    child[concept color=blue] {
+	      node[concept] (proc) {Vision Processors} 
+	      [clockwise from=-45]  
+	      child[concept color=red] {
+	        node [concept] {PTAM}
+	        [clockwise from=-45]
+	        child[concept color=orange] {
+	          node[concept] (gvar) {GVars3} 
+	        }
+	        child[concept color=orange,sibling angle=90] { 
+	          node[concept] (cvd) {libCVD} 
+	        }
+	      }
+	    }  
+	    child[concept color=blue] {
+	      node[concept] (ren) {AR Rendering}
+	    }
+	    child[concept color=blue] {
+	      node[concept] (tool) {Tools}
+	    }
+	    child[concept color=blue] {
+	      node[concept] (cmd) {Commands}
+	    };
+	  \path (cmd) to[circle connection bar switch color=from (blue) to (orange)] (gvar);
+	  \path (tool) to[circle connection bar switch color=from (blue) to (blue)] (cmd);
 	\end{tikzpicture}
+	\normalsize
   \end{center}
   \caption{Architectural Plan}
   \label{archmindmap}
@@ -274,43 +277,52 @@ It should be possible for the system to use some of the vision techniques above 
 
 \subsection{Model}
 
-\begin{tikzpicture}
-  \begin{class}[text width=150px]{Environment}{0,1.7}
-    \attribute{camera : ATANCamera}
-    \attribute{cameraPose : TooN::SE3}
-    \attribute{sceneSize : CVD::ImageRef}
-    \attribute{features : std::list\textless TooN::Vector\textless 3\textgreater\textgreater }
-    
-    \operation{findClosestEdge}
-    \operation{findClosestFace}
-    \operation{findPlanarFaces}
-    \operation{getFeaturesSorted}
-    \operation{sortPoints}
-  \end{class}
+\begin{figure}
+  \begin{center}
+	\scalefont{0.75}
+	\begin{tikzpicture}[scale=0.75]
+	  \begin{class}[text width=150px]{Environment}{0,1.7}
+    	\attribute{camera : ATANCamera}
+	    \attribute{cameraPose : TooN::SE3}
+	    \attribute{sceneSize : CVD::ImageRef}
+	    \attribute{features : std::list\textless TooN::Vector\textless 3\textgreater\textgreater }
+	    
+	    \operation{findClosestEdge}
+	    \operation{findClosestFace}
+	    \operation{findPlanarFaces}
+	    \operation{getFeaturesSorted}
+	    \operation{sortPoints}
+  	  \end{class}
 
-  \begin{class}[text width=175px]{PolyFace}{8,-5}
-    \attribute{textureViewpoint : TooN::SE3\textless \textgreater }
-    \attribute{texture : CVD::Image\textless Rgb\textless byte\textgreater \textgreater }
-    
-    \operation{testAndSetTexture}
-    \operation{testBoundsAndSetTexture}
-  \end{class}
+  	  \begin{class}[text width=175px]{PolyFace}{8,-5}
+	    \attribute{textureViewpoint : TooN::SE3\textless \textgreater }
+	    \attribute{texture : CVD::Image\textless Rgb\textless byte\textgreater \textgreater }
+	    
+	    \operation{testAndSetTexture}
+	    \operation{testBoundsAndSetTexture}
+	  \end{class}
 
-  \begin{class}[text width=125px]{Point}{8,0}
-    \attribute{position : TooN::Vector\textless 3\textgreater}
-  \end{class}
+	  \begin{class}[text width=90px]{Point}{8,0}
+	    \attribute{position : TooN::Vector\textless 3\textgreater}
+	  \end{class}
 
-  \begin{class}[text width=50px]{Edge}{8,5}
-  \end{class}
-  
-  \composition{Environment}{faces}{0..*}{PolyFace}
-  \composition{Environment}{edges}{0..*}{Edge}
-  \composition{Environment}{points}{0..*}{Point}
-  
-  \composition{Edge}{}{}{Point}
-  \composition{PolyFace}{}{}{Point}
-  
-\end{tikzpicture}
+	  \begin{class}[text width=50px]{Edge}{8,5}
+	  \end{class}
+	  
+	  \composition{Environment}{faces}{0..*}{PolyFace}
+	  \composition{Environment}{edges}{0..*}{Edge}
+	  \composition{Environment}{points}{0..*}{Point}
+	  
+	  \composition{Edge}{}{}{Point}
+	  \composition{PolyFace}{}{}{Point}
+	  
+	\end{tikzpicture}
+	\normalsize
+  \end{center}
+  \caption{Model Class Diagram}
+  \label{modelclasses}
+\end{figure}
+
 \subsection{Augmented Reality Rendering \& User Experience}
 
 \subsection{Vision Processors}
