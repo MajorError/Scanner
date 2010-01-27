@@ -141,61 +141,63 @@ void ARPointRenderer::DrawPolys() {
     glLoadIdentity();
     GLuint currTex;
 
-    for( set<PolyFace*>::iterator it = env->getFaces().begin();
-            it != env->getFaces().end(); it++ ) {
-        // No empty entries or null pointers, please!
-        if ( (*it) == NULL || (*it)->getP1() == NULL )
-            continue;
-        
-        // Set up texture info
-        glGenTextures( 1, &currTex );
-        glPrintErrors();
-        glBindTexture( GL_TEXTURE_2D, currTex );
-        glPrintErrors();
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-        glPrintErrors();
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        glPrintErrors();
-        glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-        glPrintErrors();
-        glTexImage2D( (*it)->getTexture(), 0, GL_TEXTURE_2D );
-        glPrintErrors();
-        
-        glBegin( GL_TRIANGLES );
+    if ( GV3::get<bool>( "drawFaces", true ) ) {
+        for( set<PolyFace*>::iterator it = env->getFaces().begin();
+                it != env->getFaces().end(); it++ ) {
+            // No empty entries or null pointers, please!
+            if ( (*it) == NULL || (*it)->getP1() == NULL )
+                continue;
 
-        // Render the face in both directions, so that it is visible from both
-        //  sides (OpenGL will generate opposite normal vectors)
-        /*cerr << (*it)->getP1()->getPosition() << " = " << (*it)->getP1Coord( env->getCamera() ) << ",\t";
-        cerr << (*it)->getP2()->getPosition() << " = " << (*it)->getP2Coord( env->getCamera() ) << ",\t";
-        cerr << (*it)->getP3()->getPosition() << " = " << (*it)->getP3Coord( env->getCamera() ) << endl;*/
-        
-        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
-        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+            // Set up texture info
+            glGenTextures( 1, &currTex );
+            glPrintErrors();
+            glBindTexture( GL_TEXTURE_2D, currTex );
+            glPrintErrors();
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            glPrintErrors();
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            glPrintErrors();
+            glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+            glPrintErrors();
+            glTexImage2D( (*it)->getTexture(), 0, GL_TEXTURE_2D );
+            glPrintErrors();
 
-        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
-        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
-        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+            glBegin( GL_TRIANGLES );
 
-        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
-        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+            // Render the face in both directions, so that it is visible from both
+            //  sides (OpenGL will generate opposite normal vectors)
+            /*cerr << (*it)->getP1()->getPosition() << " = " << (*it)->getP1Coord( env->getCamera() ) << ",\t";
+            cerr << (*it)->getP2()->getPosition() << " = " << (*it)->getP2Coord( env->getCamera() ) << ",\t";
+            cerr << (*it)->getP3()->getPosition() << " = " << (*it)->getP3Coord( env->getCamera() ) << endl;*/
 
-        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
-        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+            glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+            glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+            glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
 
-        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
-        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
-        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+            glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+            glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+            glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
 
-        glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
-        glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
-        glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+            glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+            glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+            glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
 
-        glEnd();
-        glDeleteTextures( 1, &currTex );
-        glPrintErrors();
+            glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+            glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+            glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+
+            glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+            glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+            glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+
+            glTexCoord( (*it)->getP3Coord( env->getCamera() ) ); glVertex( (*it)->getP3()->getPosition() );
+            glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
+            glTexCoord( (*it)->getP2Coord( env->getCamera() ) ); glVertex( (*it)->getP2()->getPosition() );
+
+            glEnd();
+            glDeleteTextures( 1, &currTex );
+            glPrintErrors();
+        }
     }
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
     if ( GV3::get<bool>( "drawClosestFace", true ) ) {

@@ -23,6 +23,26 @@ void edgelist::dump( string s ) {
     }
 }
 
+MK_GUI_COMMAND(pointlist, dump,)
+void pointlist::dump( string s ) {
+    cerr << "Point list:\n" << endl;
+    for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+            curr != environment->getPoints().end(); curr++ ) {
+        cerr << '\t' << (*curr) << " = " << (*curr)->getPosition() << endl;
+    }
+}
+
+
+MK_GUI_COMMAND(polylist, dump,)
+void polylist::dump( string s ) {
+    cerr << "Poly list:\n" << endl;
+    for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+            curr != environment->getFaces().end(); curr++ ) {
+        cerr << '\t' << (*curr) << " = " << (*curr)->getP1() << ", "
+                << (*curr)->getP2() << ", " << (*curr)->getP3() << endl;
+    }
+}
+
 namespace vtx1 {
     MK_GUI_COMMAND(vertex, create,)
     void vertex::create( string params ) {

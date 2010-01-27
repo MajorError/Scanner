@@ -151,6 +151,11 @@ namespace toggles {
         toggleVar( "drawModel" );
     };
 
+    MK_TOOL_PLUGIN( toggleFaces, "f", );
+    void toggleFaces::click() {
+        toggleVar( "drawFaces" );
+    };
+
     MK_TOOL_PLUGIN( toggleVertices, "v", );
     void toggleVertices::click() {
         toggleVar( "drawPoints" );
