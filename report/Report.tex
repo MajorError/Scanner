@@ -331,53 +331,76 @@ It should be possible for the system to use some of the vision techniques above 
         \scalefont{0.75}
         \begin{tikzpicture}[scale=0.75]
           \begin{class}[text width=80px]{Plugin}{0,0}
+            \operation{enable}
+            \operation{disable}
+            \operation{setupCommands}
+            \operation{getShortName}
           \end{class}
 
-          \begin{class}[text width=80px]{VisionProcessor}{0,-5}
+          \begin{class}[text width=110px]{VisionProcessor}{0,-4}
             \implement{Plugin}
+            \attribute{static list : std::vector\textless VisionPlugin*\textgreater}
+            \operation{static setEnvironment}
+            \operation{process}
+            \operation{doProcessing}
           \end{class}
 
-          \begin{class}[text width=30px]{PTAM}{0.1,-10}
+          \begin{class}[text width=30px]{PTAM}{0.1,-9}
             \inherit{VisionProcessor}
           \end{class}
 
-          \begin{class}[text width=50px]{Render}{3,-10}
+          \begin{class}[text width=50px]{Render}{3,-9}
             \inherit{VisionProcessor}
           \end{class}
 
-          \begin{class}[text width=60px]{ExtractTexture}{-3,-10}
+          \begin{class}[text width=60px]{ExtractTexture}{-3,-9}
             \inherit{VisionProcessor}
           \end{class}
 
-          \begin{class}[text width=80px]{Command}{5,-5}
+
+          \begin{class}[text width=110px]{GUICommand}{6,-5}
             \implement{Plugin}
+            \attribute{static list : std::vector\textless GUICommand*\textgreater}
+            \operation{static setEnvironment}
+            \operation{static callback}
+            \operation{call}
           \end{class}
 
-          \begin{class}[text width=50px]{HandleKey}{6,-10}
-            \inherit{Command}
+          \begin{class}[text width=50px]{Key}{3,-11}
+            \inherit{GUICommand}
+            \operation{handle}
           \end{class}
 
-          \begin{class}[text width=50px]{EdgeBisect}{9,-10}
-            \inherit{Command}
+          \begin{class}[text width=50px]{Edge}{6,-11}
+            \inherit{GUICommand}
+            \operation{bisect}
           \end{class}
 
-          \begin{class}[text width=50px]{VertexMove}{12,-10}
-            \inherit{Command}
+          \begin{class}[text width=50px]{Vertex}{9,-11}
+            \inherit{GUICommand}
+            \operation{move}
           \end{class}
 
-          \begin{class}[text width=80px]{Tool}{-5,-5}
+
+          \begin{class}[text width=110px]{Tool}{-6,-5}
             \implement{Plugin}
+            \attribute{static list : std::vector\textless Tool*\textgreater}
+            \operation{static setEnvironment}
+            \operation{static callback}
+            \operation{getHotKey}
+            \operation{processClick}
+            \operation{click}
           \end{class}
 
-          \begin{class}[text width=50px]{ToolSelect}{-12,-10}
+          \begin{class}[text width=50px]{ToolSelect}{-9,-11}
             \inherit{Tool}
           \end{class}
 
-          \begin{class}[text width=50px]{Bisect}{-9,-10}
+          \begin{class}[text width=50px]{Bisect}{-6,-11}
             \inherit{Tool}
           \end{class}
 
-          \begin{class}[text width=50px]{ToggleGrid}{-6,-10}
+          \begin{class}[text width=50px]{ToggleGrid}{-3,-11}
             \inherit{Tool}
           \end{class}
 
