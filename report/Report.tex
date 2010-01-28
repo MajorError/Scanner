@@ -279,7 +279,7 @@ It should be possible for the system to use some of the vision techniques above 
 
 \begin{figure}
   \begin{center}
-	\scalefont{0.75}
+	\scalefont{0.74}
 	\begin{tikzpicture}[scale=0.75]
 	  \begin{class}[text width=150px]{Environment}{0,1.7}
     	\attribute{camera : ATANCamera}
@@ -309,9 +309,9 @@ It should be possible for the system to use some of the vision techniques above 
 	  \begin{class}[text width=50px]{Edge}{8,5}
 	  \end{class}
 	  
-	  \composition{Environment}{faces}{0..*}{PolyFace}
-	  \composition{Environment}{edges}{0..*}{Edge}
-	  \composition{Environment}{points}{0..*}{Point}
+	  \aggregation{Environment}{faces}{0..*}{PolyFace}
+	  \aggregation{Environment}{edges}{0..*}{Edge}
+	  \aggregation{Environment}{points}{0..*}{Point}
 	  
 	  \composition{Edge}{}{}{Point}
 	  \composition{PolyFace}{}{}{Point}
