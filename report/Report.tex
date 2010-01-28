@@ -323,8 +323,6 @@ It should be possible for the system to use some of the vision techniques above 
   \label{modelclasses}
 \end{figure}
 
-\pagebreak
-
 \subsection{Augmented Reality Rendering \& User Experience}
 
 \subsection{Plugins}
@@ -339,7 +337,7 @@ It should be possible for the system to use some of the vision techniques above 
             \operation{getShortName}
           \end{class}
 
-          \begin{class}[text width=90px]{VisionProcessor}{0,-4}
+          \begin{class}[text width=90px]{VisionProcessor}{0,-3}
             \implement{Plugin}
             \attribute{static list : std::vector\textless VisionPlugin*\textgreater}
             \operation{static setEnvironment}
@@ -360,7 +358,7 @@ It should be possible for the system to use some of the vision techniques above 
           \end{class}
 
 
-          \begin{class}[text width=100px]{GUICommand}{6.2,-5}
+          \begin{class}[text width=100px]{GUICommand}{6.2,-5.3}
             \implement{Plugin}
             \attribute{static list : std::vector\textless GUICommand*\textgreater}
             \operation{static setEnvironment}
@@ -405,6 +403,8 @@ It should be possible for the system to use some of the vision techniques above 
           \begin{class}[text width=40px]{ToggleGrid}{-3,-12}
             \inherit{Tool}
           \end{class}
+
+          \unidirectionalAssociation{Tool}{}{}{GUICommand}
 
         \end{tikzpicture}
         \normalsize
