@@ -71,6 +71,19 @@ void plane_mover::click() {
     commandList::exec( "plane.move" );
 };
 
+MK_TOOL_PLUGIN( plane_split, "Space", bool startSplit;);
+void plane_split::click() {
+
+    if ( startSplit ) {
+        commandList::exec( "plane.split" );
+        commandList::exec( "vertex.move" );
+        startSplit = false;
+    } else {
+        commandList::exec( "vertex.move" );
+        startSplit = true;
+    }
+};
+
 MK_TOOL_PLUGIN( edge_bisect, "Space", bool startBisect;);
 void edge_bisect::click() {
     // Thanks to randomly assigned values in memory locations (startBisect is

@@ -331,6 +331,26 @@ namespace plane2 {
     }
 }
 
+namespace plane3 {
+    MK_GUI_COMMAND(plane, split,)
+    void plane::split( string params ) {
+        Vector<3> pointPos;
+        PolyFace* target = environment->findClosestFace( pointPos );
+        if ( target == NULL )
+            return;
+        
+        Point* p = new Point( pointPos );
+        environment->addPoint( p );
+
+        environment->addEdge( target->getP1(), p );
+        environment->addEdge( target->getP2(), p );
+        environment->addEdge( target->getP3(), p );
+        
+        environment->getFaces().erase( target );
+        delete target;
+    }
+}
+
 namespace {
     MK_GUI_COMMAND(text, draw,)
     void text::draw( string text ) {
