@@ -12,14 +12,12 @@
 using namespace std;
 
 PolyFace::PolyFace( Point* a, Point* b, Point* c ) : 
-        p1( min( a, min( b, c ) ) ),
-        p3( max( a, max( b, c ) ) ),
+        p1( a < b ? (a < c ? a : c) : (b < c ? b : c) ),
+        p3( a > b ? (a > c ? a : c) : (b > c ? b : c) ),
         textureViewpoint( SO3<>(), makeVector( numeric_limits<double>::max(), numeric_limits<double>::max(), numeric_limits<double>::max() ) ),
         texture( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) ),
         textureSource( &texture ) {
-    cerr << "Create " << a << ", " << b << ", " << c;
-    p2 = p1 == a ? (p3 == b ? c : b) : (p3 == a ? b : a);
-    cerr << " -> " << p1 << ", " << p2 << ", " << p3 << endl;
+    p2 = a < c ? (b < c ? (a < b ? b : a) : c) : (a < b ? a : (b < c ? c : b));
 };
 
 Point* PolyFace::getP1() {
