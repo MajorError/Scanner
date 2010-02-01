@@ -121,6 +121,25 @@ namespace edge1 {
     void edge::connect( string params ) {
         if ( environment->getPoints().size() < 2 )
              return;
+        if ( params.length() > 2 ) {
+            stringstream s( params );
+            int from = -1;
+            int to = -1;
+            s >> from >> to;
+            Point* fromPt = NULL;
+            Point* toPt = NULL;
+            int i = 0;
+            for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                    curr != environment->getPoints().end() && (i <= from || i <= to); curr++, i++ ) {
+                if ( i == from )
+                    fromPt = (*curr);
+                if ( i == to )
+                    toPt = (*curr);
+            }
+            if( fromPt != NULL && toPt != NULL )
+                environment->addEdge( fromPt, toPt );
+            return;
+        }
         if ( start ) {
             cerr << "edge.connect A" << endl;
             from = environment->sortPoints( environment->getCameraPose() ).front();

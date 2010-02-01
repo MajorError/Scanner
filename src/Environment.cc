@@ -81,6 +81,8 @@ void Environment::removePoint( Point* p ) {
 
 void Environment::addEdge( Point* from, Point* to ) {
     // Check if this edge already exists (in either direction)
+    if ( from == to )
+        return;
     for( list<Edge*>::iterator curr = edges.begin();
             curr != edges.end(); curr++ ) {
         if( ((*curr)->getStart() == from && (*curr)->getEnd() == to)

@@ -17,7 +17,9 @@ PolyFace::PolyFace( Point* a, Point* b, Point* c ) :
         textureViewpoint( SO3<>(), makeVector( numeric_limits<double>::max(), numeric_limits<double>::max(), numeric_limits<double>::max() ) ),
         texture( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) ),
         textureSource( &texture ) {
+    cerr << "Create " << a << ", " << b << ", " << c;
     p2 = p1 == a ? (p3 == b ? c : b) : (p3 == a ? b : a);
+    cerr << " -> " << p1 << ", " << p2 << ", " << p3 << endl;
 };
 
 Point* PolyFace::getP1() {
