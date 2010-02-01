@@ -1,4 +1,5 @@
 #include <GL/gl.h>
+#include <fstream>
 
 #include "Point.h"
 #include "Environment.h"
@@ -613,5 +614,38 @@ namespace {
         }
         cerr << "From " << startPt << " to " << environment->getPoints().size() << " points" << endl;
         cerr << "From " << startEdge << " to " << environment->getEdges().size() << " edges" << endl;
+    }
+}
+
+namespace code1 {
+    MK_GUI_COMMAND(code, save,)
+    void code::save( string filename ) {
+        if ( filename.length() < 1 )
+            filename = "scanner_model.out";
+        ofstream file;
+        map<Point*, int> points;
+        file.open( filename.c_str(), ios::out | ios::trunc );
+        int i = 0;
+        for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                curr != environment->getPoints().end(); curr++, i++ ) {
+            points[*curr] = i;
+            file << "vertex.create " << (*curr)->getPosition() << endl;
+        }
+        for( std::list<Edge*>::iterator curr = environment->getEdges().begin();
+                curr != environment->getEdges().end(); curr++, i++ ) {
+            file << "edge.connect " << points[(*curr)->getStart()] << " " << points[(*curr)->getEnd()] << endl;
+        }
+        file.close();
+        cerr << "File written to " << filename << endl;
+    }
+}
+
+namespace code2 {
+    MK_GUI_COMMAND(code, load,)
+    void code::load( string filename ) {
+        if ( filename.length() < 1 )
+            filename = "scanner_model.out";
+        GUI.LoadFile( filename );
+        cerr << "Loaded from " << filename << endl;
     }
 }
