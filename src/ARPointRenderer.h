@@ -5,8 +5,9 @@
 // Declares the ARPointRenderer class
 // ARPointRenderer is a trivial piece of AR which draws some 3D graphics
 //
-#ifndef __ARPointRenderere_H
+#ifndef __ARPointRenderer_H
 #define __ARPointRenderer_H
+
 #include <TooN/TooN.h>
 using namespace TooN;
 #include <gvars3/instances.h>

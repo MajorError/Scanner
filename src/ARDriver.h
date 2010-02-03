@@ -30,6 +30,9 @@ class ARDriver
   void Render(Image<Rgb<byte> > &imFrame, SE3<> se3CamFromWorld);
   void Reset();
   void Init();
+
+  // Sphere Inserter:
+  static ARPointRenderer* mGame;
  protected:
   ATANCamera mCamera;
   GLWindow2 &mGLWindow;
@@ -48,8 +51,5 @@ class ARDriver
   ImageRef mirFrameSize;
   SE3<> mse3;
   bool mbInitialised;
-
-  // Sphere Inserter:
-  ARPointRenderer mGame;
 };
 #endif

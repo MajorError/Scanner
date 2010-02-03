@@ -6,12 +6,15 @@ using namespace GVars3;
 using namespace CVD;
 using namespace std;
 
+ARPointRenderer* ARDriver::mGame = NULL;
+
 ARDriver::ARDriver(const ATANCamera &cam, ImageRef irFrameSize, GLWindow2 &glw, Environment *e)
-  :mCamera(cam), mGLWindow(glw), mGame( *new ARPointRenderer( e ) )
+  :mCamera(cam), mGLWindow(glw)
 {
   mirFrameSize = irFrameSize;
   mCamera.SetImageSize(mirFrameSize);
   mbInitialised = false;
+  mGame = new ARPointRenderer( e );
 }
 
 static bool CheckFramebufferStatus()
@@ -104,7 +107,7 @@ void ARDriver::Render(Image<Rgb<byte> > &imFrame, SE3<> se3CfromW)
 
   DrawFadingGrid();
 
-  mGame.DrawStuff(se3CfromW);
+  mGame->DrawStuff(se3CfromW);
 
   glDisable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

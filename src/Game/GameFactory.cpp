@@ -15,7 +15,7 @@ WorldMap* GameFactory::create( Environment* env ) {
     map<Point*,Waypoint*> wps;
     // Populate Waypoints in the WorldMap
     for( list<Point*>::iterator curr = env->getPoints().begin(); curr != env->getPoints().end(); curr++ ) {
-        Waypoint w = new Waypoint;
+        Waypoint* w = new Waypoint;
         w->x = (*curr)->getPosition()[0];
         w->y = (*curr)->getPosition()[1];
         w->z = (*curr)->getPosition()[2];

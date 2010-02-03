@@ -36,6 +36,8 @@ OBJECTS=	main.o\
 		Edge.o\
 		PolyFace.o\
 		Game/WorldMap.o\
+		Game/GameFactory.o\
+		Game/GameRenderer.o\
 		Game/AStarSearch.o
 
 CALIB_OBJECTS=	GLWindow2.o\

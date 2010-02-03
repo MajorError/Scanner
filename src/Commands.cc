@@ -4,6 +4,10 @@
 #include "Point.h"
 #include "Environment.h"
 #include "GUICommand.h"
+#include "ARDriver.h"
+#include "Game/GameRenderer.h"
+#include "Game/WorldMap.h"
+#include "Game/GameFactory.h"
 
 MK_GUI_COMMAND(key, handle,)
 void key::handle( string s ) {
@@ -647,5 +651,13 @@ namespace code2 {
             filename = "scanner_model.out";
         GUI.LoadFile( filename );
         cerr << "Loaded from " << filename << endl;
+    }
+}
+
+namespace game {
+    MK_GUI_COMMAND(game, init, GameFactory gf;)
+    void game::init( string args ) {
+        WorldMap* m = gf.create( environment );
+        ARDriver::mGame = new GameRenderer( m, environment );
     }
 }
