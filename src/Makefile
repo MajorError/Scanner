@@ -34,7 +34,9 @@ OBJECTS=	main.o\
 		Environment.o\
 		Point.o\
 		Edge.o\
-		PolyFace.o
+		PolyFace.o\
+		Game/WorldMap.o\
+		Game/AStarSearch.o
 
 CALIB_OBJECTS=	GLWindow2.o\
 		GLWindowMenu.o\

@@ -25,6 +25,8 @@ public:
 
     void addWaypoint( Waypoint* w );
     void setTraversable( Waypoint* from, Waypoint* to );
+    void tidyWaypoints();
+    static bool toTidy( const Waypoint* p );
 private:
     list<Waypoint*> waypoints;
 };
