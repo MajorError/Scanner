@@ -40,6 +40,7 @@ void GameRenderer::DrawStuff( SE3<> camera ) {
 
     glMatrixMode(GL_MODELVIEW);
 
+    DrawPolys();
     if ( GV3::get<bool>( "drawWaypoints", true ) )
         renderWaypointGraph();
 

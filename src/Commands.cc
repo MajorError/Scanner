@@ -657,6 +657,10 @@ namespace code2 {
 namespace game {
     MK_GUI_COMMAND(game, init, GameFactory gf;)
     void game::init( string args ) {
+        GUI.ParseLine( "drawEdges=0" );
+        GUI.ParseLine( "drawClosestEdge=0" );
+        GUI.ParseLine( "drawClosestFace=0" );
+        GUI.ParseLine( "textureExtractor.disable" );
         WorldMap* m = gf.create( environment );
         ARDriver::mGame = new GameRenderer( m, environment );
     }
