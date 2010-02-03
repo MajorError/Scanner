@@ -1,12 +1,12 @@
 
 #include "WorldMap.h"
-//#include "AIUnit.h"
+#include "AIUnit.h"
 #include <limits>
 #include <iostream>
+#include <vector>
 
 
 WorldMap::WorldMap() {
-    cerr << "Units empty? " << (aiUnits.empty() ? "yep." : "FUCK YOU");
 };
 
 WorldMap::~WorldMap() {
@@ -62,19 +62,15 @@ bool WorldMap::toTidy( const Waypoint* p ) {
 }
 
 void WorldMap::tickAll() {
-    cerr << "tickall" << endl;
-    cerr << "Units still empty? " << (aiUnits.empty() ? "yep." : "FUCK YOU");
-    for( list<void*>::iterator curr = aiUnits.begin(); curr != aiUnits.end(); curr++ ) {
-        cerr << "boom" << endl;
-        /*cerr << "Ticking " << (*curr) << endl;
-        static_cast<AIUnit*>( *curr )->tick();*/
+    for( vector<AIUnit*>::iterator curr = aiUnits.begin(); curr != aiUnits.end(); curr++ ) {
+        (*curr)->tick();
     }
 };
 
 void WorldMap::addAI() {
-    //aiUnits.push_back( new AIUnit( this ) );
+    aiUnits.push_back( new AIUnit( this ) );
 };
 
-list<void*>& WorldMap::getUnits() {
+vector<AIUnit*>& WorldMap::getUnits() {
     return aiUnits;
 };

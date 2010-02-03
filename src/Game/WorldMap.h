@@ -3,8 +3,12 @@
 #define	_WORLDMAP_H
 
 #include <list>
+#include <vector>
+#include <string>
 
 using namespace std;
+
+class AIUnit; // forward decl
 
 struct Waypoint {
     double x, y, z;
@@ -31,10 +35,13 @@ public:
     Waypoint* findNearest( Waypoint* p );
     void tickAll();
     void addAI();
-    list<void*>& getUnits();
+    vector<AIUnit*>& getUnits();
 protected:
     list<Waypoint*> waypoints;
-    list<void*> aiUnits; // yuck
+    vector<AIUnit*> aiUnits;
+    /*double thisIsInteresting;
+    double soIsthis;
+    string whatAboutThis;*/
 };
 
 #endif	/* _WORLDMAP_H */
