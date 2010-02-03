@@ -71,30 +71,30 @@ void plane_mover::click() {
     commandList::exec( "plane.move" );
 };
 
-MK_TOOL_PLUGIN( plane_split, "Space", bool startSplit;);
+MK_TOOL_PLUGIN( plane_split, "Space",);
 void plane_split::click() {
 
-    if ( startSplit ) {
+    if ( !init ) {
         commandList::exec( "plane.split" );
         commandList::exec( "vertex.move" );
-        startSplit = false;
+        init = true;
     } else {
         commandList::exec( "vertex.move" );
-        startSplit = true;
+        init = false;
     }
 };
 
-MK_TOOL_PLUGIN( edge_bisect, "Space", bool startBisect;);
+MK_TOOL_PLUGIN( edge_bisect, "Space",);
 void edge_bisect::click() {
     // Thanks to randomly assigned values in memory locations (startBisect is
     //  uninitialised), we have to assign values directly here.
-    if ( startBisect ) {
+    if ( !init ) {
         commandList::exec( "edge.bisect" );
         commandList::exec( "vertex.move" );
-        startBisect = false;
+        init = true;
     } else {
         commandList::exec( "vertex.move" );
-        startBisect = true;
+        init = false;
     }
 };
 
@@ -103,15 +103,15 @@ void edge_remove::click() {
     commandList::exec( "edge.remove" );
 };
 
-MK_TOOL_PLUGIN( extrude, "Space", bool startExtrude;);
+MK_TOOL_PLUGIN( extrude, "Space",);
 void extrude::click() {
-    if ( startExtrude ) {
+    if ( init ) {
         commandList::exec( "plane.extrude" );
         commandList::exec( "plane.move" );
-        startExtrude = false;
+        init = true;
     } else {
         commandList::exec( "plane.move" );
-        startExtrude = true;
+        init = false;
     }
 };
 

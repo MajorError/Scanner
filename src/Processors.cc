@@ -9,7 +9,7 @@ using namespace GVars3;
 using namespace TooN;
 using namespace std;
 
-MK_VISION_PLUGIN( cam, bool init; VideoSource videoSource; );
+MK_VISION_PLUGIN( cam, VideoSource videoSource; );
 void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     if ( !init ) {
         init = true;
@@ -19,7 +19,7 @@ void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     videoSource.GetAndFillFrameBWandRGB( sceneBW, sceneRGB );
 };
 
-MK_VISION_PLUGIN( ptam, bool init; Map *mpMap; \
+MK_VISION_PLUGIN( ptam, Map *mpMap; \
   MapMaker *mpMapMaker; Tracker *mpTracker; ATANCamera *mpCamera; );
 void ptam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     if ( !init ) {
@@ -52,7 +52,7 @@ void ptam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
             environment->addFeature( mpMap->vpPoints[i]->v3WorldPos );
 };
 
-MK_VISION_PLUGIN( guiDispatch, bool init; GLWindow2 *glWindow; ARDriver *ard; );
+MK_VISION_PLUGIN( guiDispatch, GLWindow2 *glWindow; ARDriver *ard; );
 void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     if ( !init ) {
         init = true;
@@ -78,7 +78,7 @@ void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
     glWindow->HandlePendingEvents();
 };
 
-MK_VISION_PLUGIN( commandList, bool init; static vector<string> commands; static pthread_mutex_t mutex; public: static void exec( string cmd ); );
+MK_VISION_PLUGIN( commandList, static vector<string> commands; static pthread_mutex_t mutex; public: static void exec( string cmd ); );
 void commandList::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     if ( !init ) {
         init = true;

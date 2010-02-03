@@ -38,7 +38,8 @@ OBJECTS=	main.o\
 		Game/WorldMap.o\
 		Game/GameFactory.o\
 		Game/GameRenderer.o\
-		Game/AStarSearch.o
+		Game/AStarSearch.o\
+		Game/AIUnit.o
 
 CALIB_OBJECTS=	GLWindow2.o\
 		GLWindowMenu.o\
@@ -58,6 +59,9 @@ CameraCalibrator:$(CALIB_OBJECTS)
 
 
 %.o: %.cc
+	$(CC) $< -o $@ -c $(COMPILEFLAGS)
+	
+%.o: %.cpp
 	$(CC) $< -o $@ -c $(COMPILEFLAGS)
 
 clean:

@@ -2,7 +2,7 @@
 #include "AStarSearch.h"
 #include <iostream>
 
-AStarSearch::AStarSearch( WorldMap &m ) : wm( m ) {
+AStarSearch::AStarSearch( WorldMap *m ) : wm( m ) {
 };
 
 AStarSearch::~AStarSearch() {
@@ -13,7 +13,9 @@ list<Waypoint*> AStarSearch::findPath( Waypoint* from, Waypoint* to ) {
     set<Waypoint*> open;
     set<Waypoint*> closed;
     map<Waypoint*,AStarElement> els;
-    // TODO: If from / to aren't in the map, find them first
+    // Make sure we have actual nodes in the graph
+    from = wm->findNearest( from );
+    to = wm->findNearest( to );
 
     open.insert( from );
     els[from].parent = NULL;

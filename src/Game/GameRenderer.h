@@ -15,6 +15,7 @@ public:
     virtual void DrawStuff( SE3<> camera );
 
     void renderWaypointGraph();
+    void renderUnits();
 private:
     WorldMap* map;
 

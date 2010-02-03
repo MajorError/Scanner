@@ -20,15 +20,21 @@ struct Waypoint {
 
 class WorldMap {
 public:
-    WorldMap() {};
-    virtual ~WorldMap() {};
+    WorldMap();
+    virtual ~WorldMap();
 
     void addWaypoint( Waypoint* w );
     void setTraversable( Waypoint* from, Waypoint* to );
     void tidyWaypoints();
     static bool toTidy( const Waypoint* p );
-private:
+    Waypoint* findNearest( double x, double y, double z );
+    Waypoint* findNearest( Waypoint* p );
+    void tickAll();
+    void addAI();
+    list<void*>& getUnits();
+protected:
     list<Waypoint*> waypoints;
+    list<void*> aiUnits; // yuck
 };
 
 #endif	/* _WORLDMAP_H */

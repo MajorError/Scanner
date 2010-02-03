@@ -14,13 +14,15 @@ struct AStarElement {
     double distanceToTarget;
 };
 
+class WorldMap; // forward decl
+
 class AStarSearch {
 public:
-    AStarSearch( WorldMap &m );
+    AStarSearch( WorldMap *m );
     virtual ~AStarSearch();
     list<Waypoint*> findPath( Waypoint* from, Waypoint* to );
 private:
-    WorldMap &wm;
+    WorldMap *wm;
 };
 
 #endif	/* _ASTARSEARCH_H */

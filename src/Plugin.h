@@ -21,8 +21,7 @@
 class Plugin
 {
 public:
-    Plugin() {
-        enabled = true;
+    Plugin() : enabled( true ), init( false ) {
     };
     virtual ~Plugin() {};
     static void enable( void* ptr, std::string cmd, std::string params ) {
@@ -44,7 +43,7 @@ public:
     virtual std::string getShortName() { return "PNULL"; };
 
 protected:
-    bool enabled;
+    bool enabled, init;
 };
 
 /**

@@ -72,14 +72,14 @@ namespace vtx1 {
 }
 
 namespace vtx2 {
-    MK_GUI_COMMAND(vertex, move, SE3<> start; bool working; pthread_t mover; static void* moveProcessor( void* ptr );)
+    MK_GUI_COMMAND(vertex, move, SE3<> start; pthread_t mover; static void* moveProcessor( void* ptr );)
     void vertex::move( string params ) {
-        if ( !working ) {
+        if ( !init ) {
             start = environment->getCameraPose();
-            working = true;
+            init = true;
             pthread_create( &mover, NULL, vertex::moveProcessor, (void*)this );
         } else if ( environment->getPoints().size() > 0 ) {
-            working = false;
+            init = false;
             pthread_join( mover, NULL );
         }
     }
@@ -96,7 +96,7 @@ namespace vtx2 {
         projection[0] /= rot[0][2];
         projection[1] /= rot[1][2];
         projection[2] /= rot[2][2];
-        while( p->working ) {
+        while( p->init ) {
             camera = p->environment->getCameraPose();
             rot = camera.get_rotation().get_matrix();
             // Now project as camera + view * startPt
@@ -122,7 +122,7 @@ namespace vtx3 {
 }
 
 namespace edge1 {
-    MK_GUI_COMMAND(edge, connect, Point* from; bool start; )
+    MK_GUI_COMMAND(edge, connect, Point* from; )
     void edge::connect( string params ) {
         if ( environment->getPoints().size() < 2 )
              return;
@@ -145,15 +145,15 @@ namespace edge1 {
                 environment->addEdge( fromPt, toPt );
             return;
         }
-        if ( start ) {
+        if ( !init ) {
             cerr << "edge.connect A" << endl;
             from = environment->sortPoints( environment->getCameraPose() ).front();
-            start = false;
+            init = true;
         } else {
             cerr << "edge.connect B" << endl;
             Point* to = environment->sortPoints( environment->getCameraPose() ).front();
             environment->addEdge( from, to );
-            start = true;
+            init = false;
         }
     }
 }
@@ -221,14 +221,14 @@ namespace edge3 {
 }
 
 namespace plane1 {
-    MK_GUI_COMMAND(plane, move, SE3<> start; bool working; pthread_t mover; static void* moveProcessor( void* ptr );)
+    MK_GUI_COMMAND(plane, move, SE3<> start; pthread_t mover; static void* moveProcessor( void* ptr );)
     void plane::move( string params ) {
-        if ( !working ) {
+        if ( !init ) {
             start = environment->getCameraPose();
-            working = true;
+            init = true;
             pthread_create( &mover, NULL, plane::moveProcessor, (void*)this );
         } else if ( environment->getPoints().size() > 0 ) {
-            working = false;
+            init = false;
             pthread_join( mover, NULL );
         }
     }
@@ -258,7 +258,7 @@ namespace plane1 {
             targetPoints[(*curr)->getP3()] = (*curr)->getP3()->getPosition() - pointOnFace;
         }
 
-        while( p->working ) {
+        while( p->init ) {
             camera = p->environment->getCameraPose();
             rot = camera.get_rotation().get_matrix();
             // Now project as camera + view * startPt
@@ -651,17 +651,5 @@ namespace code2 {
             filename = "scanner_model.out";
         GUI.LoadFile( filename );
         cerr << "Loaded from " << filename << endl;
-    }
-}
-
-namespace game {
-    MK_GUI_COMMAND(game, init, GameFactory gf;)
-    void game::init( string args ) {
-        GUI.ParseLine( "drawEdges=0" );
-        GUI.ParseLine( "drawClosestEdge=0" );
-        GUI.ParseLine( "drawClosestFace=0" );
-        GUI.ParseLine( "textureExtractor.disable" );
-        WorldMap* m = gf.create( environment );
-        ARDriver::mGame = new GameRenderer( m, environment );
     }
 }

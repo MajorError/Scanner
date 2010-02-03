@@ -32,8 +32,9 @@ using namespace std;
 using namespace GVars3;
 
 #include "Processors.cc"
-#include "Commands.cc"
 #include "Tools.cc"
+#include "Commands.cc"
+#include "Game/Hooks.cpp"
 
 
  void* safeCommandParser(void* ptr) {

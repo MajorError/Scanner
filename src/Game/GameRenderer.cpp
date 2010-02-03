@@ -1,5 +1,6 @@
 
 #include "GameRenderer.h"
+#include "AIUnit.h"
 
 GameRenderer::GameRenderer( WorldMap* m, Environment* e ) : ARPointRenderer( e ), map( m ) {
 };
@@ -40,9 +41,12 @@ void GameRenderer::DrawStuff( SE3<> camera ) {
 
     glMatrixMode(GL_MODELVIEW);
 
+    cerr << "Game Render" << endl;
+
     DrawPolys();
     if ( GV3::get<bool>( "drawWaypoints", true ) )
         renderWaypointGraph();
+    renderUnits();
 
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
@@ -51,4 +55,15 @@ void GameRenderer::DrawStuff( SE3<> camera ) {
 
 void GameRenderer::renderWaypointGraph() {
 
+};
+
+void GameRenderer::renderUnits() {
+    double ds = GV3::get<double>( "ptSize", 0.05 );
+    /*for( list<AIUnit*>::iterator curr = map->getUnits().begin(); curr != map->getUnits().end(); curr++ ) {
+        glColor4d(1.0, 0.2, 0.0, 1.0);
+        glLoadIdentity();
+        glTranslated( (*curr)->getX(), (*curr)->getY(), (*curr)->getZ() );
+        glScaled( ds, ds, ds );
+        DrawSphere();
+    }*/
 };
