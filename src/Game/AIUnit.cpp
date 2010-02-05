@@ -1,6 +1,7 @@
 
 #include "AIUnit.h"
 #include <gvars3/gvars3.h>
+#include <cmath>
 using namespace GVars3;
 
 AIUnit::AIUnit( WorldMap* m ) : velocity( 0 ), xPos( 0 ), yPos( 0 ), zPos( 0 ), map( m ), search( m ) {
@@ -12,7 +13,6 @@ AIUnit::AIUnit( WorldMap* m, double x, double y, double z ) : velocity( 0 ), xPo
 AIUnit::~AIUnit() {
 }
 
-#define ABS( a ) (a > 0 ? a : -a)
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
     if ( path.size() < 1 )
@@ -20,9 +20,9 @@ void AIUnit::tick() {
 
     velocity = GV3::get<double>( "aiSpeed", 0.01 );
     cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
-    if ( ABSDIFF( path.front()->x, xPos ) < 0.01
-            && ABSDIFF( path.front()->y, yPos ) < 0.01
-            && ABSDIFF( path.front()->z, zPos ) < 0.01 ) {
+    if ( ABSDIFF( path.front()->x, xPos ) < velocity
+            && ABSDIFF( path.front()->y, yPos ) < velocity
+            && ABSDIFF( path.front()->z, zPos ) < velocity ) {
         cerr << "\tPath Point Reached: ";
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
@@ -41,11 +41,10 @@ void AIUnit::tick() {
     yDir = path.front()->y - yPos;
     zDir = path.front()->z - zPos;
     // Normalise the vector
-    double div = ABS( xDir ) + ABS( yDir ) + ABS( zDir );
+    double div = abs( xDir ) + abs( yDir ) + abs( zDir );
     xDir /= div;
     yDir /= div;
     zDir /= div;
-    cerr << "\tDIR = " << xDir << ", " << yDir << ", " << zDir << endl;
     xPos += velocity * xDir;
     yPos += velocity * yDir;
     zPos += velocity * zDir;
