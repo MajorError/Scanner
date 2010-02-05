@@ -70,18 +70,6 @@ WorldMap* GameFactory::create( Environment* env ) {
 
 void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorld* world ) {
     btVector3 aabbMin(-1000,-1000,-1000),aabbMax(1000,1000,1000);
-    
-    double minY = numeric_limits<double>::max();
-    for( list<Point*>::iterator curr = env->getPoints().begin(); curr != env->getPoints().end(); curr++ ) {
-        minY = min( minY, (*curr)->getPosition()[1] );
-    }
-    
-    // Place the absolute minimum (infinite) ground 1m below the lowest vertex
-    btCollisionShape* groundShape = new btStaticPlaneShape( btVector3( 0, 1, 0 ), 1 );
-    btDefaultMotionState* groundMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, minY-1, 0 ) ) );
-    btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI( 0, groundMotionState, groundShape );
-    btRigidBody* groundRigidBody = new btRigidBody( groundRigidBodyCI );
-    world->addRigidBody( groundRigidBody );
 
     // Place triangles on each of the polyfaces for regular colliders
     map<Point*,int> vertexIndex;
@@ -101,8 +89,8 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
     }
     int vertStride = sizeof( btVector3 );
     int indexStride = 3 * sizeof( int );
-    btTriangleIndexVertexArray* indexVertArrays = new btTriangleIndexVertexArray(
-		env->getFaces().size(), indices, indexStride, env->getPoints().size(), (btScalar*)&vertices[0].x(), vertStride);
+    btTriangleIndexVertexArray* indexVertArrays = new btTriangleIndexVertexArray( env->getFaces().size(),
+		indices, indexStride, env->getPoints().size(), (btScalar*)&vertices[0].x(), vertStride);
     btBvhTriangleMeshShape* terrainShape = new btBvhTriangleMeshShape( indexVertArrays, true, aabbMin, aabbMax );
     // Now that we have a shape, construct rigid body dynamics as above
     btDefaultMotionState* terrainMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ) );

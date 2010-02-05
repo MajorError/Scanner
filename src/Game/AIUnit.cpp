@@ -22,6 +22,15 @@ AIUnit::~AIUnit() {
 
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
+
+    btTransform trans;
+    ballBody->getMotionState()->getWorldTransform( trans );
+    xPos = trans.getOrigin().getX();
+    yPos = trans.getOrigin().getY();
+    zPos = trans.getOrigin().getZ();
+
+
+    /* Disabled for now. TODO: How to integrate this with Bullet?
     if ( path.size() < 1 )
         return;
 
@@ -54,28 +63,19 @@ void AIUnit::tick() {
     zDir /= div;
     xPos += velocity * xDir;
     yPos += velocity * yDir;
-    zPos += velocity * zDir;
+    zPos += velocity * zDir;*/
 };
 
 double AIUnit::getX() {
-    btTransform trans;
-    ballBody->getMotionState()->getWorldTransform( trans );
-    return trans.getOrigin().getX();
-    //return xPos;
+    return xPos;
 };
 
 double AIUnit::getY() {
-    btTransform trans;
-    ballBody->getMotionState()->getWorldTransform( trans );
-    return trans.getOrigin().getY();
-    //return yPos;
+    return yPos;
 };
 
 double AIUnit::getZ() {
-    btTransform trans;
-    ballBody->getMotionState()->getWorldTransform( trans );
-    return trans.getOrigin().getZ();
-    //return zPos;
+    return zPos;
 };
 
 void AIUnit::navigateTo( Waypoint* goal ) {
