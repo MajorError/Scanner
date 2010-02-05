@@ -2,12 +2,19 @@
 #include "AIUnit.h"
 #include <gvars3/gvars3.h>
 #include <cmath>
+#include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 using namespace GVars3;
 
-AIUnit::AIUnit( WorldMap* m ) : velocity( 0 ), xPos( 0 ), yPos( 0 ), zPos( 0 ), map( m ), search( m ) {
-}
-
-AIUnit::AIUnit( WorldMap* m, double x, double y, double z ) : velocity( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
+AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
+: velocity( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
+    btCollisionShape* ballShape = new btSphereShape( 0.05 );
+    btDefaultMotionState* ballMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
+    btVector3 inertia( 0, 0, 0 );
+    ballShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
+    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "aiMass" ), ballMotionState, ballShape, inertia );
+    
+    ballBody = new btRigidBody( ballRigidBodyCI );
+    w->addRigidBody( ballBody );
 }
 
 AIUnit::~AIUnit() {
@@ -19,7 +26,7 @@ void AIUnit::tick() {
         return;
 
     velocity = GV3::get<double>( "aiSpeed", 0.01 );
-    cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
+    //cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
     if ( ABSDIFF( path.front()->x, xPos ) < velocity
             && ABSDIFF( path.front()->y, yPos ) < velocity
             && ABSDIFF( path.front()->z, zPos ) < velocity ) {
@@ -51,15 +58,24 @@ void AIUnit::tick() {
 };
 
 double AIUnit::getX() {
-    return xPos;
+    btTransform trans;
+    ballBody->getMotionState()->getWorldTransform( trans );
+    return trans.getOrigin().getX();
+    //return xPos;
 };
 
 double AIUnit::getY() {
-    return yPos;
+    btTransform trans;
+    ballBody->getMotionState()->getWorldTransform( trans );
+    return trans.getOrigin().getY();
+    //return yPos;
 };
 
 double AIUnit::getZ() {
-    return zPos;
+    btTransform trans;
+    ballBody->getMotionState()->getWorldTransform( trans );
+    return trans.getOrigin().getZ();
+    //return zPos;
 };
 
 void AIUnit::navigateTo( Waypoint* goal ) {

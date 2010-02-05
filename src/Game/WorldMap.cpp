@@ -4,6 +4,7 @@
 #include <limits>
 #include <iostream>
 #include <vector>
+#include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 
 
 WorldMap::WorldMap() {
@@ -67,8 +68,8 @@ void WorldMap::tickAll() {
     }
 };
 
-void WorldMap::addAI() {
-    aiUnits.push_back( new AIUnit( this ) );
+void WorldMap::addAI( btDynamicsWorld* w, double x, double y, double z ) {
+    aiUnits.push_back( new AIUnit( this, w, x, y, z ) );
 };
 
 list<Waypoint*>& WorldMap::getWaypoints() {

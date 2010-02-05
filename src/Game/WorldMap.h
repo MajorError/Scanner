@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <btBulletDynamicsCommon.h>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ public:
     Waypoint* findNearest( double x, double y, double z );
     Waypoint* findNearest( Waypoint* p );
     void tickAll();
-    void addAI();
+    void addAI( btDynamicsWorld* w, double x, double y, double z );
     list<Waypoint*>& getWaypoints();
     vector<AIUnit*>& getUnits();
 protected:

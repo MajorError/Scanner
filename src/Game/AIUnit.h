@@ -7,8 +7,7 @@
 
 class AIUnit {
 public:
-    AIUnit( WorldMap* m );
-    AIUnit( WorldMap* m, double x, double y, double z );
+    AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z );
     virtual ~AIUnit();
     void tick();
     double getX();
@@ -18,6 +17,7 @@ public:
 private:
     double xDir, yDir, zDir, velocity;
     double xPos, yPos, zPos;
+    btRigidBody* ballBody;
     list<Waypoint*> path;
     WorldMap* map;
     AStarSearch search;
