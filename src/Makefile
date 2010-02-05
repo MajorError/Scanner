@@ -5,7 +5,7 @@
 # Or to change the compiler's optimization flags
 CC = g++
 COMPILEFLAGS = -D_LINUX -D_REENTRANT -Wall  -O3 -march=nocona -msse3
-LINKFLAGS = -lGVars3 -lcvd
+LINKFLAGS = -lGVars3 -lcvd -lBulletDynamics -lBulletCollision -lLinearMath
 
 # Edit this line to change video source
 VIDEOSOURCE = VideoSource_Linux_DV.o
