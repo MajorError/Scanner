@@ -35,6 +35,7 @@ public:
     Waypoint* findNearest( Waypoint* p );
     void tickAll();
     void addAI();
+    list<Waypoint*>& getWaypoints();
     vector<AIUnit*>& getUnits();
 protected:
     list<Waypoint*> waypoints;

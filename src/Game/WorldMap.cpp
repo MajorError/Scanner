@@ -71,6 +71,10 @@ void WorldMap::addAI() {
     aiUnits.push_back( new AIUnit( this ) );
 };
 
+list<Waypoint*>& WorldMap::getWaypoints() {
+    return waypoints;
+};
+
 vector<AIUnit*>& WorldMap::getUnits() {
     return aiUnits;
 };

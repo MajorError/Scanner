@@ -53,7 +53,21 @@ void GameRenderer::DrawStuff( SE3<> camera ) {
 };
 
 void GameRenderer::renderWaypointGraph() {
-
+    double bs = GV3::get<double>( "waypointSize", 0.02 );
+    for( list<Waypoint*>::iterator curr = map->getWaypoints().begin(); curr != map->getWaypoints().end(); curr++ ) {
+        glColor4d( 1.0, 1.0, 0.0, 0.8 );
+        glLoadIdentity();
+        glTranslated( (*curr)->x, (*curr)->y, (*curr)->z );
+        glScaled( bs, bs, bs );
+        DrawSphere();
+        glLoadIdentity();
+        for( list<Waypoint*>::iterator goal = (*curr)->traversable.begin(); goal != (*curr)->traversable.end(); goal++ ) {
+            glBegin( GL_LINES );
+            glVertex3d( (*curr)->x, (*curr)->y, (*curr)->z );
+            glVertex3d( (*goal)->x, (*goal)->y, (*goal)->z );
+            glEnd();
+        }
+    }
 };
 
 void GameRenderer::renderUnits() {
