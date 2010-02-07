@@ -3,6 +3,8 @@
 #include "AIUnit.h"
 #include <vector>
 
+#define PI 3.14159265
+
 GameRenderer::GameRenderer( WorldMap* m, Director* d, Environment* e ) : ARPointRenderer( e ), map( m ), director( d ) {
 };
 
@@ -76,6 +78,7 @@ void GameRenderer::renderUnits() {
     for( vector<AIUnit*>::iterator curr = director->getUnits().begin(); curr != director->getUnits().end(); curr++ ) {
         glColor4d( 0.4, 0.1, 1.0, 1.0 );
         glLoadIdentity();
+        glRotated( (*curr)->getRotationAngle() * 2*PI, (*curr)->getRotationAxis()[0], (*curr)->getRotationAxis()[1], (*curr)->getRotationAxis()[2] );
         glTranslated( (*curr)->getX(), (*curr)->getY(), (*curr)->getZ() );
         glScaled( ds, ds, ds );
         DrawCube();

@@ -13,8 +13,8 @@ Projectile::Projectile( btDynamicsWorld* w, double x, double y, double z )
     btCollisionShape* ballShape = new btSphereShape( 0.05 );
     btDefaultMotionState* ballMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
     btVector3 inertia( 0, 0, 0 );
-    ballShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
-    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "aiMass" ), ballMotionState, ballShape, inertia );
+    ballShape->calculateLocalInertia( GV3::get<double>( "projectileMass", 0.4 ), inertia );
+    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "projectileMass" ), ballMotionState, ballShape, inertia );
 
     ballBody = new btRigidBody( ballRigidBodyCI );
     w->addRigidBody( ballBody );

@@ -1,4 +1,3 @@
-
 #include "AIUnit.h"
 #include <gvars3/gvars3.h>
 #include <cmath>
@@ -29,14 +28,20 @@ void AIUnit::tick() {
     xPos = trans.getOrigin().getX();
     yPos = trans.getOrigin().getY();
     zPos = trans.getOrigin().getZ();
+    btQuaternion q = trans.getRotation();
+    rotAngle = q.getAngle();
+    btVector3 axis = q.getAxis();
+    rotAxis[0] = axis.getX();
+    rotAxis[1] = axis.getY();
+    rotAxis[2] = axis.getZ();
 
 
-    /* Disabled for now. TODO: How to integrate this with Bullet?
-    if ( path.size() < 1 )
+    // Disabled for now. TODO: How to integrate this with Bullet?
+    if ( true || path.size() < 1 )
         return;
 
     velocity = GV3::get<double>( "aiSpeed", 0.01 );
-    //cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
+    cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
     if ( ABSDIFF( path.front()->x, xPos ) < velocity
             && ABSDIFF( path.front()->y, yPos ) < velocity
             && ABSDIFF( path.front()->z, zPos ) < velocity ) {
@@ -62,9 +67,10 @@ void AIUnit::tick() {
     xDir /= div;
     yDir /= div;
     zDir /= div;
-    xPos += velocity * xDir;
+    /*xPos += velocity * xDir;
     yPos += velocity * yDir;
     zPos += velocity * zDir;*/
+    boxBody->applyCentralForce( btVector3( velocity * xDir, velocity * yDir, velocity * zDir ) );
 };
 
 double AIUnit::getX() {
@@ -77,6 +83,14 @@ double AIUnit::getY() {
 
 double AIUnit::getZ() {
     return zPos;
+};
+
+double AIUnit::getRotationAngle() {
+    return rotAngle;
+};
+
+Vector<3> AIUnit::getRotationAxis() {
+    return rotAxis;
 };
 
 void AIUnit::navigateTo( Waypoint* goal ) {

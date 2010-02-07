@@ -70,10 +70,25 @@ namespace game {
 
         // The world.
         btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-        dynamicsWorld->setGravity( btVector3( 0, 0, -10 ) );
+        dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -10 ) ) );
         
         return dynamicsWorld;
     };
+}
+
+namespace ai1 {
+    MK_TOOL_PLUGIN( projectile_spawn, "z", );
+    void projectile_spawn::click() {
+        commandList::exec( "projectile.create" );
+    };
+    MK_GUI_COMMAND(projectile, create,)
+    void projectile::create( string params ) {
+        Vector<3> camPos = environment->getCameraPose().get_translation();
+        Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
+
+        Matrix<> rot = GV3::get<double>( "pushScale", 100 ) * environment->getCameraPose().get_rotation().get_matrix();
+        a->push( rot[0][2], rot[1][2], rot[2][2] );
+    }
 }
 
 namespace ai1 {
@@ -83,11 +98,9 @@ namespace ai1 {
     };
     MK_GUI_COMMAND(ai, create,)
     void ai::create( string params ) {
-        Vector<3> camPos = environment->getCameraPose().get_translation();
-        Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
-
-        Matrix<> rot = GV3::get<double>( "pushScale", 100 ) * environment->getCameraPose().get_rotation().get_matrix();
-        a->push( rot[0][2], rot[1][2], rot[2][2] );
+        Vector<3> aiPos = environment->getCameraPose().get_translation();
+        environment->findClosestFace( aiPos );
+        tick::director->addAI( tick::dynamicsWorld, aiPos[0], aiPos[1], aiPos[2]+0.1 );
     }
 }
 

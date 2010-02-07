@@ -19,11 +19,11 @@ public:
     vector<Projectile*>& getProjectiles();
     Projectile* addProjectile( btDynamicsWorld* w, double x, double y, double z );
 private:
-    vector<AIUnit*> aiUnits;
-    vector<Projectile*> projectiles;
     btDynamicsWorld* dynamicsWorld;
     WorldMap* map;
     Vector<3> lowerBound, upperBound;
+    vector<Projectile*> projectiles;
+    vector<AIUnit*> aiUnits;
     int currTick;
     int lastSpawn;
 };

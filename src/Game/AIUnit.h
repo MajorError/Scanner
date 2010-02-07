@@ -4,6 +4,9 @@
 
 #include "AStarSearch.h"
 #include "WorldMap.h"
+#include <TooN/TooN.h>
+
+using namespace TooN;
 
 class AIUnit {
 public:
@@ -13,11 +16,15 @@ public:
     double getX();
     double getY();
     double getZ();
+    double getRotationAngle();
+    Vector<3> getRotationAxis();
     void navigateTo( Waypoint* goal );
     void push( double x, double y, double z );
 private:
     double xDir, yDir, zDir, velocity;
     double xPos, yPos, zPos;
+    double rotAngle;
+    Vector<3> rotAxis;
     btRigidBody* boxBody;
     list<Waypoint*> path;
     WorldMap* map;
