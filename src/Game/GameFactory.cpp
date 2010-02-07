@@ -90,7 +90,7 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
     int vertStride = sizeof( btVector3 );
     int indexStride = 3 * sizeof( int );
     btTriangleIndexVertexArray* indexVertArrays = new btTriangleIndexVertexArray( env->getFaces().size(),
-		indices, indexStride, env->getPoints().size(), (btScalar*)&vertices[0].x(), vertStride);
+		indices, indexStride, env->getPoints().size(), (btScalar*)&vertices[0].x(), vertStride );
     btBvhTriangleMeshShape* terrainShape = new btBvhTriangleMeshShape( indexVertArrays, true, aabbMin, aabbMax );
     // Now that we have a shape, construct rigid body dynamics as above
     btDefaultMotionState* terrainMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ) );

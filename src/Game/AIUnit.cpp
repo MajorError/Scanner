@@ -89,3 +89,7 @@ void AIUnit::navigateTo( Waypoint* goal ) {
         path.push_back( goal );
     cerr << "Got path of " << path.size() << " points" << endl;
 };
+
+void AIUnit::push( double x, double y, double z ) {
+    ballBody->applyCentralForce( btVector3( x, y, z ) );
+};

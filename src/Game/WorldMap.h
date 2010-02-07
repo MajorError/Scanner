@@ -35,7 +35,7 @@ public:
     Waypoint* findNearest( double x, double y, double z );
     Waypoint* findNearest( Waypoint* p );
     void tickAll();
-    void addAI( btDynamicsWorld* w, double x, double y, double z );
+    AIUnit* addAI( btDynamicsWorld* w, double x, double y, double z );
     list<Waypoint*>& getWaypoints();
     vector<AIUnit*>& getUnits();
 protected:

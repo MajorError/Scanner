@@ -68,8 +68,10 @@ void WorldMap::tickAll() {
     }
 };
 
-void WorldMap::addAI( btDynamicsWorld* w, double x, double y, double z ) {
-    aiUnits.push_back( new AIUnit( this, w, x, y, z ) );
+AIUnit* WorldMap::addAI( btDynamicsWorld* w, double x, double y, double z ) {
+    AIUnit* a = new AIUnit( this, w, x, y, z );
+    aiUnits.push_back( a );
+    return a;
 };
 
 list<Waypoint*>& WorldMap::getWaypoints() {

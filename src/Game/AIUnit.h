@@ -14,6 +14,7 @@ public:
     double getY();
     double getZ();
     void navigateTo( Waypoint* goal );
+    void push( double x, double y, double z );
 private:
     double xDir, yDir, zDir, velocity;
     double xPos, yPos, zPos;
