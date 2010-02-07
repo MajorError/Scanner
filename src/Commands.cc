@@ -378,16 +378,37 @@ namespace plane3 {
 namespace {
     MK_GUI_COMMAND(text, draw,)
     void text::draw( string text ) {
-        ImageRef centre( environment->getSceneSize() );
-        centre *= 0.5;
-        centre.y += 10;
-        centre.x -= text.length() / 2;
-        glMatrixMode(GL_PROJECTION);
+        pair<double, double> textSize = glGetExtends( text, 1.8, 0.2 );
+        ImageRef textPos( 10, 25 );
+        textSize.first *= 10;
+        textSize.second *= 10;
+        glMatrixMode( GL_PROJECTION );
         glPushMatrix();
-        glTranslate(centre);
-        glScalef(10,-10,1);
+        
+        // Bounding Box
+        glColor4d( 0.35, 0.5, 0.9, 1.0 );
+        glBegin( GL_QUADS );
+        glVertex3d( 8.0, 8.0, 1.0 );
+        glVertex3d( textSize.first + 12, 8.0, 1.0 );
+        glVertex3d( textSize.first + 12, textSize.second + 15, 1.0 );
+        glVertex3d( 8.0, textSize.second + 15, 1.0 );
+        glEnd();
+        
+        glColor4d( 0.5, 0.65, 1.0, 1.0 );
+        glLineWidth( 1.5 );
+        glBegin( GL_LINE_STRIP );
+        glVertex3d( 8.0, 8.0, 1.0 );
+        glVertex3d( textSize.first + 12, 8.0, 1.0 );
+        glVertex3d( textSize.first + 12, textSize.second + 15, 1.0 );
+        glVertex3d( 8.0, textSize.second + 15, 1.0 );
+        glVertex3d( 8.0, 8.0, 1.0 );
+        glEnd();
+        
+        // Text draw
+        glTranslate( textPos );
+        glScalef( 10, -10, 1 );
         glColor4d( 1.0, 1.0, 1.0, 1.0 );
-        glDrawText(text, FILL, 1.8, 0.2);
+        glDrawText( text, FILL, 1.8, 0.2 );
         glPopMatrix();
     }
 }
