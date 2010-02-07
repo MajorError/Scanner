@@ -39,7 +39,9 @@ OBJECTS=	main.o\
 		Game/GameFactory.o\
 		Game/GameRenderer.o\
 		Game/AStarSearch.o\
-		Game/AIUnit.o
+		Game/AIUnit.o\
+		Game/Projectile.o\
+		Game/Director.o
 
 CALIB_OBJECTS=	GLWindow2.o\
 		GLWindowMenu.o\

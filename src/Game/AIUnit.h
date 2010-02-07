@@ -18,7 +18,7 @@ public:
 private:
     double xDir, yDir, zDir, velocity;
     double xPos, yPos, zPos;
-    btRigidBody* ballBody;
+    btRigidBody* boxBody;
     list<Waypoint*> path;
     WorldMap* map;
     AStarSearch search;

@@ -60,24 +60,8 @@ bool WorldMap::toTidy( const Waypoint* p ) {
     cerr << "Delete " << p << endl;
     delete p;
     return true;
-}
-
-void WorldMap::tickAll() {
-    for( vector<AIUnit*>::iterator curr = aiUnits.begin(); curr != aiUnits.end(); curr++ ) {
-        (*curr)->tick();
-    }
-};
-
-AIUnit* WorldMap::addAI( btDynamicsWorld* w, double x, double y, double z ) {
-    AIUnit* a = new AIUnit( this, w, x, y, z );
-    aiUnits.push_back( a );
-    return a;
 };
 
 list<Waypoint*>& WorldMap::getWaypoints() {
     return waypoints;
-};
-
-vector<AIUnit*>& WorldMap::getUnits() {
-    return aiUnits;
 };

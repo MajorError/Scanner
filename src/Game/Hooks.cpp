@@ -3,14 +3,17 @@
 #include "../GUICommand.h"
 #include "WorldMap.h"
 #include "AIUnit.h"
+#include "Director.h"
 #include <btBulletDynamicsCommon.h>
 #include <TooN/TooN.h>
 
 using namespace CVD;
 using namespace TooN;
 
-MK_VISION_PLUGIN( tick, btClock clock; public: static WorldMap* map; static btDiscreteDynamicsWorld* dynamicsWorld; )
+MK_VISION_PLUGIN( tick, btClock clock; public: static WorldMap* map; \
+static Director* director; static btDiscreteDynamicsWorld* dynamicsWorld;)
 WorldMap* tick::map = NULL;
+Director* tick::director = NULL;
 btDiscreteDynamicsWorld* tick::dynamicsWorld = NULL;
 void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     // No map, no game! Disables self
@@ -22,7 +25,7 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     double dt = clock.getTimeMilliseconds();
     clock.reset();
     dynamicsWorld->stepSimulation( dt * 0.001f, 100, btScalar(1.)/btScalar(300.) );
-    map->tickAll();
+    director->tick();
 };
 
 
@@ -39,14 +42,15 @@ namespace game {
         GUI.ParseLine( "drawClosestEdge=0" );
         GUI.ParseLine( "drawClosestFace=0" );
         GUI.ParseLine( "textureExtractor.disable" );
-        cerr << "Creating world map" << endl;
-        WorldMap* m = gf.create( environment );
-        cerr << "Creating renderer with " << m << endl;
-        ARDriver::mGame = new GameRenderer( m, environment );
         cerr << "Starting game" << endl;
-        tick::map = m;
+        cerr << "Creating world map" << endl;
+        tick::map = gf.create( environment );
         tick::dynamicsWorld = initBullet();
         gf.setupCollisionPlanes( environment, tick::dynamicsWorld );
+        cerr << "Creating game director" << endl;
+        tick::director = new Director( tick::dynamicsWorld, tick::map );
+        cerr << "Creating renderer" << endl;
+        ARDriver::mGame = new GameRenderer( tick::map, tick::director, environment );
         GUI.ParseLine( "tick.enable" );
     }
 
@@ -80,7 +84,7 @@ namespace ai1 {
     MK_GUI_COMMAND(ai, create,)
     void ai::create( string params ) {
         Vector<3> camPos = environment->getCameraPose().get_translation();
-        AIUnit* a = tick::map->addAI( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
+        Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
 
         Matrix<> rot = GV3::get<double>( "pushScale", 100 ) * environment->getCameraPose().get_rotation().get_matrix();
         a->push( rot[0][2], rot[1][2], rot[2][2] );
@@ -96,7 +100,7 @@ namespace ai2 {
         Waypoint* goal = new Waypoint;
         to >> goal->x >> goal->y >> goal->z;
         int currID = 0;
-        for( vector<AIUnit*>::iterator curr = tick::map->getUnits().begin(); curr != tick::map->getUnits().end(); curr++, currID++ ) {
+        for( vector<AIUnit*>::iterator curr = tick::director->getUnits().begin(); curr != tick::director->getUnits().end(); curr++, currID++ ) {
             if ( currID == id ) {
                 (*curr)->navigateTo( goal );
             }

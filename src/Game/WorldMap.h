@@ -34,13 +34,9 @@ public:
     static bool toTidy( const Waypoint* p );
     Waypoint* findNearest( double x, double y, double z );
     Waypoint* findNearest( Waypoint* p );
-    void tickAll();
-    AIUnit* addAI( btDynamicsWorld* w, double x, double y, double z );
     list<Waypoint*>& getWaypoints();
-    vector<AIUnit*>& getUnits();
 protected:
     list<Waypoint*> waypoints;
-    vector<AIUnit*> aiUnits;
     /*double thisIsInteresting;
     double soIsthis;
     string whatAboutThis;*/

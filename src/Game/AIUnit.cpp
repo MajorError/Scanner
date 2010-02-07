@@ -3,18 +3,19 @@
 #include <gvars3/gvars3.h>
 #include <cmath>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
 using namespace GVars3;
 
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : velocity( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
-    btCollisionShape* ballShape = new btSphereShape( 0.05 );
-    btDefaultMotionState* ballMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
+    btCollisionShape* boxShape = new btBoxShape( btVector3( 0.05, 0.05, 0.05 ) );
+    btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
     btVector3 inertia( 0, 0, 0 );
-    ballShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
-    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "aiMass" ), ballMotionState, ballShape, inertia );
+    boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
+    btRigidBody::btRigidBodyConstructionInfo boxRigidBodyCI( GV3::get<double>( "aiMass" ), boxMotionState, boxShape, inertia );
     
-    ballBody = new btRigidBody( ballRigidBodyCI );
-    w->addRigidBody( ballBody );
+    boxBody = new btRigidBody( boxRigidBodyCI );
+    w->addRigidBody( boxBody );
 }
 
 AIUnit::~AIUnit() {
@@ -24,7 +25,7 @@ AIUnit::~AIUnit() {
 void AIUnit::tick() {
 
     btTransform trans;
-    ballBody->getMotionState()->getWorldTransform( trans );
+    boxBody->getMotionState()->getWorldTransform( trans );
     xPos = trans.getOrigin().getX();
     yPos = trans.getOrigin().getY();
     zPos = trans.getOrigin().getZ();
@@ -91,5 +92,5 @@ void AIUnit::navigateTo( Waypoint* goal ) {
 };
 
 void AIUnit::push( double x, double y, double z ) {
-    ballBody->applyCentralForce( btVector3( x, y, z ) );
+    boxBody->applyCentralForce( btVector3( x, y, z ) );
 };
