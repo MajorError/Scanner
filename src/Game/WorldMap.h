@@ -9,8 +9,6 @@
 
 using namespace std;
 
-class AIUnit; // forward decl
-
 struct Waypoint {
     double x, y, z;
     list<Waypoint*> traversable;

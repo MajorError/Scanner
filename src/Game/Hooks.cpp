@@ -24,7 +24,7 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     // Step simulation according to actual time passed - should bypass framerate issues
     double dt = clock.getTimeMilliseconds();
     clock.reset();
-    dynamicsWorld->stepSimulation( dt * 0.001f, 100, btScalar(1.)/btScalar(300.) );
+    dynamicsWorld->stepSimulation( dt * 0.001f, 100000000, btScalar(1.)/btScalar(600.) );
     director->tick();
 };
 

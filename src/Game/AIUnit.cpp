@@ -7,9 +7,10 @@ using namespace GVars3;
 
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : velocity( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
-    btCollisionShape* boxShape = new btBoxShape( btVector3( 0.05, 0.05, 0.05 ) );
+    double ds = GV3::get<double>( "ptSize", 0.05 ) * 2;
+    btCollisionShape* boxShape = new btBoxShape( btVector3( ds, ds, ds ) );
     btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
-    btVector3 inertia( 0, 0, 0 );
+    btVector3 inertia( 1, 1, 1 );
     boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
     btRigidBody::btRigidBodyConstructionInfo boxRigidBodyCI( GV3::get<double>( "aiMass" ), boxMotionState, boxShape, inertia );
     
@@ -36,8 +37,7 @@ void AIUnit::tick() {
     rotAxis[2] = axis.getZ();
 
 
-    // Disabled for now. TODO: How to integrate this with Bullet?
-    if ( true || path.size() < 1 )
+    if ( path.size() < 1 )
         return;
 
     velocity = GV3::get<double>( "aiSpeed", 0.01 );

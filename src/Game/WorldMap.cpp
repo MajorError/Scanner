@@ -1,6 +1,5 @@
 
 #include "WorldMap.h"
-#include "AIUnit.h"
 #include <limits>
 #include <iostream>
 #include <vector>

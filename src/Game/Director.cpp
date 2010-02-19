@@ -40,7 +40,7 @@ void Director::tick() {
         (*curr)->tick();
     }
     
-    if ( currTick - lastSpawn > GV3::get<int>( "spawnFreq", 50 )
+    /*if ( currTick - lastSpawn > GV3::get<int>( "spawnFreq", 50 )
             && ((double)rand() / (double)RAND_MAX) < GV3::get<double>( "spawnProb", 0.1 ) ) {
         // Spawn a new character
         Waypoint* target = NULL;
@@ -52,6 +52,6 @@ void Director::tick() {
             cerr << "POP @ " << target->x << ", " << target->y << ", " << target->z << endl;
             addAI( dynamicsWorld, target->x, target->y, target->z+1 );
         }
-    }
+    }*/
 };
 
