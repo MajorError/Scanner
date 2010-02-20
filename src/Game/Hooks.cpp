@@ -10,8 +10,8 @@
 using namespace CVD;
 using namespace TooN;
 
-MK_VISION_PLUGIN( tick, btClock clock; public: static WorldMap* map; \
-static Director* director; static btDiscreteDynamicsWorld* dynamicsWorld;)
+MK_VISION_PLUGIN( tick, btClock clock; public: static void callback( btDynamicsWorld *world, btScalar timeStep ); \
+static WorldMap* map; static Director* director; static btDiscreteDynamicsWorld* dynamicsWorld;)
 WorldMap* tick::map = NULL;
 Director* tick::director = NULL;
 btDiscreteDynamicsWorld* tick::dynamicsWorld = NULL;
@@ -25,7 +25,11 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     double dt = clock.getTimeMilliseconds();
     clock.reset();
     dynamicsWorld->stepSimulation( dt * 0.001f, 100000000, btScalar(1.)/btScalar(600.) );
+};
+
+void tick::callback( btDynamicsWorld *world, btScalar timeStep ) {
     director->tick();
+    // TODO: Collision management
 };
 
 
@@ -71,6 +75,7 @@ namespace game {
         // The world.
         btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
         dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -10 ) ) );
+        dynamicsWorld->setInternalTickCallback( tick::callback );
         
         return dynamicsWorld;
     };
@@ -87,6 +92,7 @@ namespace ai1 {
         Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
 
         Matrix<> rot = GV3::get<double>( "pushScale", 100 ) * environment->getCameraPose().get_rotation().get_matrix();
+        cerr << "FLING: " << rot[0][2] << ", " << rot[1][2] << ", " << rot[2][2] << endl;
         a->push( rot[0][2], rot[1][2], rot[2][2] );
     }
 }
@@ -105,6 +111,18 @@ namespace ai1 {
 }
 
 namespace ai2 {
+    MK_TOOL_PLUGIN( ai_move, "m", );
+    void ai_move::click() {
+        cerr << "ai.move " << (tick::director->getUnits().size() - 1);
+        Vector<3> target = environment->getCameraPose().get_translation();
+        environment->findClosestFace( target );
+        cerr << " " << target;
+        Waypoint* goal = new Waypoint;
+        goal->x = target[0];
+        goal->y = target[1];
+        goal->z = target[2];
+        tick::director->getUnits().back()->navigateTo( goal );
+    };
     MK_GUI_COMMAND(ai, move,)
     void ai::move( string params ) {
         stringstream to( params );

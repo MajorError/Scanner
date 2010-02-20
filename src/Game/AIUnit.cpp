@@ -16,10 +16,10 @@ AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
     
     boxBody = new btRigidBody( boxRigidBodyCI );
     w->addRigidBody( boxBody );
-}
+};
 
 AIUnit::~AIUnit() {
-}
+};
 
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
@@ -40,11 +40,12 @@ void AIUnit::tick() {
     if ( path.size() < 1 )
         return;
 
-    velocity = GV3::get<double>( "aiSpeed", 0.01 );
+    velocity = GV3::get<double>( "aiSpeed", 1.0 );
+    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) * 2 );
     cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
-    if ( ABSDIFF( path.front()->x, xPos ) < velocity
-            && ABSDIFF( path.front()->y, yPos ) < velocity
-            && ABSDIFF( path.front()->z, zPos ) < velocity ) {
+    if ( ABSDIFF( path.front()->x, xPos ) < tolerance
+            && ABSDIFF( path.front()->y, yPos ) < tolerance
+            && ABSDIFF( path.front()->z, zPos ) < tolerance ) {
         cerr << "\tPath Point Reached: ";
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
@@ -70,7 +71,8 @@ void AIUnit::tick() {
     /*xPos += velocity * xDir;
     yPos += velocity * yDir;
     zPos += velocity * zDir;*/
-    boxBody->applyCentralForce( btVector3( velocity * xDir, velocity * yDir, velocity * zDir ) );
+    cerr << "\t" << velocity * xDir << ", " << velocity * yDir << ", " << velocity * zDir << endl;
+    push( velocity * xDir, velocity * yDir, velocity * zDir );
 };
 
 double AIUnit::getX() {
@@ -106,5 +108,6 @@ void AIUnit::navigateTo( Waypoint* goal ) {
 };
 
 void AIUnit::push( double x, double y, double z ) {
+    boxBody->activate( true );
     boxBody->applyCentralForce( btVector3( x, y, z ) );
 };
