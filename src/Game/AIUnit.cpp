@@ -28,8 +28,7 @@ AIUnit::~AIUnit() {
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
 
-    btTransform trans;
-    boxBody->getMotionState()->getWorldTransform( trans );
+    btTransform trans = boxBody->getWorldTransform();
     xPos = trans.getOrigin().getX();
     yPos = trans.getOrigin().getY();
     zPos = trans.getOrigin().getZ();
@@ -44,8 +43,8 @@ void AIUnit::tick() {
     if ( path.size() < 1 )
         return;
 
-    velocity = GV3::get<double>( "aiSpeed", 10 );
-    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) * 2 );
+    velocity = GV3::get<double>( "aiSpeed", 0.001 );
+    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) );
     //cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
             && ABSDIFF( path.front()->y, yPos ) < tolerance
@@ -68,13 +67,15 @@ void AIUnit::tick() {
     yDir = path.front()->y - yPos;
     zDir = path.front()->z - zPos;
     // Normalise the vector
-    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) ;// (xDir * xDir + yDir * yDir + zDir * zDir);
+    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / velocity ;
     xDir /= div;
     yDir /= div;
     zDir /= div;
+    boxBody->translate( btVector3( xDir, yDir, zDir ) );
+    boxBody->activate( true );
     //cerr << "\t" << velocity * xDir << ", " << velocity * yDir << ", " << velocity * zDir << endl;
-    if ( boxBody->getAngularVelocity().length() < GV3::get<double>( "aiThresholdSpeed", 10 ) )
-        push( velocity * xDir, velocity * yDir, velocity * zDir );
+    /*if ( boxBody->getAngularVelocity().length() < GV3::get<double>( "aiThresholdSpeed", 10 ) )
+        push( velocity * xDir, velocity * yDir, velocity * zDir );*/
 };
 
 double AIUnit::getX() {
