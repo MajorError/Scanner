@@ -29,6 +29,7 @@ private:
     list<Waypoint*> path;
     WorldMap* map;
     AStarSearch search;
+    static btCollisionShape* boxShape;
 };
 
 #endif	/* _AIUNIT_H */

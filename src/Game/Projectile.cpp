@@ -7,15 +7,17 @@
 
 using namespace GVars3;
 
+btCollisionShape* Projectile::ballShape = NULL;
 
 Projectile::Projectile( btDynamicsWorld* w, double x, double y, double z )
 : xPos( x ), yPos( y ), zPos( z ) {
-    btCollisionShape* ballShape = new btSphereShape( 0.05 );
+    if ( Projectile::ballShape == NULL ) {
+        Projectile::ballShape = new btSphereShape( GV3::get<double>( "ptSize", 0.05 ) / 2 );
+        btVector3 inertia( 0, 0, 0 );
+        Projectile::ballShape->calculateLocalInertia( GV3::get<double>( "projectileMass", 0.4 ), inertia );
+    }
     btDefaultMotionState* ballMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
-    btVector3 inertia( 0, 0, 0 );
-    ballShape->calculateLocalInertia( GV3::get<double>( "projectileMass", 0.4 ), inertia );
-    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "projectileMass" ), ballMotionState, ballShape, inertia );
-
+    btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "projectileMass" ), ballMotionState, Projectile::ballShape );
     ballBody = new btRigidBody( ballRigidBodyCI );
     w->addRigidBody( ballBody );
 }

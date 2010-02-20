@@ -17,6 +17,7 @@ public:
 private:
     double xPos, yPos, zPos;
     btRigidBody* ballBody;
+    static btCollisionShape* ballShape;
 };
 
 #endif	/* _PROJECTILE_H */

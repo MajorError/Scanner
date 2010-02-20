@@ -74,7 +74,7 @@ void GameRenderer::renderWaypointGraph() {
 };
 
 void GameRenderer::renderUnits() {
-    double ds = GV3::get<double>( "ptSize", 0.05 ) * 2;
+    double ds = GV3::get<double>( "ptSize", 0.05 );
     for( vector<AIUnit*>::iterator curr = director->getUnits().begin(); curr != director->getUnits().end(); curr++ ) {
         glColor4d( 0.4, 0.1, 1.0, 1.0 );
         glLoadIdentity();
@@ -86,7 +86,7 @@ void GameRenderer::renderUnits() {
 };
 
 void GameRenderer::renderProjectiles() {
-    double ds = GV3::get<double>( "ptSize", 0.05 );
+    double ds = GV3::get<double>( "ptSize", 0.05 ) / 2;
     for( vector<Projectile*>::iterator curr = director->getProjectiles().begin(); curr != director->getProjectiles().end(); curr++ ) {
         glColor4d( 1.0, 0.2, 0.0, 1.0 );
         glLoadIdentity();
@@ -143,4 +143,5 @@ void GameRenderer::DrawCube() {
     glVertex3d( 1.0, 1.0, -1.0 );
     
     glEnd();
+    glEnable( GL_CULL_FACE );
 };

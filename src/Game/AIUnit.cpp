@@ -5,13 +5,17 @@
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 using namespace GVars3;
 
+btCollisionShape* AIUnit::boxShape;
+
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : velocity( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
-    double ds = GV3::get<double>( "ptSize", 0.05 ) * 2;
-    btCollisionShape* boxShape = new btBoxShape( btVector3( ds, ds, ds ) );
-    btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
     btVector3 inertia( 1, 1, 1 );
-    boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
+    if ( AIUnit::boxShape == NULL ) {
+        double ds = GV3::get<double>( "ptSize", 0.05 );
+        AIUnit::boxShape = new btBoxShape( btVector3( ds, ds, ds ) );
+        AIUnit::boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
+    }
+    btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
     btRigidBody::btRigidBodyConstructionInfo boxRigidBodyCI( GV3::get<double>( "aiMass" ), boxMotionState, boxShape, inertia );
     
     boxBody = new btRigidBody( boxRigidBodyCI );
@@ -40,9 +44,9 @@ void AIUnit::tick() {
     if ( path.size() < 1 )
         return;
 
-    velocity = GV3::get<double>( "aiSpeed", 1.0 );
+    velocity = GV3::get<double>( "aiSpeed", 10 );
     double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) * 2 );
-    cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
+    //cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
             && ABSDIFF( path.front()->y, yPos ) < tolerance
             && ABSDIFF( path.front()->z, zPos ) < tolerance ) {
@@ -64,15 +68,13 @@ void AIUnit::tick() {
     yDir = path.front()->y - yPos;
     zDir = path.front()->z - zPos;
     // Normalise the vector
-    double div = abs( xDir ) + abs( yDir ) + abs( zDir );
+    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) ;// (xDir * xDir + yDir * yDir + zDir * zDir);
     xDir /= div;
     yDir /= div;
     zDir /= div;
-    /*xPos += velocity * xDir;
-    yPos += velocity * yDir;
-    zPos += velocity * zDir;*/
-    cerr << "\t" << velocity * xDir << ", " << velocity * yDir << ", " << velocity * zDir << endl;
-    push( velocity * xDir, velocity * yDir, velocity * zDir );
+    //cerr << "\t" << velocity * xDir << ", " << velocity * yDir << ", " << velocity * zDir << endl;
+    if ( boxBody->getAngularVelocity().length() < GV3::get<double>( "aiThresholdSpeed", 10 ) )
+        push( velocity * xDir, velocity * yDir, velocity * zDir );
 };
 
 double AIUnit::getX() {

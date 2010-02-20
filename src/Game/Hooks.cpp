@@ -92,7 +92,6 @@ namespace ai1 {
         Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
 
         Matrix<> rot = GV3::get<double>( "pushScale", 100 ) * environment->getCameraPose().get_rotation().get_matrix();
-        cerr << "FLING: " << rot[0][2] << ", " << rot[1][2] << ", " << rot[2][2] << endl;
         a->push( rot[0][2], rot[1][2], rot[2][2] );
     }
 }
@@ -111,7 +110,7 @@ namespace ai1 {
 }
 
 namespace ai2 {
-    MK_TOOL_PLUGIN( ai_move, "m", );
+    MK_TOOL_PLUGIN( ai_move, "w", );
     void ai_move::click() {
         cerr << "ai.move " << (tick::director->getUnits().size() - 1);
         Vector<3> target = environment->getCameraPose().get_translation();
