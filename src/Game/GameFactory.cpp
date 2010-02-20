@@ -64,7 +64,10 @@ WorldMap* GameFactory::create( Environment* env ) {
             }
         }
     }
-    
+
+    // Remove non-navigable waypoints from the map
+    m->tidyWaypoints();
+
     return m;
 };
 

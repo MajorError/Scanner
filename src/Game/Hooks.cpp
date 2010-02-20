@@ -26,6 +26,7 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     clock.reset();
     dynamicsWorld->stepSimulation( dt * 0.001f, 100000000, btScalar(1.)/btScalar(600.) );
 };
+
 /*inline void tick::cullDeadObjects() {
     // Cull any objects that have fallen off the bottom of the world
     vector<Projectile*> validProjectiles;

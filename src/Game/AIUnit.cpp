@@ -49,18 +49,18 @@ void AIUnit::tick() {
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
             && ABSDIFF( path.front()->y, yPos ) < tolerance
             && ABSDIFF( path.front()->z, zPos ) < tolerance ) {
-        cerr << "\tPath Point Reached: ";
+        //cerr << "\tPath Point Reached: ";
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
             delete path.front();
         path.pop_front();
         // Check if we've reached our goal
         if ( path.size() == 0 ) {
-            cerr << "STOP" << endl;
+            cerr << "AI reached goal" << endl;
             velocity = 0;
             return;
         }
-        cerr << "Next stop = " << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << " -> " << endl;
+        //cerr << "Next stop = " << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << " -> " << endl;
     }
     // Set up new {x,y,z}Dir
     xDir = path.front()->x - xPos;
@@ -107,7 +107,6 @@ void AIUnit::navigateTo( Waypoint* goal ) {
     path.push_front( from );
     if( path.back()->x != goal->x || path.back()->y != goal->y || path.back()->z != goal->z )
         path.push_back( goal );
-    cerr << "Got path of " << path.size() << " points" << endl;
 };
 
 void AIUnit::push( double x, double y, double z ) {

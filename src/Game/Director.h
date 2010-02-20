@@ -26,6 +26,7 @@ private:
     vector<AIUnit*> aiUnits;
     int currTick;
     int lastSpawn;
+    vector<Waypoint*> startPoints, endPoints;
 };
 
 #endif	/* _DIRECTOR_H */
