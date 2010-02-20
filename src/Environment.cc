@@ -230,14 +230,11 @@ void Environment::findPlanarFaces( PolyFace* target, double tol, set<PolyFace*>&
     if ( planarFaces.count( target ) > 0 )
         return;
     // Test if this face has 0-area; two points will be at the same position
-    cerr << "Test " << target->getP1()->getPosition() << " == " << target->getP2()->getPosition() << " == " << target->getP3()->getPosition() << ": ";
     if ( target->getP1()->getPosition() == target->getP2()->getPosition() ||
             target->getP1()->getPosition() == target->getP3()->getPosition() ||
             target->getP2()->getPosition() == target->getP3()->getPosition() ) {
-        cerr << " ZERO AREA" << endl;
         return;
     }
-    cerr << " OK" << endl;
     // Add the face, search its siblings
     planarFaces.insert( target );
     Vector<3> n = target->getFaceNormal();

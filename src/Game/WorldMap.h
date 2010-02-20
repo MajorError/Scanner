@@ -27,7 +27,7 @@ public:
     virtual ~WorldMap();
 
     void addWaypoint( Waypoint* w );
-    void setTraversable( Waypoint* from, Waypoint* to );
+    void setTraversable( Waypoint* from, Waypoint* to, bool bidirectional=true );
     void tidyWaypoints();
     static bool toTidy( const Waypoint* p );
     Waypoint* findNearest( double x, double y, double z );

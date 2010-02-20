@@ -21,6 +21,11 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         enabled = false;
         return;
     }
+    // Reset clock on first call, otherwise we do a HUGE physics sim at the start
+    if ( init ) {
+        init = false;
+        clock.reset();
+    }
     // Step simulation according to actual time passed - should bypass framerate issues
     double dt = clock.getTimeMilliseconds();
     clock.reset();
@@ -152,7 +157,7 @@ namespace ai2 {
         cerr << "ai.move " << (tick::director->getUnits().size() - 1);
         Vector<3> target = environment->getCameraPose().get_translation();
         environment->findClosestFace( target );
-        cerr << " " << target;
+        cerr << " " << target << endl;
         Waypoint* goal = new Waypoint;
         goal->x = target[0];
         goal->y = target[1];

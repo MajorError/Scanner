@@ -65,6 +65,14 @@ void GameRenderer::renderWaypointGraph() {
         DrawSphere();
         glLoadIdentity();
         for( list<Waypoint*>::iterator goal = (*curr)->traversable.begin(); goal != (*curr)->traversable.end(); goal++ ) {
+            // Colour edges green iff they are bidirectional
+            glColor4d( 1.0, 1.0, 0.0, 0.8 );
+            for( list<Waypoint*>::iterator test = (*goal)->traversable.begin(); test != (*goal)->traversable.end(); test++ ) {
+                if ( (*test) == (*curr) ) {
+                    glColor4d( 0.0, 1.0, 0.0, 1.0 );
+                    break;
+                }
+            }
             glBegin( GL_LINES );
             glVertex3d( (*curr)->x, (*curr)->y, (*curr)->z );
             glVertex3d( (*goal)->x, (*goal)->y, (*goal)->z );

@@ -17,6 +17,8 @@ GameFactory::~GameFactory() {
 WorldMap* GameFactory::create( Environment* env ) {
     WorldMap* m = new WorldMap;
 
+    double maxGradient = GV3::get<double>( "maxGradient", 1.0 );
+
     map<Point*,Waypoint*> wps;
     // Populate Waypoints in the WorldMap
     for( list<Point*>::iterator curr = env->getPoints().begin(); curr != env->getPoints().end(); curr++ ) {
@@ -30,7 +32,7 @@ WorldMap* GameFactory::create( Environment* env ) {
 
     // Connect these Waypoints per the geometry in the map
     for( list<Edge*>::iterator curr = env->getEdges().begin(); curr != env->getEdges().end(); curr++ ) {
-        m->setTraversable( wps[(*curr)->getStart()], wps[(*curr)->getEnd()] );
+        link( m, maxGradient, wps[(*curr)->getStart()], wps[(*curr)->getEnd()] );
     }
 
     map<PolyFace*,Waypoint*> fwps;
@@ -43,9 +45,9 @@ WorldMap* GameFactory::create( Environment* env ) {
         fwps[*curr] = w;
 
         // Can always traverse from centre to corner of face
-        m->setTraversable( w, wps[(*curr)->getP1()] );
-        m->setTraversable( w, wps[(*curr)->getP2()] );
-        m->setTraversable( w, wps[(*curr)->getP3()] );
+        link( m, maxGradient, w, wps[(*curr)->getP1()] );
+        link( m, maxGradient, w, wps[(*curr)->getP2()] );
+        link( m, maxGradient, w, wps[(*curr)->getP3()] );
     }
 
     for( set<PolyFace*>::iterator curr = env->getFaces().begin(); curr != env->getFaces().end(); curr++ ) {
@@ -56,19 +58,32 @@ WorldMap* GameFactory::create( Environment* env ) {
             for( set<PolyFace*>::iterator boundary = plane.begin(); boundary != plane.end(); boundary++ ) {
                 if ( (*boundary) == (*curr) )
                     continue;
-                m->setTraversable( w, fwps[*boundary] );
-                m->setTraversable( w, wps[(*boundary)->getP1()] );
-                m->setTraversable( w, wps[(*boundary)->getP2()] );
-                m->setTraversable( w, wps[(*boundary)->getP3()] );
+                link( m, maxGradient, w, fwps[*boundary] );
+                link( m, maxGradient, w, wps[(*boundary)->getP1()] );
+                link( m, maxGradient, w, wps[(*boundary)->getP2()] );
+                link( m, maxGradient,  w, wps[(*boundary)->getP3()] );
                 fwps.erase( *boundary ); // To prevent double-traversal
             }
         }
     }
 
     // Remove non-navigable waypoints from the map
-    m->tidyWaypoints();
+    //m->tidyWaypoints();
 
     return m;
+};
+
+inline void GameFactory::link( WorldMap* m, double maxGradient, Waypoint* w1, Waypoint* w2 ) {
+    double x = w1->x - w2->x;
+    double y = w1->y - w2->y;
+    double z = w1->z - w2->z;
+    double gradX = (z*z) / (x*x);
+    double gradY = (z*z) / (y*y);
+    cerr << y << ": " << gradX << ", " << gradY << endl;
+    if ( w1->z > w2->z )
+        m->setTraversable( w1, w2, abs( gradX ) < maxGradient && abs( gradY ) < maxGradient );
+    else
+        m->setTraversable( w2, w1, abs( gradX ) < maxGradient && abs( gradY ) < maxGradient );
 };
 
 void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorld* world ) {
