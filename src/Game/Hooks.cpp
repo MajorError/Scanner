@@ -61,11 +61,48 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         }
         director->getUnits().pop_back();
     }
-    while( !validUnits.empty() ) {
+    while( !validProjectiles.empty() ) {
         director->getUnits().push_back( validUnits.back() );
         validUnits.pop_back();
     }
 };
+
+/*inline void tick::cullDeadObjects() {
+    // Cull any objects that have fallen off the bottom of the world
+    vector<Projectile*> validProjectiles;
+    validProjectiles.reserve( director->getProjectiles().size() );
+    while( !director->getProjectiles().empty() ) {
+        Projectile* p = director->getProjectiles().back();
+        if ( p->getY() < -100 ) {
+            cerr << "Cull Px" << p << endl;
+            //delete p;
+        } else {
+            validProjectiles.push_back( p );
+        }
+        director->getProjectiles().pop_back();
+    }
+    while( !validProjectiles.empty() ) {
+        director->getProjectiles().push_back( validProjectiles.back() );
+        validProjectiles.pop_back();
+    }
+
+    vector<AIUnit*> validUnits;
+    validUnits.reserve( director->getUnits().size() );
+    while( !director->getUnits().empty() ) {
+        AIUnit* u = director->getUnits().back();
+        if ( u->getY() < -100 ) {
+            cerr << "Cull U" << u << endl;
+            //delete u;
+        } else {
+            validUnits.push_back( u );
+        }
+        director->getUnits().pop_back();
+    }
+    while( !validProjectiles.empty() ) {
+        director->getUnits().push_back( validUnits.back() );
+        validUnits.pop_back();
+    }
+}*/
 
 void tick::callback( btDynamicsWorld *world, btScalar timeStep ) {
     director->tick();
