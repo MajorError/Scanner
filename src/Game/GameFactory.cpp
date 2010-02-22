@@ -8,6 +8,8 @@
 
 using namespace GVars3;
 
+int GameFactory::terrainType = (1 << 0);
+
 GameFactory::GameFactory() {
 }
 
@@ -103,5 +105,6 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
     btDefaultMotionState* terrainMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ) );
     btRigidBody::btRigidBodyConstructionInfo terrainRigidBodyCI( 0, terrainMotionState, terrainShape );
     btRigidBody* terrainRigidBody = new btRigidBody( terrainRigidBodyCI );
+    terrainRigidBody->setUserPointer( &GameFactory::terrainType );
     world->addRigidBody( terrainRigidBody );
 };

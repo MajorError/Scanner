@@ -15,6 +15,8 @@ public:
     double getZ();
     void push( double x, double y, double z );
     void removeFromWorld( btDynamicsWorld* w );
+
+    static int type;
 private:
     double xPos, yPos, zPos;
     btRigidBody* ballBody;

@@ -3,8 +3,10 @@
 #include <cmath>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
+
 using namespace GVars3;
 
+int AIUnit::type = (1 << 1);
 btCollisionShape* AIUnit::boxShape;
 
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
@@ -19,6 +21,7 @@ AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
     btRigidBody::btRigidBodyConstructionInfo boxRigidBodyCI( GV3::get<double>( "aiMass" ), boxMotionState, boxShape, inertia );
     
     boxBody = new btRigidBody( boxRigidBodyCI );
+    boxBody->setUserPointer( this );
     w->addRigidBody( boxBody );
 };
 

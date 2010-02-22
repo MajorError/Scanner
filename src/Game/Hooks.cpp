@@ -69,7 +69,14 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
 
 void tick::callback( btDynamicsWorld *world, btScalar timeStep ) {
     director->tick();
-    // TODO: Collision management
+    int numManifolds = world->getDispatcher()->getNumManifolds();
+    for (int i = 0; i < numManifolds; i++ ) {
+        btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal( i );
+        btCollisionObject* body1 = static_cast<btCollisionObject*>( contactManifold->getBody0() );
+        btCollisionObject* body2 = static_cast<btCollisionObject*>( contactManifold->getBody1() );
+        AIUnit* ai = NULL;
+        Projectile* p = NULL;
+    }
 };
 
 
