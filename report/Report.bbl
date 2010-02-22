@@ -1,0 +1,145 @@
+\begin{thebibliography}{xx}
+
+\harvarditem{Allgower \harvardand\ Schmidt}{1985}{cubes}
+Allgower, E.~L. \harvardand\ Schmidt, P.~H.  \harvardyearleft
+  1985\harvardyearright .
+\newblock An algorithm for piecewise linear approximation of an implicitly
+  defined manifold, {\em SIAM Journal of Numerical Analysis} {\bf
+  22}:~322--346.
+
+\harvarditem[Debevec et~al.]{Debevec, Taylor \harvardand\
+  Malik}{1996}{architecture}
+Debevec, P.~E., Taylor, C.~J. \harvardand\ Malik, J.  \harvardyearleft
+  1996\harvardyearright .
+\newblock Modeling and rendering architecture from photographs: a hybrid
+  geometry- and image-based approach, {\em SIGGRAPH '96: Proceedings of the
+  23rd annual conference on Computer graphics and interactive techniques}, ACM,
+  New York, NY, USA, pp.~11--20.
+
+\harvarditem{Delaunay}{1934}{dtet}
+Delaunay, B.~N.  \harvardyearleft 1934\harvardyearright .
+\newblock Sur la sph\`{e}re vide, {\em Bulletin of Academy of Sciences of the
+  USSR} {\bf 7}:~793--800.
+
+\harvarditem{Devernay \harvardand\ Faugeras}{2001}{atancam}
+Devernay, F. \harvardand\ Faugeras, O.  \harvardyearleft 2001\harvardyearright
+  .
+\newblock Straight lines have to be straight, {\em Machine Vision and
+  Applications} {\bf 13}(1):~14--24.
+
+\harvarditem{Edelsbrunner \harvardand\ M\"{u}cke}{1992}{alpha}
+Edelsbrunner, H. \harvardand\ M\"{u}cke, E.~P.  \harvardyearleft
+  1992\harvardyearright .
+\newblock Three-dimensional alpha shapes, {\em VVS '92: Proceedings of the 1992
+  workshop on Volume visualization}, ACM, Boston, Massachusetts, United States,
+  pp.~75--82.
+
+\harvarditem[Fechteler et~al.]{Fechteler, Eisert \harvardand\
+  Rurainsky}{2007}{lightface}
+Fechteler, P., Eisert, P. \harvardand\ Rurainsky, J.  \harvardyearleft
+  2007\harvardyearright .
+\newblock {Fast and High Resolution 3D Face Scanning}, {\em Proceedings of the
+  14th International Conference on Image Processing (ICIP2007))}, San Antonio,
+  Texas, USA.
+\newblock ICIP 2007.
+
+\harvarditem[Goesele et~al.]{Goesele, Snavely, Curless, Hoppe \harvardand\
+  Seitz}{2007}{multistereo}
+Goesele, M., Snavely, N., Curless, B., Hoppe, H. \harvardand\ Seitz, S.
+  \harvardyearleft 2007\harvardyearright .
+\newblock Multi-view stereo for community photo collections, {\em Proceedings
+  of IEEE 11th International Conference on Computer Vision}, IEEE, Rio de
+  Janeiro, Brazil, pp.~1--8.
+
+\harvarditem{Google}{December 2009}{sketchup}
+Google  \harvardyearleft December 2009\harvardyearright .
+\newblock Sketchup.
+\newline\harvardurl{http://sketchup.google.com/}
+
+\harvarditem{Hoppe}{1994}{unorgsurf}
+Hoppe, H.  \harvardyearleft 1994\harvardyearright .
+\newblock {\em Surface Reconstruction from Unorganized Points}, PhD thesis,
+  University of Washington, Seattle, WA, USA.
+
+\harvarditem[Hoppe et~al.]{Hoppe, DeRose, Duchamp, McDonald \harvardand\
+  Stuetzle}{1992}{surface}
+Hoppe, H., DeRose, T., Duchamp, T., McDonald, J. \harvardand\ Stuetzle, W.
+  \harvardyearleft 1992\harvardyearright .
+\newblock Surface reconstruction from unorganized points, {\em SIGGRAPH '92:
+  Proceedings of the 19th annual conference on Computer graphics and
+  interactive techniques}, ACM, New York, NY, USA, pp.~71--78.
+
+\harvarditem{Jarvis}{1977}{hull}
+Jarvis, R.~A.  \harvardyearleft 1977\harvardyearright .
+\newblock Computing the shape hull of points in the plane, {\em Proceedings of
+  the IEEE Computing Society Conference on Pattern Recognition and Image
+  Processing}, IEEE, New York, NY, USA, pp.~231--241.
+
+\harvarditem{Klein \harvardand\ Murray}{2007}{ptam}
+Klein, G. \harvardand\ Murray, D.  \harvardyearleft 2007\harvardyearright .
+\newblock Parallel tracking and mapping for small {AR} workspaces, {\em
+  Proceedings of the Sixth {IEEE} and {ACM} International Symposium on Mixed
+  and Augmented Reality {(ISMAR'07)}}, Nara, Japan.
+
+\harvarditem{Leonard \harvardand\ Durrant-Whyte}{1991}{slam}
+Leonard, J.~J. \harvardand\ Durrant-Whyte, H.  \harvardyearleft
+  1991\harvardyearright .
+\newblock Simultaneous map building and localization for an autonomous mobile
+  robot, {\em IEEE International Conference on Intelligent Robot Systems},
+  Osaka, Japan.
+
+\harvarditem{Microsoft}{December 2009}{photosynth}
+Microsoft  \harvardyearleft December 2009\harvardyearright .
+\newblock Photosynth.
+\newline\harvardurl{http://photosynth.net/about.aspx}
+
+\harvarditem{Niem \harvardand\ Broszio}{1995}{texmultiview}
+Niem, W. \harvardand\ Broszio, H.  \harvardyearleft 1995\harvardyearright .
+\newblock Mapping texture from multiple camera views onto 3d-object models for
+  computer animation, {\em in Proceedings of the International Workshop on
+  Stereoscopic and Three Dimensional Imaging}, pp.~99--105.
+
+\harvarditem[Pan et~al.]{Pan, Reitmayr \harvardand\ Drummond}{2009}{proforma}
+Pan, Q., Reitmayr, G. \harvardand\ Drummond, T.  \harvardyearleft
+  2009\harvardyearright .
+\newblock {P}ro{FORMA}: {P}robabilistic {F}eature-based {O}n-line {R}apid
+  {M}odel {A}cquisition, {\em Proc. 20th British Machine Vision Conference
+  (BMVC)}, London.
+
+\harvarditem[Pedersini et~al.]{Pedersini, Tubaro \harvardand\
+  Rocca}{1993}{camcalib}
+Pedersini, F., Tubaro, S. \harvardand\ Rocca, F.  \harvardyearleft
+  1993\harvardyearright .
+\newblock Camera calibration and error analysis. an application to binocular
+  and trinocular stereoscopic system, {\em in Proceedings of the 4th
+  International Workshop on Time-verying Image Processing and Moving Object
+  Recognition}, Florence, Italy.
+
+\harvarditem{Scharstein \harvardand\ Szeliski}{2003}{structlight}
+Scharstein, D. \harvardand\ Szeliski, R.  \harvardyearleft
+  2003\harvardyearright .
+\newblock High-accuracy stereo depth maps using structured light, {\em CVPR
+  '03: Proceedings of 2003 IEEE Computer Society Conference on Computer Vision
+  and Pattern Recognition (CVPR 2003)}, Madison, WI, USA, pp.~195--202.
+
+\harvarditem{Thorm\"alen}{2006}{voodoo}
+Thorm\"alen, T.  \harvardyearleft 2006\harvardyearright .
+\newblock {\em Zuverl\"assige Sch\"atzung der Kamerabewegung aus einer
+  Bildfolge}, PhD thesis, University of Hannover.
+
+\harvarditem[van~den Hengel et~al.]{van~den Hengel, Dick, Thorm\"{a}hlen, Ward
+  \harvardand\ Torr}{2007}{videotrace}
+van~den Hengel, A., Dick, A., Thorm\"{a}hlen, T., Ward, B. \harvardand\ Torr,
+  P. H.~S.  \harvardyearleft 2007\harvardyearright .
+\newblock Videotrace: rapid interactive scene modelling from video, {\em
+  SIGGRAPH '07: ACM SIGGRAPH 2007 papers}, ACM, New York, NY, USA, p.~86.
+
+\harvarditem[Wong et~al.]{Wong, Martin, Chudak, Lasky, McKinney, Simon-Parker,
+  Wolff, Cutting, Uchida, Kacyra \harvardand\ Kacyra}{1999}{lidar}
+Wong, E., Martin, D., Chudak, D., Lasky, A., McKinney, G., Simon-Parker, L.,
+  Wolff, B., Cutting, G., Uchida, W., Kacyra, B. \harvardand\ Kacyra, B.
+  \harvardyearleft 1999\harvardyearright .
+\newblock Lidar: reality capture, {\em SIGGRAPH '99: ACM SIGGRAPH 99 Electronic
+  art and animation catalog}, ACM, New York, NY, USA, p.~158.
+
+\end{thebibliography}
