@@ -33,6 +33,10 @@ void AIUnit::removeFromWorld( btDynamicsWorld* w ) {
     delete boxBody;
 };
 
+int AIUnit::getType() {
+    return AIUnit::type;
+};
+
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
 

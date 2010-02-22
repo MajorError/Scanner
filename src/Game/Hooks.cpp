@@ -4,6 +4,7 @@
 #include "WorldMap.h"
 #include "AIUnit.h"
 #include "Director.h"
+#include "GameObject.h"
 #include <btBulletDynamicsCommon.h>
 #include <TooN/TooN.h>
 
@@ -72,10 +73,31 @@ void tick::callback( btDynamicsWorld *world, btScalar timeStep ) {
     int numManifolds = world->getDispatcher()->getNumManifolds();
     for (int i = 0; i < numManifolds; i++ ) {
         btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal( i );
-        btCollisionObject* body1 = static_cast<btCollisionObject*>( contactManifold->getBody0() );
-        btCollisionObject* body2 = static_cast<btCollisionObject*>( contactManifold->getBody1() );
+        GameObject* o1 = static_cast<GameObject*>( static_cast<btCollisionObject*>(
+                contactManifold->getBody0() )->getUserPointer() );
+        GameObject* o2 = static_cast<GameObject*>( static_cast<btCollisionObject*>(
+                contactManifold->getBody1() )->getUserPointer() );
+
+        if ( o1 == NULL || o2 == NULL )
+            continue;
+        
         AIUnit* ai = NULL;
         Projectile* p = NULL;
+        if ( o1->getType() == AIUnit::type )
+            ai = static_cast<AIUnit*>( o1 );
+        else if ( o1->getType() == Projectile::type )
+            p = static_cast<Projectile*>( o1 );
+
+        if ( o2->getType() == AIUnit::type )
+            ai = static_cast<AIUnit*>( o1 );
+        else if ( o2->getType() == Projectile::type )
+            p = static_cast<Projectile*>( o1 );
+
+        if ( ai == NULL || p == NULL )
+            continue;
+
+        // We have a Projectile -> AI collision
+        commandList::exec( "text.draw BOOOOOM" );
     }
 };
 

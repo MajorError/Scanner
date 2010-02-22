@@ -32,6 +32,10 @@ void Projectile::removeFromWorld( btDynamicsWorld* w ) {
     delete ballBody;
 };
 
+int Projectile::getType() {
+    return Projectile::type;
+};
+
 void Projectile::tick() {
     btTransform trans;
     ballBody->getMotionState()->getWorldTransform( trans );

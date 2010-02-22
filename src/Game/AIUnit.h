@@ -4,11 +4,12 @@
 
 #include "AStarSearch.h"
 #include "WorldMap.h"
+#include "GameObject.h"
 #include <TooN/TooN.h>
 
 using namespace TooN;
 
-class AIUnit {
+class AIUnit : public GameObject {
 public:
     AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z );
     virtual ~AIUnit();
@@ -23,6 +24,7 @@ public:
     void removeFromWorld( btDynamicsWorld* w );
 
     static int type;
+    virtual int getType();
 private:
     int currTick, lastNode;
     double xDir, yDir, zDir;

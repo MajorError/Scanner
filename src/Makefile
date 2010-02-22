@@ -38,6 +38,7 @@ OBJECTS=	main.o\
 		Game/WorldMap.o\
 		Game/GameFactory.o\
 		Game/GameRenderer.o\
+		Game/GameObject.o\
 		Game/AStarSearch.o\
 		Game/AIUnit.o\
 		Game/Projectile.o\

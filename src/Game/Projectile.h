@@ -4,8 +4,9 @@
 
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
+#include "GameObject.h"
 
-class Projectile {
+class Projectile : public GameObject {
 public:
     Projectile( btDynamicsWorld* w, double x, double y, double z );
     virtual ~Projectile();
@@ -17,6 +18,7 @@ public:
     void removeFromWorld( btDynamicsWorld* w );
 
     static int type;
+    virtual int getType();
 private:
     double xPos, yPos, zPos;
     btRigidBody* ballBody;
