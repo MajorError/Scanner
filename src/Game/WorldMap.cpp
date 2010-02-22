@@ -1,9 +1,9 @@
 
 #include "WorldMap.h"
-#include "AIUnit.h"
 #include <limits>
 #include <iostream>
 #include <vector>
+#include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 
 
 WorldMap::WorldMap() {
@@ -16,12 +16,14 @@ void WorldMap::addWaypoint( Waypoint* w ) {
     waypoints.push_back( w );
 };
 
-void WorldMap::setTraversable( Waypoint* from, Waypoint* to ) {
+void WorldMap::setTraversable( Waypoint* from, Waypoint* to, bool bidirectional ) {
     double d = (*from) - to;
     from->traversable.push_back( to );
     from->distances.push_back( d );
-    to->traversable.push_back( from );
-    to->distances.push_back( d );
+    if ( bidirectional ) {
+        to->traversable.push_back( from );
+        to->distances.push_back( d );
+    }
 };
 
 Waypoint* WorldMap::findNearest( double x, double y, double z ) {
@@ -36,7 +38,7 @@ Waypoint* WorldMap::findNearest( double x, double y, double z ) {
 
 Waypoint* WorldMap::findNearest( Waypoint* p ) {
     double bestDistance = numeric_limits<double>::max();
-    Waypoint* best = NULL;
+    Waypoint* best = waypoints.front();
     for( list<Waypoint*>::iterator curr = waypoints.begin(); curr != waypoints.end(); curr++ ) {
         if ( (*curr) == p )
             return p;
@@ -59,22 +61,8 @@ bool WorldMap::toTidy( const Waypoint* p ) {
     cerr << "Delete " << p << endl;
     delete p;
     return true;
-}
-
-void WorldMap::tickAll() {
-    for( vector<AIUnit*>::iterator curr = aiUnits.begin(); curr != aiUnits.end(); curr++ ) {
-        (*curr)->tick();
-    }
-};
-
-void WorldMap::addAI() {
-    aiUnits.push_back( new AIUnit( this ) );
 };
 
 list<Waypoint*>& WorldMap::getWaypoints() {
     return waypoints;
-};
-
-vector<AIUnit*>& WorldMap::getUnits() {
-    return aiUnits;
 };

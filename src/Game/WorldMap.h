@@ -5,10 +5,9 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <btBulletDynamicsCommon.h>
 
 using namespace std;
-
-class AIUnit; // forward decl
 
 struct Waypoint {
     double x, y, z;
@@ -28,18 +27,14 @@ public:
     virtual ~WorldMap();
 
     void addWaypoint( Waypoint* w );
-    void setTraversable( Waypoint* from, Waypoint* to );
+    void setTraversable( Waypoint* from, Waypoint* to, bool bidirectional=true );
     void tidyWaypoints();
     static bool toTidy( const Waypoint* p );
     Waypoint* findNearest( double x, double y, double z );
     Waypoint* findNearest( Waypoint* p );
-    void tickAll();
-    void addAI();
     list<Waypoint*>& getWaypoints();
-    vector<AIUnit*>& getUnits();
 protected:
     list<Waypoint*> waypoints;
-    vector<AIUnit*> aiUnits;
     /*double thisIsInteresting;
     double soIsthis;
     string whatAboutThis;*/
