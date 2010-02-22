@@ -27,6 +27,11 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         init = false;
         clock.reset();
     }
+
+    stringstream cmd;
+    cmd << "text.draw Score: " << director->getScore();
+    commandList::exec( cmd.str() );
+
     // Step simulation according to actual time passed - should bypass framerate issues
     double dt = clock.getTimeMilliseconds();
     clock.reset();
@@ -57,6 +62,7 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         if ( u->getZ() < -100 ) {
             u->removeFromWorld( dynamicsWorld );
             delete u;
+            director->registerDeath();
         } else {
             validUnits.push_back( u );
         }
@@ -97,7 +103,7 @@ void tick::callback( btDynamicsWorld *world, btScalar timeStep ) {
             continue;
 
         // We have a Projectile -> AI collision
-        commandList::exec( "text.draw BOOOOOM" );
+        director->registerImpact();
     }
 };
 

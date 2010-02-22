@@ -6,7 +6,7 @@
 
 using namespace GVars3;
 
-Director::Director( btDynamicsWorld* w, WorldMap* m ) : dynamicsWorld( w ), map( m ), currTick( 0 ), lastSpawn( 20000 ) {
+Director::Director( btDynamicsWorld* w, WorldMap* m ) : dynamicsWorld( w ), map( m ), currTick( 0 ), lastSpawn( 20000 ), score( 0 ) {
     // Find leftmost and rightmost points;
     Waypoint* leftMost = NULL;
     Waypoint* rightMost = NULL;
@@ -55,12 +55,29 @@ Projectile* Director::addProjectile( btDynamicsWorld* w, double x, double y, dou
     return a;
 };
 
+
+void Director::registerImpact() {
+    score += 10;
+};
+
+void Director::registerDeath() {
+    score += 100;
+};
+
+void Director::registerAIWin() {
+    score -= 300;
+};
+
+int Director::getScore() {
+    return score;
+};
+
 void Director::tick() {
     currTick++;
     if ( currTick % 1000 == 0 )
         cerr << currTick << endl;
     for( vector<AIUnit*>::iterator curr = aiUnits.begin(); curr != aiUnits.end(); curr++ )
-        (*curr)->tick();
+        (*curr)->tick( this );
     for( vector<Projectile*>::iterator curr = projectiles.begin(); curr != projectiles.end(); curr++ )
         (*curr)->tick();
     

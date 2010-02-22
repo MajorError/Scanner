@@ -1,4 +1,5 @@
 #include "AIUnit.h"
+#include "Director.h"
 #include <gvars3/gvars3.h>
 #include <cmath>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
@@ -38,7 +39,7 @@ int AIUnit::getType() {
 };
 
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
-void AIUnit::tick() {
+void AIUnit::tick( Director* d ) {
 
     currTick++;
 
@@ -75,6 +76,7 @@ void AIUnit::tick() {
             btTransform death;
             death.getOrigin().setZ( -500 );
             boxBody->setWorldTransform( death );
+            d->registerAIWin();
             return;
         }
         //cerr << "Next stop = " << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << " -> " << endl;

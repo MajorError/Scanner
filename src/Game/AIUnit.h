@@ -9,11 +9,13 @@
 
 using namespace TooN;
 
+class Director; // forward decl
+
 class AIUnit : public GameObject {
 public:
     AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z );
     virtual ~AIUnit();
-    void tick();
+    void tick( Director* d );
     double getX();
     double getY();
     double getZ();

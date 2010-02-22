@@ -18,6 +18,10 @@ public:
     AIUnit* addAI( btDynamicsWorld* w, double x, double y, double z );
     vector<Projectile*>& getProjectiles();
     Projectile* addProjectile( btDynamicsWorld* w, double x, double y, double z );
+    void registerImpact();
+    void registerDeath();
+    void registerAIWin();
+    int getScore();
 private:
     btDynamicsWorld* dynamicsWorld;
     WorldMap* map;
@@ -27,6 +31,7 @@ private:
     int currTick;
     int lastSpawn;
     vector<Waypoint*> startPoints, endPoints;
+    int score;
 };
 
 #endif	/* _DIRECTOR_H */
