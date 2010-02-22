@@ -21,7 +21,8 @@ public:
     void navigateTo( Waypoint* goal );
     void push( double x, double y, double z );
 private:
-    double xDir, yDir, zDir, velocity;
+    int currTick, lastNode;
+    double xDir, yDir, zDir;
     double xPos, yPos, zPos;
     double rotAngle;
     Vector<3> rotAxis;

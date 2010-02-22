@@ -38,7 +38,7 @@ Waypoint* WorldMap::findNearest( double x, double y, double z ) {
 
 Waypoint* WorldMap::findNearest( Waypoint* p ) {
     double bestDistance = numeric_limits<double>::max();
-    Waypoint* best = NULL;
+    Waypoint* best = waypoints.front();
     for( list<Waypoint*>::iterator curr = waypoints.begin(); curr != waypoints.end(); curr++ ) {
         if ( (*curr) == p )
             return p;

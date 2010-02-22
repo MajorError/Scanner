@@ -8,7 +8,7 @@ using namespace GVars3;
 btCollisionShape* AIUnit::boxShape;
 
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
-: velocity( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
+: currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
     btVector3 inertia( 1, 1, 1 );
     if ( AIUnit::boxShape == NULL ) {
         double ds = GV3::get<double>( "ptSize", 0.05 );
@@ -28,6 +28,8 @@ AIUnit::~AIUnit() {
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
 
+    currTick++;
+
     btTransform trans = boxBody->getWorldTransform();
     xPos = trans.getOrigin().getX();
     yPos = trans.getOrigin().getY();
@@ -43,12 +45,12 @@ void AIUnit::tick() {
     if ( path.size() < 1 )
         return;
 
-    velocity = GV3::get<double>( "aiSpeed", 0.001 );
     double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) );
     //cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
             && ABSDIFF( path.front()->y, yPos ) < tolerance
             && ABSDIFF( path.front()->z, zPos ) < tolerance ) {
+        lastNode = currTick;
         //cerr << "\tPath Point Reached: ";
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
@@ -57,17 +59,19 @@ void AIUnit::tick() {
         // Check if we've reached our goal
         if ( path.size() == 0 ) {
             cerr << "AI reached goal" << endl;
-            velocity = 0;
             return;
         }
         //cerr << "Next stop = " << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << " -> " << endl;
     }
+    // Replan if we haven't seen a node recently
+    if ( currTick - lastNode > GV3::get<int>( "aiPatience", 500 ) )
+        navigateTo( path.back() );
     // Set up new {x,y,z}Dir
     xDir = path.front()->x - xPos;
     yDir = path.front()->y - yPos;
     zDir = path.front()->z - zPos;
-    // Normalise the vector
-    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / velocity ;
+    // Normalise the vector, apply velocity
+    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / GV3::get<double>( "aiSpeed", 0.001 ) ;
     xDir /= div;
     yDir /= div;
     zDir /= div;

@@ -4,8 +4,8 @@
 # Edit the lines below to point to any needed include and link paths
 # Or to change the compiler's optimization flags
 CC = g++
-COMPILEFLAGS = -D_LINUX -D_REENTRANT -Wall  -O3 -march=nocona -msse3
-LINKFLAGS = -lGVars3 -lcvd -lBulletDynamics -lBulletCollision -lLinearMath
+COMPILEFLAGS = -D_LINUX -D_REENTRANT -Wall  -O2 -march=nocona -msse3 -g3
+LINKFLAGS = -lGVars3 -lcvd -lBulletDynamics -lBulletCollision -lLinearMath -g3
 
 # Edit this line to change video source
 VIDEOSOURCE = VideoSource_Linux_DV.o
