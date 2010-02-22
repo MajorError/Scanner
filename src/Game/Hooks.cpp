@@ -23,8 +23,8 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         return;
     }
     // Reset clock on first call, otherwise we do a HUGE physics sim at the start
-    if ( init ) {
-        init = false;
+    if ( !init ) {
+        init = true;
         clock.reset();
     }
 
