@@ -23,7 +23,12 @@ Projectile::Projectile( btDynamicsWorld* w, double x, double y, double z )
 }
 
 Projectile::~Projectile() {
-}
+};
+
+void Projectile::removeFromWorld( btDynamicsWorld* w ) {
+    w->removeRigidBody( ballBody );
+    delete ballBody;
+};
 
 void Projectile::tick() {
     btTransform trans;

@@ -20,6 +20,7 @@ public:
     Vector<3> getRotationAxis();
     void navigateTo( Waypoint* goal );
     void push( double x, double y, double z );
+    void removeFromWorld( btDynamicsWorld* w );
 private:
     int currTick, lastNode;
     double xDir, yDir, zDir;

@@ -25,6 +25,11 @@ AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 AIUnit::~AIUnit() {
 };
 
+void AIUnit::removeFromWorld( btDynamicsWorld* w ) {
+    w->removeRigidBody( boxBody );
+    delete boxBody;
+};
+
 #define ABSDIFF( a, b ) (a > b ? a - b : b - a)
 void AIUnit::tick() {
 

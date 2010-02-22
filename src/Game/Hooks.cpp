@@ -30,6 +30,41 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     double dt = clock.getTimeMilliseconds();
     clock.reset();
     dynamicsWorld->stepSimulation( dt * 0.001f, 100000000, btScalar(1.)/btScalar(600.) );
+    
+    // Cull any objects that have fallen off the bottom of the world
+    vector<Projectile*> validProjectiles;
+    validProjectiles.reserve( director->getProjectiles().size() );
+    while( !director->getProjectiles().empty() ) {
+        Projectile* p = director->getProjectiles().back();
+        if ( p->getZ() < -100 ) {
+            p->removeFromWorld( dynamicsWorld );
+            delete p;
+        } else {
+            validProjectiles.push_back( p );
+        }
+        director->getProjectiles().pop_back();
+    }
+    while( !validProjectiles.empty() ) {
+        director->getProjectiles().push_back( validProjectiles.back() );
+        validProjectiles.pop_back();
+    }
+
+    vector<AIUnit*> validUnits;
+    validUnits.reserve( director->getUnits().size() );
+    while( !director->getUnits().empty() ) {
+        AIUnit* u = director->getUnits().back();
+        if ( u->getZ() < -100 ) {
+            u->removeFromWorld( dynamicsWorld );
+            delete u;
+        } else {
+            validUnits.push_back( u );
+        }
+        director->getUnits().pop_back();
+    }
+    while( !validProjectiles.empty() ) {
+        director->getUnits().push_back( validUnits.back() );
+        validUnits.pop_back();
+    }
 };
 
 /*inline void tick::cullDeadObjects() {
