@@ -71,6 +71,10 @@ void AIUnit::tick() {
         // Check if we've reached our goal
         if ( path.size() == 0 ) {
             cerr << "AI reached goal" << endl;
+            // Drop off the planet, so that we get culled
+            btTransform death;
+            death.getOrigin().setZ( -500 );
+            boxBody->setWorldTransform( death );
             return;
         }
         //cerr << "Next stop = " << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << " -> " << endl;

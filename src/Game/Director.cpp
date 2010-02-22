@@ -6,7 +6,7 @@
 
 using namespace GVars3;
 
-Director::Director( btDynamicsWorld* w, WorldMap* m ) : dynamicsWorld( w ), map( m ), currTick( 0 ), lastSpawn( 0 ) {
+Director::Director( btDynamicsWorld* w, WorldMap* m ) : dynamicsWorld( w ), map( m ), currTick( 0 ), lastSpawn( 20000 ) {
     // Find leftmost and rightmost points;
     Waypoint* leftMost = NULL;
     Waypoint* rightMost = NULL;
@@ -57,6 +57,8 @@ Projectile* Director::addProjectile( btDynamicsWorld* w, double x, double y, dou
 
 void Director::tick() {
     currTick++;
+    if ( currTick % 1000 == 0 )
+        cerr << currTick << endl;
     for( vector<AIUnit*>::iterator curr = aiUnits.begin(); curr != aiUnits.end(); curr++ )
         (*curr)->tick();
     for( vector<Projectile*>::iterator curr = projectiles.begin(); curr != projectiles.end(); curr++ )
@@ -71,7 +73,16 @@ void Director::tick() {
         for( vector<Waypoint*>::iterator curr = startPoints.begin(); curr != startPoints.end() && wpID >= 0; curr++, wpID-- )
             target = *curr;
         if ( target != NULL ) {
-            AIUnit* a = addAI( dynamicsWorld, target->x, target->y, target->z+2 );
+            double x = target->x;
+            double y = target->y;
+            double z = target->z+0.5;
+            if ( target->traversable.empty() ) {
+                x += 0.1;
+            } else {
+               x += (target->traversable.back()->x - target->x) * 0.25;
+               y += (target->traversable.back()->y - target->y) * 0.25;
+            }
+            AIUnit* a = addAI( dynamicsWorld, x, y, z );
             // Choose a goal point
             target = NULL;
             wpID = ((double)rand() / (double)RAND_MAX) * endPoints.size();
