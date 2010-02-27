@@ -674,3 +674,51 @@ namespace code2 {
         cerr << "Loaded from " << filename << endl;
     }
 }
+
+namespace obj1 {
+    MK_GUI_COMMAND(obj, save,)
+    void obj::save( string filename ) {
+        if ( filename.length() < 1 )
+            filename = "scanner_model";
+        // Write the OBJ file first
+        ofstream obj;
+        obj.open( (filename + ".obj").c_str(), ios::out | ios::trunc );
+        obj << "#" << endl
+            << "# File describes " << environment->getPoints().size() 
+                    << " vertices and " << environment->getFaces().size()
+                    << " faces." << endl
+            << "#" << endl << endl
+            << "# Vertices:" << endl;
+        map<Point*, int> vtxIndex;
+        int i = 1; // OBJ uses 1-based indexing
+        for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                curr != environment->getPoints().end(); curr++, i++ ) {
+            vtxIndex[*curr] = i;
+            obj << "v " << (*curr)->getPosition() << endl;
+        }
+        obj << endl
+            << "# Texture Co-Ordinates:" << endl;
+        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++ ) {
+            obj << "vt " << (*curr)->getP1Coord( environment->getCamera() ) << endl
+                << "vt " << (*curr)->getP2Coord( environment->getCamera() ) << endl
+                << "vt " << (*curr)->getP3Coord( environment->getCamera() ) << endl;
+        }
+        obj << endl
+            << "# Faces:" << endl;
+        i = 0; // Face index, to calculate which texture co-ord to link to
+        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++, i++ ) {
+            obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/ "
+                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/ "
+                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << endl;
+        }
+        obj.close();
+
+        // Now the material database
+
+        // Finally, serialise textures as TGA images
+
+        cerr << "File written to " << filename << endl;
+    }
+}
