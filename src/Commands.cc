@@ -770,20 +770,20 @@ namespace obj1 {
     };
 
     typedef struct {
-        byte  idSize;           // size of ID field that follows header
-        byte  hasColourMap;     // type of colour map 0=none, 1=has palette
-        byte  imageType;        // type of image 0=none,1=indexed,2=rgb,3=grey,+8=rle packed
+        byte idSize;           // size of ID field that follows header
+        byte hasColourMap;     // type of colour map 0=none, 1=has palette
+        byte imageType;        // type of image 0=none,1=indexed,2=rgb,3=grey,+8=rle packed
 
-        short colourMapStart;   // first colour map entry in palette
-        short colourMapSize;    // number of colours in palette
-        byte  colourMapBits;    // number of bits per palette entry 15,16,24,32
+        byte colourMapStart;   // first colour map entry in palette
+        short int colourMapSize;    // number of colours in palette
+        byte colourMapBits;    // number of bits per palette entry 15,16,24,32
 
-        short xOrigin;          // image x origin
-        short yOrigin;          // image y origin
-        short width;            // image width in pixels
-        short height;           // image height in pixels
-        byte  bpp;              // image bits per pixel 8,16,24,32
-        byte  descriptor;       // image descriptor bits (vh flip bits)
+        short int xOrigin;      // image x origin
+        short int yOrigin;      // image y origin
+        short int width;        // image width in pixels
+        short int height;       // image height in pixels
+        byte bpp;              // image bits per pixel 8,16,24,32
+        byte descriptor;       // image descriptor bits (vh flip bits)
     } TGAHeader;
 
     void obj::saveTGA( string filename ) {
@@ -794,7 +794,7 @@ namespace obj1 {
 
         head.colourMapStart = 0;
         head.colourMapSize = 0;
-        head.colourMapBits = 0;
+        head.colourMapBits = 24;
 
         head.xOrigin = 0;
         head.yOrigin = 0;
@@ -803,6 +803,7 @@ namespace obj1 {
         head.width = environment->getSceneSize()[0];
         head.height = environment->getSceneSize()[1] * environment->getFaces().size();
         head.bpp = 24; // This is now a 24-bit RGB bitmap
+        head.descriptor = 0;
 
         FILE *tga = fopen( (filename+".tga").c_str(), "wb" );
 
