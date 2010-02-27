@@ -676,18 +676,35 @@ namespace code2 {
 }
 
 namespace obj1 {
-    MK_GUI_COMMAND(obj, save,)
+    MK_GUI_COMMAND(obj, save, void saveOBJ( string filename ); \
+        void saveMTL( string filename ); void saveTGA( string filename );)
     void obj::save( string filename ) {
         if ( filename.length() < 1 )
             filename = "scanner_model";
-        // Write the OBJ file first
+        
+        // Write the geometry to an OBJ file first
+        saveOBJ( filename );
+        // Now the material database
+        saveMTL( filename );
+        // Finally, serialise textures as TGA images
+        saveTGA( filename );
+
+        cerr << "File written to " << filename << endl;
+    }
+
+    void obj::saveOBJ( string filename ) {
         ofstream obj;
         obj.open( (filename + ".obj").c_str(), ios::out | ios::trunc );
         obj << "#" << endl
-            << "# File describes " << environment->getPoints().size() 
+            << "# File describes " << environment->getPoints().size()
                     << " vertices and " << environment->getFaces().size()
                     << " faces." << endl
-            << "#" << endl << endl
+            << "#" << endl
+            << endl
+            << "# Material library links:" << endl
+            << "mtllib " << filename << ".mtl" << endl
+            << "usemtl TextureMapped" << endl
+            << endl
             << "# Vertices:" << endl;
         map<Point*, int> vtxIndex;
         int i = 1; // OBJ uses 1-based indexing
@@ -714,11 +731,27 @@ namespace obj1 {
                         << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << endl;
         }
         obj.close();
+    };
 
-        // Now the material database
-
-        // Finally, serialise textures as TGA images
-
-        cerr << "File written to " << filename << endl;
-    }
+    void obj::saveMTL( string filename ) {
+        ofstream mtl;
+        mtl.open( (filename + ".obj").c_str(), ios::out | ios::trunc );
+        mtl << "# Material database for " << filename << ".obj" << endl
+            << "newmtl TextureMapped" << endl
+            << "  Ka 1.000 1.000 1.000" << endl // Ambient
+            << "  Kd 1.000 1.000 1.000" << endl // Diffuse
+            << "  Ks 0.000 0.000 0.000" << endl // Specular
+            << endl
+            << "  d 1.0" << endl << "  Tr 1.0" << endl // Alpha transparency
+            << "  illum 2" << endl // Illumination model
+            << "  map_Ka " << filename << ".tga"
+            << "  map_Kd " << filename << ".tga"
+            << "  map_Ks " << filename << ".tga"
+            << endl;
+        mtl.close();
+    };
+    
+    void obj::saveTGA( string filename ) {
+        // TODO
+    };
 }
