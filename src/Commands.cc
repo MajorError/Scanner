@@ -713,7 +713,6 @@ namespace obj1 {
             << endl
             << "# Material library links:" << endl
             << "mtllib " << filename << ".mtl" << endl
-            << "usemtl TextureMapped" << endl
             << endl
             << "# Vertices:" << endl;
         map<Point*, int> vtxIndex;
@@ -732,26 +731,26 @@ namespace obj1 {
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++ ) {
             Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() ) + makeVector( 0, i );
-            coord[0] = 1 - coord[0];
             coord[1] /= nf;
             obj << "vt " << coord << endl;
             coord = (*curr)->getP2Coord( environment->getCamera() ) + makeVector( 0, i );
-            coord[0] = 1 - coord[0];
             coord[1] /= nf;
             obj << "vt " << coord << endl;
             coord = (*curr)->getP3Coord( environment->getCamera() ) + makeVector( 0, i );
-            coord[0] = 1 - coord[0];
             coord[1] /= nf;
             obj << "vt " << coord << endl;
         }
         obj << endl
-            << "# Faces:" << endl;
+            << "# Faces:" << endl
+            << "g " << filename << endl
+            << "usemtl TextureMapped" << endl;
         i = 0; // Face index, to calculate which texture co-ord to link to
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++, i++ ) {
-            obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/ "
-                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/ "
-                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << endl;
+            // Not currently storing vertex normals
+            obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << " "
+                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << " "
+                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << endl;
         }
         obj.close();
     };
@@ -767,10 +766,8 @@ namespace obj1 {
             << endl
             << "  d 1.0" << endl << "  Tr 1.0" << endl // Alpha transparency
             << "  illum 2" << endl // Illumination model
-            << "  map_Ka " << filename << ".tga"
-            << "  map_Kd " << filename << ".tga"
-            << "  map_Ks " << filename << ".tga"
-            << endl;
+            << "  map_Ka " << filename << ".tga" << endl
+            << "  map_Kd " << filename << ".tga" << endl;
         mtl.close();
     };
 
@@ -821,9 +818,8 @@ namespace obj1 {
         fwrite( &head, sizeof( TGAHeader ), 1, tga );
 
         // Now, write images for each of the poly faces
-        for( std::set<PolyFace*>::reverse_iterator curr = environment->getFaces().rend();
-                curr != environment->getFaces().rbegin(); curr-- ) {
-            cerr << "Iterate pxs @ " << *curr << endl;
+        for( std::set<PolyFace*>::reverse_iterator curr = environment->getFaces().rbegin();
+                curr != environment->getFaces().rend(); curr++ ) {
             for( Image< Rgb<byte> >::iterator px = (*curr)->getTexture().end()-1;
                     px >= (*curr)->getTexture().begin(); px-- ) {
                 fwrite( &(px->blue), sizeof( byte ), 1, tga );
