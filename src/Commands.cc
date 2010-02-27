@@ -676,6 +676,16 @@ namespace code2 {
 }
 
 namespace obj1 {
+    /*
+     * Note here that we save three files, with the same basename; an OBJ file
+     *   for the geometry, an MTL file to define our texture mapping and how
+     *   we want it to look, and a TGA image of the actual texture data.
+     *
+     * As texture is stored as up to getFaces().size() video frames in memory,
+     *   they will be spliced together one after another in the TGA image,
+     *   vertically. The texture co-ordinates in the OBJ file must assume
+     *   this to be the case and normalise accordingly.
+     */
     MK_GUI_COMMAND(obj, save, void saveOBJ( string filename ); \
         void saveMTL( string filename ); void saveTGA( string filename );)
     void obj::save( string filename ) {
@@ -715,11 +725,19 @@ namespace obj1 {
         }
         obj << endl
             << "# Texture Co-Ordinates:" << endl;
+        i = 0; // Face index, to calculate texture offset in TGA file
+        int nf = environment->getFaces().size(); // to scale the texture co-ords
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++ ) {
-            obj << "vt " << (*curr)->getP1Coord( environment->getCamera() ) << endl
-                << "vt " << (*curr)->getP2Coord( environment->getCamera() ) << endl
-                << "vt " << (*curr)->getP3Coord( environment->getCamera() ) << endl;
+            Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() ) + makeVector( 0, i );
+            coord[1] /= nf;
+            obj << "vt " << coord << endl;
+            coord = (*curr)->getP2Coord( environment->getCamera() ) + makeVector( 0, i );
+            coord[1] /= nf;
+            obj << "vt " << coord << endl;
+            coord = (*curr)->getP3Coord( environment->getCamera() ) + makeVector( 0, i );
+            coord[1] /= nf;
+            obj << "vt " << coord << endl;
         }
         obj << endl
             << "# Faces:" << endl;
@@ -735,7 +753,7 @@ namespace obj1 {
 
     void obj::saveMTL( string filename ) {
         ofstream mtl;
-        mtl.open( (filename + ".obj").c_str(), ios::out | ios::trunc );
+        mtl.open( (filename + ".mtl").c_str(), ios::out | ios::trunc );
         mtl << "# Material database for " << filename << ".obj" << endl
             << "newmtl TextureMapped" << endl
             << "  Ka 1.000 1.000 1.000" << endl // Ambient
@@ -750,8 +768,59 @@ namespace obj1 {
             << endl;
         mtl.close();
     };
-    
+
+    typedef struct {
+        byte  idSize;           // size of ID field that follows header
+        byte  hasColourMap;     // type of colour map 0=none, 1=has palette
+        byte  imageType;        // type of image 0=none,1=indexed,2=rgb,3=grey,+8=rle packed
+
+        short colourMapStart;   // first colour map entry in palette
+        short colourMapSize;    // number of colours in palette
+        byte  colourMapBits;    // number of bits per palette entry 15,16,24,32
+
+        short xOrigin;          // image x origin
+        short yOrigin;          // image y origin
+        short width;            // image width in pixels
+        short height;           // image height in pixels
+        byte  bpp;              // image bits per pixel 8,16,24,32
+        byte  descriptor;       // image descriptor bits (vh flip bits)
+    } TGAHeader;
+
     void obj::saveTGA( string filename ) {
-        // TODO
+        TGAHeader head;
+        head.idSize = 0;
+        head.hasColourMap = 0;
+        head.imageType = 2;
+
+        head.colourMapStart = 0;
+        head.colourMapSize = 0;
+        head.colourMapBits = 0;
+
+        head.xOrigin = 0;
+        head.yOrigin = 0;
+        // Ideally, we'd like to minimise the number of frames we save here
+        //   as there may be some duplicates... This can be a TODO for later!
+        head.width = environment->getSceneSize()[0];
+        head.height = environment->getSceneSize()[1] * environment->getFaces().size();
+        head.bpp = 24; // This is now a 24-bit RGB bitmap
+
+        FILE *tga = fopen( (filename+".tga").c_str(), "wb" );
+
+        if ( tga == NULL ) {
+            cerr << "ERROR: Couldn't open TGA file for writing (" << filename << ".tga)" << endl;
+            return;
+        }
+
+        // First, write the header we've built
+        fwrite( &head, sizeof( TGAHeader ), 1, tga );
+
+        // Now, write images for each of the poly faces
+        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++ ) {
+            fwrite( (*curr)->getTexture().data(), sizeof( byte ) * 4,
+                    (*curr)->getTexture().size()[0] * (*curr)->getTexture().size()[1], tga );
+        }
+
+        fclose( tga );
     };
 }
