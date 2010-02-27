@@ -12,8 +12,9 @@ btCollisionShape* Projectile::ballShape = NULL;
 
 Projectile::Projectile( btDynamicsWorld* w, double x, double y, double z )
 : xPos( x ), yPos( y ), zPos( z ) {
+    double ds = GV3::get<double>( "ptSize", 0.05 ) / 2;
     if ( Projectile::ballShape == NULL ) {
-        Projectile::ballShape = new btSphereShape( GV3::get<double>( "ptSize", 0.05 ) / 2 );
+        Projectile::ballShape = new btSphereShape( ds );
         btVector3 inertia( 0, 0, 0 );
         Projectile::ballShape->calculateLocalInertia( GV3::get<double>( "projectileMass", 0.4 ), inertia );
     }
@@ -21,6 +22,8 @@ Projectile::Projectile( btDynamicsWorld* w, double x, double y, double z )
     btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "projectileMass" ), ballMotionState, Projectile::ballShape );
     ballBody = new btRigidBody( ballRigidBodyCI );
     ballBody->setUserPointer( this );
+    ballBody->setCcdMotionThreshold( ds );
+    ballBody->setCcdSweptSphereRadius( 0.2f * ds );
     w->addRigidBody( ballBody );
 }
 

@@ -6,12 +6,13 @@
 #include "../ARPointRenderer.h"
 #include "WorldMap.h"
 #include "Director.h"
+#include "BulletDynamics/btBulletDynamicsCommon.h"
 
 using namespace TooN;
 
 class GameRenderer : public ARPointRenderer {
 public:
-    GameRenderer( WorldMap* m, Director* d, Environment* e );
+    GameRenderer( WorldMap* m, Director* d, btDynamicsWorld* dw, Environment* e );
     virtual ~GameRenderer();
     virtual void DrawStuff( SE3<> camera );
 
@@ -23,6 +24,7 @@ protected:
 private:
     WorldMap* map;
     Director* director;
+    btDynamicsWorld* dynamicsWorld;
 };
 
 #endif	/* _GAMERENDERER_H */

@@ -13,8 +13,8 @@ btCollisionShape* AIUnit::boxShape;
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
     btVector3 inertia( 1, 1, 1 );
+    double ds = GV3::get<double>( "ptSize", 0.05 );
     if ( AIUnit::boxShape == NULL ) {
-        double ds = GV3::get<double>( "ptSize", 0.05 );
         AIUnit::boxShape = new btBoxShape( btVector3( ds, ds, ds ) );
         AIUnit::boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
     }
@@ -23,6 +23,8 @@ AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
     
     boxBody = new btRigidBody( boxRigidBodyCI );
     boxBody->setUserPointer( this );
+    boxBody->setCcdMotionThreshold( ds );
+    boxBody->setCcdSweptSphereRadius( 0.2f * ds );
     w->addRigidBody( boxBody );
 };
 

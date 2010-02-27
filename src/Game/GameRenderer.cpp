@@ -5,7 +5,7 @@
 
 #define PI 3.14159265
 
-GameRenderer::GameRenderer( WorldMap* m, Director* d, Environment* e ) : ARPointRenderer( e ), map( m ), director( d ) {
+GameRenderer::GameRenderer( WorldMap* m, Director* d, btDynamicsWorld* dw, Environment* e ) : ARPointRenderer( e ), map( m ), director( d ), dynamicsWorld( dw ) {
 };
 
 GameRenderer::~GameRenderer() {
@@ -44,12 +44,17 @@ void GameRenderer::DrawStuff( SE3<> camera ) {
 
     glMatrixMode(GL_MODELVIEW);
 
-    DrawPolys();
+    if ( GV3::get<bool>( "drawModel", true ) )
+        DrawPolys();
     if ( GV3::get<bool>( "drawWaypoints", true ) )
         renderWaypointGraph();
-    renderUnits();
-    renderProjectiles();
-
+    if ( GV3::get<bool>( "drawUnits", true ) )
+        renderUnits();
+    if ( GV3::get<bool>( "drawProjectiles", true ) )
+        renderProjectiles();
+    if ( GV3::get<bool>( "physicsDebug", true ) )
+        dynamicsWorld->debugDrawWorld();
+    
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);

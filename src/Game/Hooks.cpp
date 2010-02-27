@@ -5,6 +5,7 @@
 #include "AIUnit.h"
 #include "Director.h"
 #include "GameObject.h"
+#include "GLDebugDrawer.h"
 #include <btBulletDynamicsCommon.h>
 #include <TooN/TooN.h>
 
@@ -129,7 +130,7 @@ namespace game {
         cerr << "Creating game director" << endl;
         tick::director = new Director( tick::dynamicsWorld, tick::map );
         cerr << "Creating renderer" << endl;
-        ARDriver::mGame = new GameRenderer( tick::map, tick::director, environment );
+        ARDriver::mGame = new GameRenderer( tick::map, tick::director, tick::dynamicsWorld, environment );
         GUI.ParseLine( "tick.enable" );
     }
 
@@ -151,6 +152,10 @@ namespace game {
         btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
         dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -10 ) ) );
         dynamicsWorld->setInternalTickCallback( tick::callback );
+
+        btIDebugDraw* drawer = new GLDebugDrawer;
+        drawer->setDebugMode( btIDebugDraw::DBG_MAX_DEBUG_DRAW_MODE );
+        dynamicsWorld->setDebugDrawer( drawer );
         
         return dynamicsWorld;
     };

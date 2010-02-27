@@ -6,6 +6,7 @@
 #include "../Edge.h"
 #include "gvars3/gvars3.h"
 #include "GameObject.h"
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
 using namespace GVars3;
 
@@ -100,6 +101,7 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
         terrainMesh->addTriangle( v0, v1, v2 );
     }
     btBvhTriangleMeshShape* terrainShape = new btBvhTriangleMeshShape( terrainMesh, true, aabbMin, aabbMax );
+    terrainShape->recalcLocalAabb();
     // Now that we have a shape, construct rigid body dynamics as above
     btDefaultMotionState* terrainMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ) );
     btRigidBody::btRigidBodyConstructionInfo terrainRigidBodyCI( 0, terrainMotionState, terrainShape );
