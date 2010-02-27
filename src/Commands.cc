@@ -726,16 +726,21 @@ namespace obj1 {
         obj << endl
             << "# Texture Co-Ordinates:" << endl;
         i = 0; // Face index, to calculate texture offset in TGA file
-        int nf = environment->getFaces().size(); // to scale the texture co-ords
+        int nf = environment->getFaces().size();
+        // Co-ords are scaled by nf in the y direction (stacked frames), and
+        // mirrored in the x direction (we write data backwards)
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++ ) {
             Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() ) + makeVector( 0, i );
+            coord[0] = 1 - coord[0];
             coord[1] /= nf;
             obj << "vt " << coord << endl;
             coord = (*curr)->getP2Coord( environment->getCamera() ) + makeVector( 0, i );
+            coord[0] = 1 - coord[0];
             coord[1] /= nf;
             obj << "vt " << coord << endl;
             coord = (*curr)->getP3Coord( environment->getCamera() ) + makeVector( 0, i );
+            coord[0] = 1 - coord[0];
             coord[1] /= nf;
             obj << "vt " << coord << endl;
         }
@@ -816,10 +821,15 @@ namespace obj1 {
         fwrite( &head, sizeof( TGAHeader ), 1, tga );
 
         // Now, write images for each of the poly faces
-        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
-                curr != environment->getFaces().end(); curr++ ) {
-            fwrite( (*curr)->getTexture().data(), sizeof( byte ) * 4,
-                    (*curr)->getTexture().size()[0] * (*curr)->getTexture().size()[1], tga );
+        for( std::set<PolyFace*>::reverse_iterator curr = environment->getFaces().rend();
+                curr != environment->getFaces().rbegin(); curr-- ) {
+            cerr << "Iterate pxs @ " << *curr << endl;
+            for( Image< Rgb<byte> >::iterator px = (*curr)->getTexture().end()-1;
+                    px >= (*curr)->getTexture().begin(); px-- ) {
+                fwrite( &(px->blue), sizeof( byte ), 1, tga );
+                fwrite( &(px->green), sizeof( byte ), 1, tga );
+                fwrite( &(px->red), sizeof( byte ), 1, tga );
+            }
         }
 
         fclose( tga );
