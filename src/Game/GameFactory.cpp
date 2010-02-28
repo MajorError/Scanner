@@ -94,15 +94,19 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
 
     // Place triangles on each of the polyfaces for regular colliders
     btTriangleMesh* terrainMesh = new btTriangleMesh;
+    double scale = GV3::get<double>( "physicsScale", 1000 );
     for( set<PolyFace*>::iterator curr = env->getFaces().begin(); curr != env->getFaces().end(); curr++ ) {
-        btVector3 v0( (*curr)->getP1()->getPosition()[0], (*curr)->getP1()->getPosition()[1], (*curr)->getP1()->getPosition()[2] );
-        btVector3 v1( (*curr)->getP2()->getPosition()[0], (*curr)->getP2()->getPosition()[1], (*curr)->getP2()->getPosition()[2] );
-        btVector3 v2( (*curr)->getP3()->getPosition()[0], (*curr)->getP3()->getPosition()[1], (*curr)->getP3()->getPosition()[2] );
-        terrainMesh->addTriangle( v0, v1, v2 );
+        Vector<3> p = scale * (*curr)->getP1()->getPosition();
+        btVector3 v1( p[0], p[1], p[2] );
+        p = scale * (*curr)->getP2()->getPosition();
+        btVector3 v2( p[0], p[1], p[2] );
+        p = scale * (*curr)->getP3()->getPosition();
+        btVector3 v3( p[0], p[1], p[2] );
+        terrainMesh->addTriangle( v1, v2, v3 );
     }
     btBvhTriangleMeshShape* terrainShape = new btBvhTriangleMeshShape( terrainMesh, true, aabbMin, aabbMax );
     terrainShape->recalcLocalAabb();
-    // Now that we have a shape, construct rigid body dynamics as above
+    // Now that we have a shape, construct rigid body dynamics
     btDefaultMotionState* terrainMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( 0, 0, 0 ) ) );
     btRigidBody::btRigidBodyConstructionInfo terrainRigidBodyCI( 0, terrainMotionState, terrainShape );
     btRigidBody* terrainRigidBody = new btRigidBody( terrainRigidBodyCI );

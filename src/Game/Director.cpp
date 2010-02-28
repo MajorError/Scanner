@@ -79,8 +79,8 @@ void Director::tick() {
     for( vector<Projectile*>::iterator curr = projectiles.begin(); curr != projectiles.end(); curr++ )
         (*curr)->tick();
     
-    if ( currTick - lastSpawn > GV3::get<int>( "spawnFreq", 500 )
-            && ((double)rand() / (double)RAND_MAX) < GV3::get<double>( "spawnProb", 0.005 ) ) {
+    if ( currTick - lastSpawn > GV3::get<int>( "spawnFreq", 5000 )
+            && ((double)rand() / (double)RAND_MAX) < GV3::get<double>( "spawnProb", 0.0001 ) ) {
         lastSpawn = currTick;
         // Spawn a new character
         Waypoint* target = NULL;

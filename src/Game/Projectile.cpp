@@ -13,19 +13,20 @@ btCollisionShape* Projectile::ballShape = NULL;
 Projectile::Projectile( btDynamicsWorld* w, double x, double y, double z )
 : xPos( x ), yPos( y ), zPos( z ) {
     double ds = GV3::get<double>( "ptSize", 0.05 ) / 2;
+    double scale = GV3::get<double>( "physicsScale" );
     if ( Projectile::ballShape == NULL ) {
-        Projectile::ballShape = new btSphereShape( ds );
+        Projectile::ballShape = new btSphereShape( scale * ds );
         btVector3 inertia( 0, 0, 0 );
         Projectile::ballShape->calculateLocalInertia( GV3::get<double>( "projectileMass", 0.4 ), inertia );
     }
-    btDefaultMotionState* ballMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
+    btDefaultMotionState* ballMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), scale * btVector3( x, y, z ) ) );
     btRigidBody::btRigidBodyConstructionInfo ballRigidBodyCI( GV3::get<double>( "projectileMass" ), ballMotionState, Projectile::ballShape );
     ballBody = new btRigidBody( ballRigidBodyCI );
     ballBody->setUserPointer( this );
-    ballBody->setCcdMotionThreshold( ds );
-    ballBody->setCcdSweptSphereRadius( 0.2f * ds );
+    ballBody->setCcdMotionThreshold( scale * ds );
+    ballBody->setCcdSweptSphereRadius( 0.2f * scale * ds );
     w->addRigidBody( ballBody );
-}
+};
 
 Projectile::~Projectile() {
 };
@@ -40,11 +41,12 @@ int Projectile::getType() {
 };
 
 void Projectile::tick() {
-    btTransform trans;
-    ballBody->getMotionState()->getWorldTransform( trans );
-    xPos = trans.getOrigin().getX();
-    yPos = trans.getOrigin().getY();
-    zPos = trans.getOrigin().getZ();
+    btTransform t;
+    ballBody->getMotionState()->getWorldTransform( t );
+    btVector3 pos = t.getOrigin() / GV3::get<double>( "physicsScale" );
+    xPos = pos.getX();
+    yPos = pos.getY();
+    zPos = pos.getZ();
 };
 
 double Projectile::getX() {
@@ -60,5 +62,5 @@ double Projectile::getZ() {
 };
 
 void Projectile::push( double x, double y, double z ) {
-    ballBody->applyCentralForce( btVector3( x, y, z ) );
+    ballBody->applyCentralImpulse( btVector3( x, y, z ) );
 };

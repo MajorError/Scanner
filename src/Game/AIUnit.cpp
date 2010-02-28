@@ -14,17 +14,18 @@ AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
     btVector3 inertia( 1, 1, 1 );
     double ds = GV3::get<double>( "ptSize", 0.05 );
+    double scale = GV3::get<double>( "physicsScale" );
     if ( AIUnit::boxShape == NULL ) {
-        AIUnit::boxShape = new btBoxShape( btVector3( ds, ds, ds ) );
+        AIUnit::boxShape = new btBoxShape( btVector3( scale * ds, scale * ds, scale * ds ) );
         AIUnit::boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
     }
-    btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), btVector3( x, y, z ) ) );
+    btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), scale * btVector3( x, y, z ) ) );
     btRigidBody::btRigidBodyConstructionInfo boxRigidBodyCI( GV3::get<double>( "aiMass" ), boxMotionState, boxShape, inertia );
     
     boxBody = new btRigidBody( boxRigidBodyCI );
     boxBody->setUserPointer( this );
-    boxBody->setCcdMotionThreshold( ds );
-    boxBody->setCcdSweptSphereRadius( 0.2f * ds );
+    boxBody->setCcdMotionThreshold( scale * ds );
+    boxBody->setCcdSweptSphereRadius( 0.2f * scale * ds );
     w->addRigidBody( boxBody );
 };
 
@@ -45,11 +46,13 @@ void AIUnit::tick( Director* d ) {
 
     currTick++;
 
-    btTransform trans = boxBody->getWorldTransform();
-    xPos = trans.getOrigin().getX();
-    yPos = trans.getOrigin().getY();
-    zPos = trans.getOrigin().getZ();
-    btQuaternion q = trans.getRotation();
+    btVector3 pos = boxBody->getWorldTransform().getOrigin() / GV3::get<double>( "physicsScale" );
+    xPos = pos.getX();
+    yPos = pos.getY();
+    zPos = pos.getZ();
+    btTransform t;
+    boxBody->getMotionState()->getWorldTransform( t );
+    btQuaternion q = t.getRotation();
     rotAngle = q.getAngle();
     btVector3 axis = q.getAxis();
     rotAxis[0] = axis.getX();
@@ -60,13 +63,11 @@ void AIUnit::tick( Director* d ) {
     if ( path.size() < 1 )
         return;
 
-    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) );
-    //cerr << "tock @ " << xPos << ", " << yPos << ", " << zPos << endl;
+    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) / 2 );
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
             && ABSDIFF( path.front()->y, yPos ) < tolerance
             && ABSDIFF( path.front()->z, zPos ) < tolerance ) {
         lastNode = currTick;
-        //cerr << "\tPath Point Reached: ";
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
             delete path.front();
@@ -76,12 +77,11 @@ void AIUnit::tick( Director* d ) {
             cerr << "AI reached goal" << endl;
             // Drop off the planet, so that we get culled
             btTransform death;
-            death.getOrigin().setZ( -500 );
+            death.getOrigin().setZ( -50000 );
             boxBody->setWorldTransform( death );
             d->registerAIWin();
             return;
         }
-        //cerr << "Next stop = " << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << " -> " << endl;
     }
     // Replan if we haven't seen a node recently
     if ( currTick - lastNode > GV3::get<int>( "aiPatience", 500 ) )
@@ -91,15 +91,12 @@ void AIUnit::tick( Director* d ) {
     yDir = path.front()->y - yPos;
     zDir = path.front()->z - zPos;
     // Normalise the vector, apply velocity
-    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / GV3::get<double>( "aiSpeed", 0.001 ) ;
+    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / GV3::get<double>( "aiSpeed", 0.1 ) ;
     xDir /= div;
     yDir /= div;
     zDir /= div;
     boxBody->translate( btVector3( xDir, yDir, zDir ) );
     boxBody->activate( true );
-    //cerr << "\t" << velocity * xDir << ", " << velocity * yDir << ", " << velocity * zDir << endl;
-    /*if ( boxBody->getAngularVelocity().length() < GV3::get<double>( "aiThresholdSpeed", 10 ) )
-        push( velocity * xDir, velocity * yDir, velocity * zDir );*/
 };
 
 double AIUnit::getX() {

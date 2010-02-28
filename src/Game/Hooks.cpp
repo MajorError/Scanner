@@ -5,13 +5,16 @@
 #include "AIUnit.h"
 #include "Director.h"
 #include "GameObject.h"
-#include "GLDebugDrawer.h"
 #include <btBulletDynamicsCommon.h>
 #include <TooN/TooN.h>
+#include <limits>
 
 using namespace CVD;
 using namespace TooN;
-
+/*
+code.load
+game.init
+ */
 MK_VISION_PLUGIN( tick, btClock clock; public: static void callback( btDynamicsWorld *world, btScalar timeStep ); \
 static WorldMap* map; static Director* director; static btDiscreteDynamicsWorld* dynamicsWorld;)
 WorldMap* tick::map = NULL;
@@ -36,14 +39,14 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     // Step simulation according to actual time passed - should bypass framerate issues
     double dt = clock.getTimeMilliseconds();
     clock.reset();
-    dynamicsWorld->stepSimulation( dt * 0.001f, 100000000, btScalar(1.)/btScalar(600.) );
+    dynamicsWorld->stepSimulation( dt * 0.01f, numeric_limits<int>::max(), btScalar(1.)/btScalar(250.) );
     
     // Cull any objects that have fallen off the bottom of the world
     vector<Projectile*> validProjectiles;
     validProjectiles.reserve( director->getProjectiles().size() );
     while( !director->getProjectiles().empty() ) {
         Projectile* p = director->getProjectiles().back();
-        if ( p->getZ() < -100 ) {
+        if ( p->getZ() < -10000 ) {
             p->removeFromWorld( dynamicsWorld );
             delete p;
         } else {
@@ -60,7 +63,7 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     validUnits.reserve( director->getUnits().size() );
     while( !director->getUnits().empty() ) {
         AIUnit* u = director->getUnits().back();
-        if ( u->getZ() < -100 ) {
+        if ( u->getZ() < -10000 ) {
             u->removeFromWorld( dynamicsWorld );
             delete u;
             director->registerDeath();
@@ -130,7 +133,7 @@ namespace game {
         cerr << "Creating game director" << endl;
         tick::director = new Director( tick::dynamicsWorld, tick::map );
         cerr << "Creating renderer" << endl;
-        ARDriver::mGame = new GameRenderer( tick::map, tick::director, tick::dynamicsWorld, environment );
+        ARDriver::mGame = new GameRenderer( tick::map, tick::director, environment );
         GUI.ParseLine( "tick.enable" );
     }
 
@@ -152,10 +155,6 @@ namespace game {
         btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
         dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -10 ) ) );
         dynamicsWorld->setInternalTickCallback( tick::callback );
-
-        btIDebugDraw* drawer = new GLDebugDrawer;
-        drawer->setDebugMode( btIDebugDraw::DBG_MAX_DEBUG_DRAW_MODE );
-        dynamicsWorld->setDebugDrawer( drawer );
         
         return dynamicsWorld;
     };
@@ -171,7 +170,7 @@ namespace ai1 {
         Vector<3> camPos = environment->getCameraPose().get_translation();
         Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
 
-        Matrix<> rot = GV3::get<double>( "pushScale", 100 ) * environment->getCameraPose().get_rotation().get_matrix();
+        Matrix<> rot = GV3::get<double>( "pushScale", 30 ) * environment->getCameraPose().get_rotation().get_matrix();
         a->push( rot[0][2], rot[1][2], rot[2][2] );
     }
 }
