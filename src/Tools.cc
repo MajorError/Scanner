@@ -95,7 +95,7 @@ void edge_remove::click() {
 
 MK_TOOL_PLUGIN( extrude, "Space",);
 void extrude::click() {
-    if ( init ) 
+    if ( !init )
         commandList::exec( "plane.extrude" );
     commandList::exec( "plane.move" );
     init = !init;
