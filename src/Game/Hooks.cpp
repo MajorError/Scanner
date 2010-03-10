@@ -39,14 +39,16 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     // Step simulation according to actual time passed - should bypass framerate issues
     double dt = clock.getTimeMilliseconds();
     clock.reset();
-    dynamicsWorld->stepSimulation( dt * 0.01f, numeric_limits<int>::max(), btScalar(1.)/btScalar(250.) );
+    double subStep = 1.f/60.f;
+    for( double step = 0; step < dt / 100; step += subStep )
+        dynamicsWorld->stepSimulation( subStep, numeric_limits<int>::max(), btScalar(1.)/btScalar(600.) );
     
     // Cull any objects that have fallen off the bottom of the world
     vector<Projectile*> validProjectiles;
     validProjectiles.reserve( director->getProjectiles().size() );
     while( !director->getProjectiles().empty() ) {
         Projectile* p = director->getProjectiles().back();
-        if ( p->getZ() < -10000 ) {
+        if ( p->getZ() < -100 ) {
             p->removeFromWorld( dynamicsWorld );
             delete p;
         } else {
@@ -63,7 +65,7 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     validUnits.reserve( director->getUnits().size() );
     while( !director->getUnits().empty() ) {
         AIUnit* u = director->getUnits().back();
-        if ( u->getZ() < -10000 ) {
+        if ( u->getZ() < -100 ) {
             u->removeFromWorld( dynamicsWorld );
             delete u;
             director->registerDeath();
