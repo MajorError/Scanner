@@ -729,7 +729,7 @@ namespace obj1 {
         // Co-ords are scaled by nf in the y direction (stacked frames), and
         // mirrored in the x direction (we write data backwards)
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
-                curr != environment->getFaces().end(); curr++ ) {
+                curr != environment->getFaces().end(); curr++, i++ ) {
             Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() ) + makeVector( 0, i );
             coord[1] /= nf;
             obj << "vt " << coord << endl;
@@ -741,16 +741,26 @@ namespace obj1 {
             obj << "vt " << coord << endl;
         }
         obj << endl
+            << "# Normals (currently one per face):" << endl;
+        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++ ) {
+            obj << "vn " << (*curr)->getFaceNormal() << endl;
+        }
+        obj << endl
             << "# Faces:" << endl
             << "g " << filename << endl
             << "usemtl TextureMapped" << endl;
-        i = 0; // Face index, to calculate which texture co-ord to link to
+        i = 0; // Face index, to calculate which texture co-ord and normal to link to
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++, i++ ) {
-            // Not currently storing vertex normals
-            obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << " "
-                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << " "
-                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << endl;
+            if ( (*curr)->hasFlippedNormal() )
+                obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/" << (i+1) << " "
+                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << (i+1) << " "
+                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/" << (i+1) << endl;
+            else
+                obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/" << (i+1) << " "
+                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/" << (i+1) << " "
+                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << (i+1) << endl;
         }
         obj.close();
     };

@@ -39,6 +39,7 @@ public:
     SE3<>& getTextureViewpoint();
     Vector<3> getFaceCentre();
     Vector<3> getFaceNormal();
+    bool hasFlippedNormal();
     bool operator()( PolyFace* a, PolyFace* b ) const;
 protected:
     Point* p1;
@@ -49,7 +50,7 @@ protected:
     Image< Rgb< byte > >* textureSource;
     double scale;
     double offset;
-
+    bool flipNormal;
 };
 
 #endif	/* _POLYFACE_H */

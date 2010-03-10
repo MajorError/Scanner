@@ -16,7 +16,7 @@ PolyFace::PolyFace( Point* a, Point* b, Point* c ) :
         p3( a > b ? (a > c ? a : c) : (b > c ? b : c) ),
         textureViewpoint( SO3<>(), makeVector( numeric_limits<double>::max(), numeric_limits<double>::max(), numeric_limits<double>::max() ) ),
         texture( ImageRef( 640, 480 ), Rgb<byte>( 255, 0, 0 ) ),
-        textureSource( &texture ) {
+        textureSource( &texture ), flipNormal( false ) {
     p2 = a < c ? (b < c ? (a < b ? b : a) : c) : (a < b ? a : (b < c ? c : b));
 };
 
@@ -105,6 +105,12 @@ void PolyFace::testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera*
 void PolyFace::setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
     texture.copy_from( t );
     textureViewpoint = vp;
+
+    // Decide whether or not to flip the "natural" vertex normal
+    Matrix<> rot = vp.get_rotation().get_matrix();
+    Vector<3> look = makeVector( rot[0][2], rot[1][2], rot[2][2] );
+    flipNormal = look * getFaceNormal() > 0;
+    cerr << "PolyFace " << this << " = " << (flipNormal ? "Flipped" : "Straight") << " now " << (look * getFaceNormal()) << endl;
 };
 
 void PolyFace::setTexture( Image< Rgb< byte > >* t, SE3<> vp ) {
@@ -132,8 +138,14 @@ Vector<3> PolyFace::getFaceCentre() {
 
 Vector<3> PolyFace::getFaceNormal() {
     Vector<3> n = (p2->getPosition() - p1->getPosition()) ^ (p3->getPosition() - p1->getPosition());
+    if ( flipNormal )
+        n = (p3->getPosition() - p1->getPosition()) ^ (p2->getPosition() - p1->getPosition());
     return n / sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
 };
+
+bool PolyFace::hasFlippedNormal() {
+    return flipNormal;
+}
 
 bool PolyFace::operator()( PolyFace* a, PolyFace* p ) const {
     return a->p1 < p->p1 || a->p2 < p->p2 || a->p3 < p->p3;

@@ -102,7 +102,10 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
         btVector3 v2( p[0], p[1], p[2] );
         p = scale * (*curr)->getP3()->getPosition();
         btVector3 v3( p[0], p[1], p[2] );
-        terrainMesh->addTriangle( v1, v2, v3 );
+        if ( (*curr)->hasFlippedNormal() )
+            terrainMesh->addTriangle( v1, v3, v2 );
+        else
+            terrainMesh->addTriangle( v1, v2, v3 );
     }
     btBvhTriangleMeshShape* terrainShape = new btBvhTriangleMeshShape( terrainMesh, true, aabbMin, aabbMax );
     terrainShape->recalcLocalAabb();
