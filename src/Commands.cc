@@ -686,23 +686,27 @@ namespace obj1 {
      *   vertically. The texture co-ordinates in the OBJ file must assume
      *   this to be the case and normalise accordingly.
      */
-    MK_GUI_COMMAND(obj, save, void saveOBJ( string filename ); \
-        void saveMTL( string filename ); void saveTGA( string filename );)
+    MK_GUI_COMMAND(obj, save, void saveOBJ( string filename, map< Image< Rgb<byte> > *,int> textures ); \
+        void saveMTL( string filename ); void saveTGA( string filename, map< Image< Rgb<byte> > *,int>& textures );)
     void obj::save( string filename ) {
         if ( filename.length() < 1 )
             filename = "scanner_model";
-        
+
+        // Clean our textures first, to minimise its size
+        GUI.ParseLine( "texture.clean" );
+
+        // Furst, serialise textures as concat TGA, storing mapping of offsets
+        map< Image< Rgb<byte> >*,int> textures;
+        saveTGA( filename, textures );
         // Write the geometry to an OBJ file first
-        saveOBJ( filename );
+        saveOBJ( filename, textures );
         // Now the material database
         saveMTL( filename );
-        // Finally, serialise textures as TGA images
-        saveTGA( filename );
 
         cerr << "File written to " << filename << endl;
     }
 
-    void obj::saveOBJ( string filename ) {
+    void obj::saveOBJ( string filename, map< Image< Rgb<byte> >*,int> textures ) {
         ofstream obj;
         obj.open( (filename + ".obj").c_str(), ios::out | ios::trunc );
         obj << "#" << endl
@@ -722,14 +726,15 @@ namespace obj1 {
             vtxIndex[*curr] = i;
             obj << "v " << (*curr)->getPosition() << endl;
         }
+
         obj << endl
             << "# Texture Co-Ordinates:" << endl;
-        i = 0; // Face index, to calculate texture offset in TGA file
-        int nf = environment->getFaces().size();
+        int nf = textures.size();
         // Co-ords are scaled by nf in the y direction (stacked frames), and
         // mirrored in the x direction (we write data backwards)
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
-                curr != environment->getFaces().end(); curr++, i++ ) {
+                curr != environment->getFaces().end(); curr++ ) {
+            int i = textures[(*curr)->getTextureSource()];
             Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() ) + makeVector( 0, i );
             coord[1] /= nf;
             obj << "vt " << coord << endl;
@@ -740,6 +745,7 @@ namespace obj1 {
             coord[1] /= nf;
             obj << "vt " << coord << endl;
         }
+                
         obj << endl
             << "# Normals (currently one per face):" << endl;
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
@@ -798,7 +804,7 @@ namespace obj1 {
         byte descriptor;       // image descriptor bits (vh flip bits)
     } TGAHeader;
 
-    void obj::saveTGA( string filename ) {
+    void obj::saveTGA( string filename, map< Image< Rgb<byte> > *,int>& textures ) {
         TGAHeader head;
         head.idSize = 0;
         head.hasColourMap = 0;
@@ -810,10 +816,18 @@ namespace obj1 {
 
         head.xOrigin = 0;
         head.yOrigin = 0;
-        // Ideally, we'd like to minimise the number of frames we save here
-        //   as there may be some duplicates... This can be a TODO for later!
+        // We'd like to minimise the number of frames we save here
+        //   as there may be some duplicates... So first count the images to save
+        int numImages = 0;
+        for( std::set<PolyFace*>::reverse_iterator curr = environment->getFaces().rbegin();
+                curr != environment->getFaces().rend(); curr++ ) {
+            if ( textures.count( (*curr)->getTextureSource() ) == 0 )
+                numImages++;
+            textures[(*curr)->getTextureSource()] = 1;
+        }
+        textures.clear();
         head.width = environment->getSceneSize()[0];
-        head.height = environment->getSceneSize()[1] * environment->getFaces().size();
+        head.height = environment->getSceneSize()[1] * numImages;
         head.bpp = 24; // This is now a 24-bit RGB bitmap
         head.descriptor = 0;
 
@@ -827,9 +841,13 @@ namespace obj1 {
         // First, write the header we've built
         fwrite( &head, sizeof( TGAHeader ), 1, tga );
 
+        int idx = 0;
         // Now, write images for each of the poly faces
         for( std::set<PolyFace*>::reverse_iterator curr = environment->getFaces().rbegin();
                 curr != environment->getFaces().rend(); curr++ ) {
+            if ( textures.count( (*curr)->getTextureSource() ) > 0 )
+                continue;
+            textures[(*curr)->getTextureSource()] = idx++;
             Image< Rgb<byte> > tex = (*curr)->getTexture();
             for( Image< Rgb<byte> >::iterator px = tex.end()-1;
                     px >= tex.begin(); px -= tex.size().x ) {
