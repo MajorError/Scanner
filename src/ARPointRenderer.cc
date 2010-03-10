@@ -174,13 +174,15 @@ void ARPointRenderer::DrawPolys() {
 
             glEnd();
 
-            glColor4d(1.0, 1.0, 0.0, 1.0);
-            glBegin( GL_LINES );
-            glLoadIdentity();
-            glVertex( (*it)->getFaceCentre() );
-            glVertex( (*it)->getFaceCentre() + 1.5 * (*it)->getFaceNormal() );
-            glEnd();
-            glColor4d(1.0, 1.0, 1.0, 1.0);
+            if ( GV3::get<bool>( "drawNormals", true ) ) {
+                glColor4d(1.0, 1.0, 0.0, 1.0);
+                glBegin( GL_LINES );
+                glLoadIdentity();
+                glVertex( (*it)->getFaceCentre() );
+                glVertex( (*it)->getFaceCentre() + 0.5 * (*it)->getFaceNormal() );
+                glEnd();
+                glColor4d(1.0, 1.0, 1.0, 1.0);
+            }
             
             glDeleteTextures( 1, &currTex );
             glPrintErrors();

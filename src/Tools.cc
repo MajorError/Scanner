@@ -183,4 +183,9 @@ namespace toggles {
     void toggleGrid::click() {
         toggleVar( "drawGrid" );
     };
+
+    MK_TOOL_PLUGIN( toggleNormals, "n", );
+    void toggleNormals::click() {
+        toggleVar( "drawNormals" );
+    };
 }
