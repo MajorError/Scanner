@@ -109,6 +109,7 @@ void PolyFace::setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
     // Decide whether or not to flip the "natural" vertex normal
     Matrix<> rot = vp.get_rotation().get_matrix();
     Vector<3> look = makeVector( rot[0][2], rot[1][2], rot[2][2] );
+    flipNormal = false;
     flipNormal = look * getFaceNormal() > 0;
     cerr << "PolyFace " << this << " = " << (flipNormal ? "Flipped" : "Straight") << " now " << (look * getFaceNormal()) << endl;
 };
