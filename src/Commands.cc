@@ -731,18 +731,18 @@ namespace obj1 {
             << "# Texture Co-Ordinates:" << endl;
         int nf = textures.size();
         // Co-ords are scaled by nf in the y direction (stacked frames), and
-        // mirrored in the x direction (we write data backwards)
+        // mirrored on each frame to convert from LH to RH co-ord system
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++ ) {
-            int i = textures[(*curr)->getTextureSource()];
-            Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() ) + makeVector( 0, i );
-            coord[1] /= nf;
+            int i = 1 + textures[(*curr)->getTextureSource()];
+            Vector<2> coord = (*curr)->getP1Coord( environment->getCamera() );
+            coord[1] = (-coord[1] + i) / nf;
             obj << "vt " << coord << endl;
-            coord = (*curr)->getP2Coord( environment->getCamera() ) + makeVector( 0, i );
-            coord[1] /= nf;
+            coord = (*curr)->getP2Coord( environment->getCamera() );
+            coord[1] = (-coord[1] + i) / nf;
             obj << "vt " << coord << endl;
-            coord = (*curr)->getP3Coord( environment->getCamera() ) + makeVector( 0, i );
-            coord[1] /= nf;
+            coord = (*curr)->getP3Coord( environment->getCamera() );
+            coord[1] = (-coord[1] + i) / nf;
             obj << "vt " << coord << endl;
         }
                 
