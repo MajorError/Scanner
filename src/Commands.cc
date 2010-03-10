@@ -750,17 +750,17 @@ namespace obj1 {
             << "# Faces:" << endl
             << "g " << filename << endl
             << "usemtl TextureMapped" << endl;
-        i = 0; // Face index, to calculate which texture co-ord and normal to link to
+        i = 0; // Face index, to calculate which texture co-ord to link to
         for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
                 curr != environment->getFaces().end(); curr++, i++ ) {
             if ( (*curr)->hasFlippedNormal() )
-                obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/" << (i+1) << " "
-                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << (i+1) << " "
-                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/" << (i+1) << endl;
+                obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/" << i+1 << " "
+                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << i+1 << " "
+                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/" << i+1 << endl;
             else
-                obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/" << (i+1) << " "
-                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/" << (i+1) << " "
-                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << (i+1) << endl;
+                obj << "f " << vtxIndex[(*curr)->getP1()] << "/" << 3*i+1 << "/" << i+1 << " "
+                        << vtxIndex[(*curr)->getP2()] << "/" << 3*i+2 << "/" << i+1 << " "
+                        << vtxIndex[(*curr)->getP3()] << "/" << 3*i+3 << "/" << i+1 << endl;
         }
         obj.close();
     };
@@ -830,11 +830,14 @@ namespace obj1 {
         // Now, write images for each of the poly faces
         for( std::set<PolyFace*>::reverse_iterator curr = environment->getFaces().rbegin();
                 curr != environment->getFaces().rend(); curr++ ) {
-            for( Image< Rgb<byte> >::iterator px = (*curr)->getTexture().end()-1;
-                    px >= (*curr)->getTexture().begin(); px-- ) {
-                fwrite( &(px->blue), sizeof( byte ), 1, tga );
-                fwrite( &(px->green), sizeof( byte ), 1, tga );
-                fwrite( &(px->red), sizeof( byte ), 1, tga );
+            Image< Rgb<byte> > tex = (*curr)->getTexture();
+            for( Image< Rgb<byte> >::iterator px = tex.end()-1;
+                    px >= tex.begin(); px -= tex.size().x ) {
+                for( int i = tex.size().x - 1; i >= 0 ; i-- ) {
+                    fwrite( &((px-i)->blue), sizeof( byte ), 1, tga );
+                    fwrite( &((px-i)->green), sizeof( byte ), 1, tga );
+                    fwrite( &((px-i)->red), sizeof( byte ), 1, tga );
+                }
             }
         }
 
