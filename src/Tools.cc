@@ -19,9 +19,10 @@ void toolsel::click() {
     }
     if( !running ) {
         curr = 2;
-        for ( curr = Tool::list.size()-1; curr > 2; curr-- )
+        /* Actually seems more intuitive to start at the beginning of the list
+         for ( curr = Tool::list.size()-1; curr > 2; curr-- )
             if ( Tool::list[curr]->isEnabled() )
-                break;
+                break;*/
         running = true;
         pthread_create( &display, NULL, toolsel::displayTimeout, (void*)this );
     } else {
@@ -73,29 +74,18 @@ void plane_mover::click() {
 
 MK_TOOL_PLUGIN( plane_split, "Space",);
 void plane_split::click() {
-
-    if ( !init ) {
+    if ( !init )
         commandList::exec( "plane.split" );
-        commandList::exec( "vertex.move" );
-        init = true;
-    } else {
-        commandList::exec( "vertex.move" );
-        init = false;
-    }
+    commandList::exec( "vertex.move" );
+    init = !init;
 };
 
 MK_TOOL_PLUGIN( edge_bisect, "Space",);
 void edge_bisect::click() {
-    // Thanks to randomly assigned values in memory locations (startBisect is
-    //  uninitialised), we have to assign values directly here.
-    if ( !init ) {
+    if ( !init )
         commandList::exec( "edge.bisect" );
-        commandList::exec( "vertex.move" );
-        init = true;
-    } else {
-        commandList::exec( "vertex.move" );
-        init = false;
-    }
+    commandList::exec( "vertex.move" );
+    init = !init;
 };
 
 MK_TOOL_PLUGIN( edge_remove, "Space", );
@@ -105,14 +95,10 @@ void edge_remove::click() {
 
 MK_TOOL_PLUGIN( extrude, "Space",);
 void extrude::click() {
-    if ( init ) {
+    if ( init ) 
         commandList::exec( "plane.extrude" );
-        commandList::exec( "plane.move" );
-        init = true;
-    } else {
-        commandList::exec( "plane.move" );
-        init = false;
-    }
+    commandList::exec( "plane.move" );
+    init = !init;
 };
 
 MK_TOOL_PLUGIN( vertex_remove, "Space", );
@@ -135,57 +121,63 @@ void shrink_wrap::click() {
     commandList::exec( "shrinkwrap.exec" );
 };
 
-namespace toggles {
+void* displayTimeout( void* ptr ) {
+    string* text = static_cast<string*>( ptr );
+    time_t start = time( NULL );
+    while( time( NULL ) < start + 1 ) {
+        commandList::exec( "text.draw " + *text );
+        usleep(10);
+    }
+    delete text;
+    return NULL;
+};
 
-    void* displayTimeout( void* ptr ) {
-        string* text = static_cast<string*>( ptr );
-        time_t start = time( NULL );
-        while( time( NULL ) < start + 1 ) {
-            commandList::exec( "text.draw " + *text );
-            usleep(10);
-        }
-        delete text;
-        return NULL;
-    };
+MK_TOOL_PLUGIN( save, "s", );
+void save::click() {
+    pthread_t t;
+    string* text = new string( "Saving Wavefront OBJ File" );
+    commandList::exec( "text.draw " + *text );
+    pthread_create( &t, NULL, displayTimeout, text );
+    commandList::exec( "obj.save" );
+};
 
-    void toggleVar( string varName ) {
-        string* text = new string( "Toggle " + varName + " to " + (GV3::get<bool>( varName, true ) ? "0" : "1") );
-        pthread_t t;
-        commandList::exec( varName+"="+(GV3::get<bool>( varName, true ) ? "0" : "1") );
-        pthread_create( &t, NULL, displayTimeout, text );
-    };
-    MK_TOOL_PLUGIN( toggleBG, "b", );
-    void toggleBG::click() {
-        toggleVar( "drawBackground" );
-    };
+void toggleVar( string varName ) {
+    string* text = new string( "Toggle " + varName + " to " + (GV3::get<bool>( varName, true ) ? "0" : "1") );
+    pthread_t t;
+    commandList::exec( varName+"="+(GV3::get<bool>( varName, true ) ? "0" : "1") );
+    pthread_create( &t, NULL, displayTimeout, text );
+};
+MK_TOOL_PLUGIN( toggleBG, "b", );
+void toggleBG::click() {
+    toggleVar( "drawBackground" );
+};
 
-    MK_TOOL_PLUGIN( toggleModel, "m", );
-    void toggleModel::click() {
-        toggleVar( "drawModel" );
-    };
+MK_TOOL_PLUGIN( toggleModel, "m", );
+void toggleModel::click() {
+    toggleVar( "drawModel" );
+};
 
-    MK_TOOL_PLUGIN( toggleFaces, "f", );
-    void toggleFaces::click() {
-        toggleVar( "drawFaces" );
-    };
+MK_TOOL_PLUGIN( toggleFaces, "f", );
+void toggleFaces::click() {
+    toggleVar( "drawFaces" );
+};
 
-    MK_TOOL_PLUGIN( toggleVertices, "v", );
-    void toggleVertices::click() {
-        toggleVar( "drawPoints" );
-    };
+MK_TOOL_PLUGIN( toggleVertices, "v", );
+void toggleVertices::click() {
+    toggleVar( "drawPoints" );
+};
 
-    MK_TOOL_PLUGIN( toggleEdges, "e", );
-    void toggleEdges::click() {
-        toggleVar( "drawEdges" );
-    };
+MK_TOOL_PLUGIN( toggleEdges, "e", );
+void toggleEdges::click() {
+    toggleVar( "drawEdges" );
+};
 
-    MK_TOOL_PLUGIN( toggleGrid, "g", );
-    void toggleGrid::click() {
-        toggleVar( "drawGrid" );
-    };
+MK_TOOL_PLUGIN( toggleGrid, "g", );
+void toggleGrid::click() {
+    toggleVar( "drawGrid" );
+};
 
-    MK_TOOL_PLUGIN( toggleNormals, "n", );
-    void toggleNormals::click() {
-        toggleVar( "drawNormals" );
-    };
-}
+MK_TOOL_PLUGIN( toggleNormals, "n", );
+void toggleNormals::click() {
+    toggleVar( "drawNormals" );
+};
