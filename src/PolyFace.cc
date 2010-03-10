@@ -111,7 +111,6 @@ void PolyFace::setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
     Vector<3> look = makeVector( rot[0][2], rot[1][2], rot[2][2] );
     flipNormal = false;
     flipNormal = look * getFaceNormal() > 0;
-    cerr << "PolyFace " << this << " = " << (flipNormal ? "Flipped" : "Straight") << " now " << (look * getFaceNormal()) << endl;
 };
 
 void PolyFace::setTexture( Image< Rgb< byte > >* t, SE3<> vp ) {

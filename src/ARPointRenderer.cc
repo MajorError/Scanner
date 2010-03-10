@@ -134,9 +134,9 @@ void ARPointRenderer::DrawPolys() {
     }
     glEnd();
 
-    glColor4d(1.0, 1.0, 1.0, 1.0);
-    glEnable(GL_TEXTURE_2D);
-    glDisable(GL_POLYGON_SMOOTH);
+    glColor4d( 1.0, 1.0, 1.0, 1.0 );
+    glEnable( GL_TEXTURE_2D );
+    glDisable( GL_POLYGON_SMOOTH );
     
     glLoadIdentity();
     GLuint currTex;
@@ -174,7 +174,8 @@ void ARPointRenderer::DrawPolys() {
 
             glEnd();
 
-            if ( GV3::get<bool>( "drawNormals", true ) ) {
+            if ( GV3::get<bool>( "drawNormals", false ) ) {
+                glDisable( GL_TEXTURE_2D );
                 glColor4d(1.0, 1.0, 0.0, 1.0);
                 glBegin( GL_LINES );
                 glLoadIdentity();
@@ -182,13 +183,15 @@ void ARPointRenderer::DrawPolys() {
                 glVertex( (*it)->getFaceCentre() + 0.5 * (*it)->getFaceNormal() );
                 glEnd();
                 glColor4d(1.0, 1.0, 1.0, 1.0);
+                glEnable( GL_TEXTURE_2D );
+                glDisable( GL_POLYGON_SMOOTH );
             }
             
             glDeleteTextures( 1, &currTex );
             glPrintErrors();
         }
     }
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
+    glDisable( GL_TEXTURE_RECTANGLE_ARB );
     if ( GV3::get<bool>( "drawClosestFace", true ) ) {
         glColor4d(1.0, 0.4, 0.0, 0.6);
         Vector<3> pt;
