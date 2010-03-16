@@ -24,6 +24,14 @@ Environment::~Environment() {
     // no-op
 };
 
+void Environment::lock() {
+    pthread_mutex_lock( &mutex );
+};
+
+void Environment::unlock() {
+    pthread_mutex_unlock( &mutex );
+};
+
 void Environment::setCamera( ATANCamera *c ) {
     camera = c;
 };

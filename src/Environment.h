@@ -24,6 +24,9 @@ public:
     Environment();
     virtual ~Environment();
 
+    void lock();
+    void unlock();
+
     void setCamera( ATANCamera *c );
     ATANCamera* getCamera();
 
@@ -70,6 +73,7 @@ private:
     list< Edge* > edges;
     set< PolyFace*, PolyFace > faces;
     list< Vector<3> > features;
+    pthread_mutex_t mutex;
 
 };
 

@@ -706,7 +706,7 @@ namespace mesh2 {
 
     // yuck - work around for the macro parser :(
     typedef map< Point*, Vector<3> > PointVectorMap;
-    MK_GUI_COMMAND(mesh, smoothDeform, pthread_t deformThread; PointVectorMap points; static void* deformer( void* ptr ); void doSmooth( Vector<3> pos );)
+    MK_GUI_COMMAND(mesh, smoothDeform, pthread_t deformThread; PointVectorMap points; static void* deformer( void* ptr ); void doSmooth( Point* pos );)
     void mesh::smoothDeform( string params ) {
         init = !init;
         if ( init ) {
@@ -744,34 +744,40 @@ namespace mesh2 {
             target->setPosition( tmp );
 
             // Now smooth the resultant mesh
-            p->doSmooth( target->getPosition() );
+            p->doSmooth( target );
         }
         return NULL;
     }
 
-    void mesh::doSmooth( Vector<3> pos ) {
-        double stiff = GV3::get<double>( "smoothDeformStiffness", 0.8 );
+    void mesh::doSmooth( Point* target ) {
+        double attraction = GV3::get<double>( "smoothDeformAttraction", 0.8 );
+        double inertia = GV3::get<double>( "smoothDeformInertia", 0.5 );
+        Vector<3> pos = target->getPosition();
+        Vector<3> targetMotion = pos - points[target];
+        double targetWt = min( 1.0, targetMotion * targetMotion / inertia );
         // First, find the max/min weights so we can normalise to (0,1)
         double maxWt = numeric_limits<double>::min();
         double minWt = numeric_limits<double>::max();
         for( std::list<Point*>::iterator curr = environment->getPoints().begin();
                 curr != environment->getPoints().end(); curr++ ) {
             Vector<3> diff( pos - points[*curr] );
-            double d = diff * diff / stiff;
+            double d = diff * diff / attraction;
             maxWt = max( maxWt, d );
             minWt = min( minWt, d );
         }
-        cerr << "Target Pos: " << pos << endl;
+        environment->lock();
         for( std::list<Point*>::iterator curr = environment->getPoints().begin();
                 curr != environment->getPoints().end(); curr++ ) {
+            if ( (*curr) == target )
+                continue; // skip this one, must remain *on* the cursor
             Vector<3> diff( pos - points[*curr] );
-            double wt = (diff * diff / stiff - minWt) / (maxWt-minWt);
-            wt = 1.0 - min( max( 0.0, wt ), 1.0 );
+            double wt = (diff * diff / attraction - minWt) / (maxWt-minWt);
+            wt = targetWt * (1.0 - min( max( 0.0, wt ), 1.0 ));
             if ( wt == 0.0 )
                 continue;
-            cerr << "\tP " << points[*curr] << " & w " << wt << " => " << (points[*curr] + diff / wt) << endl;
             (*curr)->setPosition( points[*curr] + diff * wt );
         }
+        environment->unlock();
     }
 }
 

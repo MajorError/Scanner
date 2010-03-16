@@ -61,6 +61,7 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
 
 void ARPointRenderer::DrawPoints( SE3<> camera ) {
     double ds = GV3::get<double>( "ptSize", 0.05 );
+    env->lock();
     if ( GV3::get<bool>( "drawClosestPoint", true ) ) {
         glColor4d(1.0, 0.4, 0.0, 1.0);
         env->sortPoints( camera );
@@ -81,6 +82,7 @@ void ARPointRenderer::DrawPoints( SE3<> camera ) {
             glColor4d(0.92, 0.9, 0.85,1);
         }
     }
+    env->unlock();
 };
 
 void ARPointRenderer::DrawFeatures( SE3<> camera ) {
