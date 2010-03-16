@@ -116,10 +116,12 @@ void texture_delete::click() {
     commandList::exec( "texture.clear" );
 };
 
+#ifdef USE_EXPERIMENTALS
 MK_TOOL_PLUGIN( shrink_wrap, "Space", );
 void shrink_wrap::click() {
     commandList::exec( "shrinkwrap.exec" );
 };
+#endif
 
 MK_TOOL_PLUGIN( subdivide, "Space", );
 void subdivide::click() {

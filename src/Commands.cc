@@ -478,7 +478,6 @@ namespace tex1 {
     }
 }
 
-
 namespace tex2 {
     MK_GUI_COMMAND(texture, clear,)
     void texture::clear( string args ) {
@@ -495,6 +494,7 @@ namespace tex2 {
     }
 }
 
+#ifdef USE_EXPERIMENTALS
 namespace {
     MK_GUI_COMMAND(textureBoundary, blend,)
     void textureBoundary::blend( string args ) {
@@ -579,7 +579,8 @@ namespace {
         }
     }
 }
-
+#endif
+#ifdef USE_EXPERIMENTALS
 namespace {
     MK_GUI_COMMAND(shrinkwrap, exec,)
     void shrinkwrap::exec( string args ) {
@@ -642,6 +643,7 @@ namespace {
         cerr << "From " << startEdge << " to " << environment->getEdges().size() << " edges" << endl;
     }
 }
+#endif
 
 namespace mesh1 {
     
