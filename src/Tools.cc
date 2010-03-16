@@ -128,6 +128,11 @@ void subdivide::click() {
     commandList::exec( "mesh.subdivide" );
 };
 
+MK_TOOL_PLUGIN( smooth_deform, "Space", );
+void smooth_deform::click() {
+    commandList::exec( "mesh.smoothDeform" );
+};
+
 void* displayTimeout( void* ptr ) {
     string* text = static_cast<string*>( ptr );
     time_t start = time( NULL );

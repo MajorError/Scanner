@@ -702,6 +702,79 @@ namespace mesh1 {
     }
 }
 
+namespace mesh2 {
+
+    // yuck - work around for the macro parser :(
+    typedef map< Point*, Vector<3> > PointVectorMap;
+    MK_GUI_COMMAND(mesh, smoothDeform, pthread_t deformThread; PointVectorMap points; static void* deformer( void* ptr ); void doSmooth( Vector<3> pos );)
+    void mesh::smoothDeform( string params ) {
+        init = !init;
+        if ( init ) {
+            for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                    curr != environment->getPoints().end(); curr++ ) {
+                points[*curr] = (*curr)->getPosition();
+            }
+            pthread_create( &deformThread, NULL, mesh::deformer, (void*)this );
+        } else if ( environment->getPoints().size() > 0 ) {
+            pthread_join( deformThread, NULL );
+        }
+    }
+
+    void* mesh::deformer( void* ptr ) {
+        mesh* p = static_cast<mesh*>( ptr );
+        Vector<3> projection;
+        SE3<> camera( p->environment->getCameraPose() );
+        Point* target = p->environment->sortPoints( camera ).front();
+        // start point on list ~ camera + view*t
+        Matrix<> rot = camera.get_rotation().get_matrix();
+        projection = target->getPosition();
+        projection -= camera.get_translation();
+        projection[0] /= rot[0][2];
+        projection[1] /= rot[1][2];
+        projection[2] /= rot[2][2];
+        while( p->init ) {
+            camera = p->environment->getCameraPose();
+            rot = camera.get_rotation().get_matrix();
+            // Now project as camera + view * startPt
+            // Calculate in a separate list to prevent flickering
+            Vector<3> tmp( camera.get_translation() );
+            tmp[0] += rot[0][2] * projection[0];
+            tmp[1] += rot[1][2] * projection[1];
+            tmp[2] += rot[2][2] * projection[2];
+            target->setPosition( tmp );
+
+            // Now smooth the resultant mesh
+            p->doSmooth( target->getPosition() );
+        }
+        return NULL;
+    }
+
+    void mesh::doSmooth( Vector<3> pos ) {
+        double stiff = GV3::get<double>( "smoothDeformStiffness", 0.8 );
+        // First, find the max/min weights so we can normalise to (0,1)
+        double maxWt = numeric_limits<double>::min();
+        double minWt = numeric_limits<double>::max();
+        for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                curr != environment->getPoints().end(); curr++ ) {
+            Vector<3> diff( pos - points[*curr] );
+            double d = diff * diff / stiff;
+            maxWt = max( maxWt, d );
+            minWt = min( minWt, d );
+        }
+        cerr << "Target Pos: " << pos << endl;
+        for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                curr != environment->getPoints().end(); curr++ ) {
+            Vector<3> diff( pos - points[*curr] );
+            double wt = (diff * diff / stiff - minWt) / (maxWt-minWt);
+            wt = 1.0 - min( max( 0.0, wt ), 1.0 );
+            if ( wt == 0.0 )
+                continue;
+            cerr << "\tP " << points[*curr] << " & w " << wt << " => " << (points[*curr] + diff / wt) << endl;
+            (*curr)->setPosition( points[*curr] + diff * wt );
+        }
+    }
+}
+
 namespace code1 {
     MK_GUI_COMMAND(code, save,)
     void code::save( string filename ) {
