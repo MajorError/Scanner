@@ -121,6 +121,11 @@ void shrink_wrap::click() {
     commandList::exec( "shrinkwrap.exec" );
 };
 
+MK_TOOL_PLUGIN( subdivide, "Space", );
+void subdivide::click() {
+    commandList::exec( "mesh.subdivide" );
+};
+
 void* displayTimeout( void* ptr ) {
     string* text = static_cast<string*>( ptr );
     time_t start = time( NULL );

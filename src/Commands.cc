@@ -1,5 +1,6 @@
 #include <GL/gl.h>
 #include <fstream>
+#include <bits/stl_vector.h>
 
 #include "Point.h"
 #include "Environment.h"
@@ -639,6 +640,63 @@ namespace {
         }
         cerr << "From " << startPt << " to " << environment->getPoints().size() << " points" << endl;
         cerr << "From " << startEdge << " to " << environment->getEdges().size() << " edges" << endl;
+    }
+}
+
+namespace mesh1 {
+    
+    MK_GUI_COMMAND(mesh, subdivide,)
+    void mesh::subdivide( string params ) {
+        multimap<Point*, Point*> pts;
+        multimap< Point*,Vector<3> > facePoints;
+        std::list<Point*> oldPoints = environment->getPoints();
+        // Collect the list of points to construct
+        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++ ) {
+            Point* p = new Point( (*curr)->getFaceCentre() );
+            environment->addPoint( p );
+            pts.insert( pair<Point*,Point*>( p, (*curr)->getP1() ) );
+            pts.insert( pair<Point*,Point*>( p, (*curr)->getP2() ) );
+            pts.insert( pair<Point*,Point*>( p, (*curr)->getP3() ) );
+            // Record the facePoints for this face
+            facePoints.insert( pair< Point*,Vector<3> >( (*curr)->getP1(), p->getPosition() ) );
+            facePoints.insert( pair< Point*,Vector<3> >( (*curr)->getP2(), p->getPosition() ) );
+            facePoints.insert( pair< Point*,Vector<3> >( (*curr)->getP3(), p->getPosition() ) );
+            // Delete the current face; pointers get dropped after this loop
+            delete *curr;
+        }
+
+        environment->getFaces().clear();
+        
+        // Catmull-clark averaging of point positions
+        double smoothAmt = GV3::get<double>( "catmullSmooth", 0.2 );
+        for( std::list<Point*>::iterator curr = oldPoints.begin(); curr != oldPoints.end(); curr++ ) {
+            // Calculate edge-mid-point average
+            Vector<3> edgeAvg = makeVector( 0, 0, 0 );
+            int numEdges = 0;
+            for( std::list<Edge*>::iterator it = (*curr)->getEdges().begin(); it != (*curr)->getEdges().end(); it++ ) {
+                edgeAvg += 0.5 * ( (*it)->getStart()->getPosition() + (*it)->getEnd()->getPosition() );
+                numEdges++;
+            }
+            edgeAvg /= numEdges;
+            // Now calculate average face-centre for faces around curr
+            Vector<3> faceAvg = makeVector( 0, 0, 0 );
+            pair< multimap< Point*,Vector<3> >::iterator, multimap< Point*,Vector<3> >::iterator > range =
+                    facePoints.equal_range( *curr );
+            int numFaces = 0;
+            for( multimap< Point*,Vector<3> >::iterator el = range.first; el != range.second; el++ ) {
+                faceAvg += el->second;
+                numFaces++;
+            }
+            faceAvg /= numFaces;
+            (*curr)->setPosition( (1 - smoothAmt) * (*curr)->getPosition()
+                    + smoothAmt * (faceAvg + 2*edgeAvg + (numEdges-3)*(*curr)->getPosition()) / numEdges );
+        }
+
+        // Now we've moved the control points, construct the new subdiv polys
+        for( multimap<Point*, Point*>::iterator el = pts.begin(); el != pts.end(); el++ ) {
+            environment->addEdge( el->first, el->second );
+        }
     }
 }
 
