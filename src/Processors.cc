@@ -3,6 +3,7 @@
 
 #include "VisionProcessor.h"
 #include "Environment.h"
+#include "Shiny.h"
 
 using namespace CVD;
 using namespace GVars3;
@@ -11,17 +12,20 @@ using namespace std;
 
 MK_VISION_PLUGIN( cam, VideoSource videoSource; );
 void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    PROFILE_BEGIN( cam );
     if ( !init ) {
         init = true;
         sceneBW.resize( videoSource.Size() );
         sceneRGB.resize( videoSource.Size() );
     }
     videoSource.GetAndFillFrameBWandRGB( sceneBW, sceneRGB );
+    PROFILE_END();
 };
 
 MK_VISION_PLUGIN( ptam, Map *mpMap; \
   MapMaker *mpMapMaker; Tracker *mpTracker; ATANCamera *mpCamera; );
 void ptam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    PROFILE_BEGIN( ptam );
     if ( !init ) {
         GUI.LoadFile( "settings.cfg" );
         init = true;
@@ -50,10 +54,12 @@ void ptam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     for( unsigned int i = 0; i < mpMap->vpPoints.size(); i++ )
         if ( !mpMap->vpPoints[i]->bBad )
             environment->addFeature( mpMap->vpPoints[i]->v3WorldPos );
+    PROFILE_END();
 };
 
 MK_VISION_PLUGIN( guiDispatch, GLWindow2 *glWindow; ARDriver *ard; );
 void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    PROFILE_BEGIN( gui );
     if ( !init ) {
         init = true;
         glWindow = new GLWindow2( sceneBW.size(), "Handheld 3D Scanner" );
@@ -76,10 +82,12 @@ void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
     // (TODO?) No message at this time... glWindow->DrawCaption( sCaption );
     glWindow->DrawMenus();
     glWindow->HandlePendingEvents();
+    PROFILE_END();
 };
 
 MK_VISION_PLUGIN( commandList, static vector<string> commands; static pthread_mutex_t mutex; public: static void exec( string cmd ); );
 void commandList::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    PROFILE_BEGIN( commands );
     if ( !init ) {
         init = true;
     }
@@ -90,6 +98,7 @@ void commandList::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
     }
     commands.clear();
     pthread_mutex_unlock( &mutex );
+    PROFILE_END();
 };
 
 void commandList::exec( string cmd ) {
@@ -102,6 +111,7 @@ pthread_mutex_t commandList::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 MK_VISION_PLUGIN( textureExtractor, inline double sqDistance( Vector<3> v1, Vector<3> v2 ); );
 void textureExtractor::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    PROFILE_BEGIN( textures );
     SE3<> camera = environment->getCameraPose();
     for( set<PolyFace*>::iterator it = environment->getFaces().begin();
             it != environment->getFaces().end(); it++ ) {
@@ -109,8 +119,16 @@ void textureExtractor::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& s
         Vector<3> centre = (*it)->getFaceCentre();*/
         (*it)->testAndSetTexture( sceneRGB, camera, environment->getCamera() );
     }
+    PROFILE_END();
 };
 
 double textureExtractor::sqDistance( Vector<3> v1, Vector<3> v2 ) {
     return (v1[0]-v2[0]) * (v1[0]-v2[0]) + (v1[1]-v2[1]) * (v1[1]-v2[1]) + (v1[2]-v2[2]) * (v1[2]-v2[2]);
+}
+
+MK_VISION_PLUGIN( profiler, );
+void profiler::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    PROFILE_UPDATE_ALL( 0 );
+    PROFILE_OUTPUT_ALL();
+    PROFILE_DESTROY_ALL();
 }

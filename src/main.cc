@@ -36,6 +36,8 @@ using namespace GVars3;
 #include "Commands.cc"
 #include "Game/Hooks.cpp"
 
+#include "Shiny.cpp"
+
 
  void* safeCommandParser(void* ptr) {
      char line[2048];
