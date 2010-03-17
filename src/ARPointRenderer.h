@@ -13,6 +13,7 @@ using namespace TooN;
 #include <gvars3/instances.h>
 using namespace GVars3;
 #include <vector>
+#include <map>
 #include "Environment.h"
 #include "OpenGL.h"
 
@@ -28,6 +29,7 @@ protected:
     void DrawTarget( SE3<> camera );
     void DrawSphere();
     Environment *env;
+    std::map< Image< Rgb< byte > >*, GLuint > textures;
 
 };
 

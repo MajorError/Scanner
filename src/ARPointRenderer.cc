@@ -5,6 +5,7 @@
 #include <cvd/convolution.h>
 #include <gvars3/gvars3.h>
 #include <gvars3/instances.h>
+#include "Shiny.h"
 
 using namespace CVD;
 using namespace GVars3;
@@ -13,6 +14,7 @@ ARPointRenderer::ARPointRenderer( Environment *e ) : env( e ) {
 }
 
 void ARPointRenderer::DrawStuff(SE3<> camera) {
+    PROFILE_FUNC();
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glEnable( GL_CULL_FACE );
@@ -60,6 +62,7 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
 };
 
 void ARPointRenderer::DrawPoints( SE3<> camera ) {
+    PROFILE_FUNC();
     double ds = GV3::get<double>( "ptSize", 0.05 );
     env->lock();
     if ( GV3::get<bool>( "drawClosestPoint", true ) ) {
@@ -86,6 +89,7 @@ void ARPointRenderer::DrawPoints( SE3<> camera ) {
 };
 
 void ARPointRenderer::DrawFeatures( SE3<> camera ) {
+    PROFILE_FUNC();
     double ds = GV3::get<double>( "ftSize", 0.01 );
     double rad = GV3::get<double>( "ftRadius", 1.0 );
 
@@ -104,6 +108,7 @@ void ARPointRenderer::DrawFeatures( SE3<> camera ) {
 };
 
 void ARPointRenderer::DrawTarget( SE3<> camera ) {
+    PROFILE_FUNC();
     double ds = GV3::get<double>( "ftSize", 0.01 );
     glLoadIdentity();
     glColor4d(0.2, 0.9, 0.2, 1.0);
@@ -114,6 +119,7 @@ void ARPointRenderer::DrawTarget( SE3<> camera ) {
 };
 
 void ARPointRenderer::DrawPolys() {
+    PROFILE_FUNC();
     if ( GV3::get<bool>( "drawEdges", true ) ) {
         glLoadIdentity();
         glColor4d(0.2, 0.2, 0.9, 1.0);
@@ -149,21 +155,36 @@ void ARPointRenderer::DrawPolys() {
             // No empty entries or null pointers, please!
             if ( (*it) == NULL || (*it)->getP1() == NULL )
                 continue;
-
             // Set up texture info
-            glGenTextures( 1, &currTex );
-            glPrintErrors();
-            glBindTexture( GL_TEXTURE_2D, currTex );
-            glPrintErrors();
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            glPrintErrors();
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            glPrintErrors();
-            glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-            glPrintErrors();
-            glTexImage2D( (*it)->getTexture(), 0, GL_TEXTURE_2D );
-            glPrintErrors();
+            if ( textures.count( (*it)->getTextureSource() ) == 0 ) {
+                PROFILE_BEGIN( setupNewTexture );
+                glGenTextures( 1, &currTex );
+                glPrintErrors();
+                textures[(*it)->getTextureSource()] = currTex;
+                glBindTexture( GL_TEXTURE_2D, currTex );
+                glPrintErrors();
+                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+                glPrintErrors();
+                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+                glPrintErrors();
+                glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+                glPrintErrors();
+                glTexImage2D( (*it)->getTexture(), 0, GL_TEXTURE_2D );
+                glPrintErrors();
+            } else {
+                PROFILE_BEGIN( retrieveTexture );
+                glBindTexture( GL_TEXTURE_2D, textures[(*it)->getTextureSource()] );
+                glPrintErrors();
+                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+                glPrintErrors();
+                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+                glPrintErrors();
+                glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+                glPrintErrors();
+            }
+            PROFILE_END();
 
+            PROFILE_BEGIN( drawTriangles );
             glBegin( GL_TRIANGLES );
 
             glTexCoord( (*it)->getP1Coord( env->getCamera() ) ); glVertex( (*it)->getP1()->getPosition() );
@@ -188,9 +209,7 @@ void ARPointRenderer::DrawPolys() {
                 glEnable( GL_TEXTURE_2D );
                 glDisable( GL_POLYGON_SMOOTH );
             }
-            
-            glDeleteTextures( 1, &currTex );
-            glPrintErrors();
+            PROFILE_END();
         }
     }
     glDisable( GL_TEXTURE_RECTANGLE_ARB );
