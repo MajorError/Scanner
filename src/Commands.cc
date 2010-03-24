@@ -10,6 +10,8 @@
 #include "Game/WorldMap.h"
 #include "Game/GameFactory.h"
 
+#define PI 3.14159265
+
 MK_GUI_COMMAND(key, handle,)
 void key::handle( string s ) {
     for( unsigned int i = 0; i < Tool::list.size(); i++ ) {
@@ -373,6 +375,46 @@ namespace plane3 {
         
         environment->getFaces().erase( target );
         delete target;
+    }
+}
+
+namespace plane4 {
+    MK_GUI_COMMAND(plane, revolve,)
+    void plane::revolve( string params ) {
+        double d = numeric_limits<double>::max();
+        Vector<3> p;
+        Edge* axisEdge = environment->findClosestEdge( p, d );
+        // Generate a normalised axis
+        Vector<3> axis = axisEdge->getStart()->getPosition() - axisEdge->getEnd()->getPosition();
+        axis /= axis * axis;
+        PolyFace* targetFace = environment->findClosestFace( p );
+        set<PolyFace*> planeTemplate;
+        environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), planeTemplate );
+        
+        double numFaces = GV3::get<double>( "revolveFaces", 25 );
+        double freq = (PI * 2) / numFaces;
+        for ( double i = 1; i <= numFaces; i++ ) {
+            double theta = i * freq;
+            Vector<3> currAxis = axis * theta;
+            double a = sin( theta ) / theta;
+            double b = (1 - cos( theta )) / (theta * theta);
+            Matrix<3,3> rot;
+            rodrigues_so3_exp( currAxis, a, b, rot );
+            for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
+                Point* p1 = new Point( (*fc)->getP1()->getPosition() * rot );
+                Point* p2 = new Point( (*fc)->getP2()->getPosition() * rot );
+                Point* p3 = new Point( (*fc)->getP3()->getPosition() * rot );
+
+                environment->addPoint( p1 );
+                environment->addPoint( p2 );
+                environment->addPoint( p3 );
+
+                environment->addEdge( p1, p2 );
+                environment->addEdge( p1, p3 );
+                environment->addEdge( p2, p3 );
+            }
+        }
+
     }
 }
 

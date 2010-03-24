@@ -101,6 +101,11 @@ void extrude::click() {
     init = !init;
 };
 
+MK_TOOL_PLUGIN( revolve, "Space", );
+void revolve::click() {
+    commandList::exec( "plane.revolve" );
+};
+
 MK_TOOL_PLUGIN( vertex_remove, "Space", );
 void vertex_remove::click() {
     commandList::exec( "vertex.remove" );
