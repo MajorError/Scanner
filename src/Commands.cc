@@ -386,32 +386,49 @@ namespace plane4 {
         Edge* axisEdge = environment->findClosestEdge( p, d );
         // Generate a normalised axis
         Vector<3> axis = axisEdge->getStart()->getPosition() - axisEdge->getEnd()->getPosition();
-        axis /= axis * axis;
+        axis /= sqrt( axis * axis );
         PolyFace* targetFace = environment->findClosestFace( p );
         set<PolyFace*> planeTemplate;
         environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), planeTemplate );
         
         double numFaces = GV3::get<double>( "revolveFaces", 25 );
         double freq = (PI * 2) / numFaces;
+        Matrix<3,3> transToOrigin;
+        transToOrigin[0] = makeVector( 1, 0, 0 );
+        transToOrigin[1] = makeVector( 0, 1, 0 );
+        transToOrigin[2] = -axisEdge->getStart()->getPosition();
+        SO3<> rotToX( axis, makeVector( 1, 0, 0 ) );
+        SO3<> rotBack = rotToX.inverse();
+        Matrix<3,3> transBack;
+        transBack[0] = makeVector( 1, 0, 0 );
+        transBack[1] = makeVector( 0, 1, 0 );
+        transBack[2] = axisEdge->getStart()->getPosition();
         for ( double i = 1; i <= numFaces; i++ ) {
             double theta = i * freq;
+            /*double sinTheta = sin( theta );
+            double cosTheta = cos( theta );
+
+            Matrix<3,3> rot;
+            rot[0] = makeVector( 1, 0, 0 );
+            rot[1] = makeVector( 0, cosTheta, sinTheta );
+            rot[2] = makeVector( 0, -sinTheta, cosTheta );
+            Matrix<3,3> xform = transToOrigin * rotToX.get_matrix() * rot * rotBack.get_matrix() * transBack;*/
+            
             Vector<3> currAxis = axis * theta;
             double a = sin( theta ) / theta;
             double b = (1 - cos( theta )) / (theta * theta);
-            Matrix<3,3> rot;
-            rodrigues_so3_exp( currAxis, a, b, rot );
+            Matrix<3,3> xform;
+            rodrigues_so3_exp( currAxis, a, b, xform );
+            
             // Ensure there is no duplication of points
             map<Point*,Point*> pointMap;
             for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
                 Point* p1 = pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()]
-                        : new Point( (*fc)->getP1()->getPosition() * rot );
+                        : pointMap[(*fc)->getP1()] = new Point( (*fc)->getP1()->getPosition() * xform );
                 Point* p2 = pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()]
-                        : new Point( (*fc)->getP2()->getPosition() * rot );
+                        : pointMap[(*fc)->getP2()] = new Point( (*fc)->getP2()->getPosition() * xform );
                 Point* p3 = pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()]
-                        : new Point( (*fc)->getP3()->getPosition() * rot );
-                pointMap[(*fc)->getP1()] = p1;
-                pointMap[(*fc)->getP2()] = p2;
-                pointMap[(*fc)->getP3()] = p3;
+                        : pointMap[(*fc)->getP3()] = new Point( (*fc)->getP3()->getPosition() * xform );
                 
                 if ( (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() )
                     environment->addPoint( p1 );
