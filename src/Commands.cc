@@ -403,6 +403,12 @@ namespace plane4 {
         transBack[0] = makeVector( 1, 0, 0 );
         transBack[1] = makeVector( 0, 1, 0 );
         transBack[2] = axisEdge->getStart()->getPosition();
+        map< Point*, vector<Point*> > pointProjection;
+        for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
+            pointProjection[(*fc)->getP1()].push_back( (*fc)->getP1() );
+            pointProjection[(*fc)->getP2()].push_back( (*fc)->getP2() );
+            pointProjection[(*fc)->getP3()].push_back( (*fc)->getP3() );
+        }
         for ( double i = 1; i <= numFaces; i++ ) {
             double theta = i * freq;
             double sinTheta = sin( theta );
@@ -419,60 +425,51 @@ namespace plane4 {
             
             for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
                 // Each new point is (pos - axisStart) * xform + axisStart
-                Point* p1 = pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()]
-                        : pointMap[(*fc)->getP1()] = new Point(
-                            ((*fc)->getP1()->getPosition() - axisEdge->getStart()->getPosition())
+                Point* p1 = NULL;
+                if ( pointMap.count( (*fc)->getP1() ) == 0 && (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() ) {
+                    p1 = new Point( ((*fc)->getP1()->getPosition() - axisEdge->getStart()->getPosition())
                             * xform + axisEdge->getStart()->getPosition() );
-                Point* p2 = pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()]
-                        : pointMap[(*fc)->getP2()] = new Point(
-                            ((*fc)->getP2()->getPosition() - axisEdge->getStart()->getPosition())
-                            * xform + axisEdge->getStart()->getPosition() );
-                Point* p3 = pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()]
-                        : pointMap[(*fc)->getP3()] = new Point(
-                            ((*fc)->getP3()->getPosition() - axisEdge->getStart()->getPosition())
-                            * xform + axisEdge->getStart()->getPosition() );
-                
-                if ( (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() )
+                    pointMap[(*fc)->getP1()] = p1;
                     environment->addPoint( p1 );
-                if ( (*fc)->getP2() != axisEdge->getStart() && (*fc)->getP2() != axisEdge->getEnd() )
+                    environment->addEdge( p1, pointProjection[(*fc)->getP1()].back() );
+                    pointProjection[(*fc)->getP1()].push_back( p1 );
+                    if ( (*fc)->getP2() == axisEdge->getStart() || (*fc)->getP2() == axisEdge->getEnd() )
+                        environment->addEdge( p1, (*fc)->getP2() );
+                    if ( (*fc)->getP3() == axisEdge->getStart() || (*fc)->getP3() == axisEdge->getEnd() )
+                        environment->addEdge( p1, (*fc)->getP3() );
+                }
+                Point* p2 = NULL;
+                if ( pointMap.count( (*fc)->getP2() ) == 0 && (*fc)->getP2() != axisEdge->getStart() && (*fc)->getP2() != axisEdge->getEnd() ) {
+                    p2 = new Point( ((*fc)->getP2()->getPosition() - axisEdge->getStart()->getPosition())
+                            * xform + axisEdge->getStart()->getPosition() );
+                    pointMap[(*fc)->getP2()] = p2;
                     environment->addPoint( p2 );
-                if ( (*fc)->getP3() != axisEdge->getStart() && (*fc)->getP3() != axisEdge->getEnd() )
+                    environment->addEdge( p2, pointProjection[(*fc)->getP2()].back() );
+                    pointProjection[(*fc)->getP2()].push_back( p2 );
+                    if ( (*fc)->getP1() == axisEdge->getStart() || (*fc)->getP1() == axisEdge->getEnd() )
+                        environment->addEdge( p2, (*fc)->getP1() );
+                    if ( (*fc)->getP3() == axisEdge->getStart() || (*fc)->getP3() == axisEdge->getEnd() )
+                        environment->addEdge( p2, (*fc)->getP3() );
+                }
+                Point* p3 = NULL;
+                if ( pointMap.count( (*fc)->getP3() ) == 0 && (*fc)->getP3() != axisEdge->getStart() && (*fc)->getP3() != axisEdge->getEnd() ) {
+                    p3 = new Point( ((*fc)->getP3()->getPosition() - axisEdge->getStart()->getPosition())
+                            * xform + axisEdge->getStart()->getPosition() );
+                    pointMap[(*fc)->getP3()] = p3;
                     environment->addPoint( p3 );
-
-                if ( (*fc)->getP1() == axisEdge->getStart() ) {
-                    environment->addEdge( axisEdge->getStart(), (*fc)->getP2() == axisEdge->getEnd() ? axisEdge->getStart() : p2 );
-                    environment->addEdge( axisEdge->getStart(), (*fc)->getP3() == axisEdge->getEnd() ? axisEdge->getStart() : p3 );
-                } else if ( (*fc)->getP1() == axisEdge->getEnd() ) {
-                    environment->addEdge( axisEdge->getEnd(), (*fc)->getP2() == axisEdge->getStart() ? axisEdge->getEnd() : p2 );
-                    environment->addEdge( axisEdge->getEnd(), (*fc)->getP3() == axisEdge->getStart() ? axisEdge->getEnd() : p3 );
-                } else {
-                    if ( (*fc)->getP2() == axisEdge->getStart() )
-                        environment->addEdge( p1, axisEdge->getStart() );
-                    else if ( (*fc)->getP2() == axisEdge->getEnd() )
-                        environment->addEdge( p1, axisEdge->getEnd() );
-                    else
-                        environment->addEdge( p1, p2 );
-
-                    if ( (*fc)->getP3() == axisEdge->getStart() )
-                        environment->addEdge( p1, axisEdge->getStart() );
-                    else if ( (*fc)->getP3() == axisEdge->getEnd() )
-                        environment->addEdge( p1, axisEdge->getEnd() );
-                    else
-                        environment->addEdge( p1, p3 );
+                    environment->addEdge( p3, pointProjection[(*fc)->getP3()].back() );
+                    pointProjection[(*fc)->getP3()].push_back( p3 );
+                    if ( (*fc)->getP1() == axisEdge->getStart() || (*fc)->getP1() == axisEdge->getEnd() )
+                        environment->addEdge( p3, (*fc)->getP1() );
+                    if ( (*fc)->getP2() == axisEdge->getStart() || (*fc)->getP2() == axisEdge->getEnd() )
+                        environment->addEdge( p3, (*fc)->getP2() );
                 }
-
-                if ( (*fc)->getP2() == axisEdge->getStart() ) {
-                    environment->addEdge( axisEdge->getStart(), (*fc)->getP3() == axisEdge->getEnd() ? axisEdge->getStart() : p3 );
-                } else if ( (*fc)->getP2() == axisEdge->getEnd() ) {
-                    environment->addEdge( axisEdge->getEnd(), (*fc)->getP3() == axisEdge->getStart() ? axisEdge->getEnd() : p3 );
-                } else {
-                    if ( (*fc)->getP3() == axisEdge->getStart() )
-                        environment->addEdge( p2, axisEdge->getStart() );
-                    else if ( (*fc)->getP3() == axisEdge->getEnd() )
-                        environment->addEdge( p2, axisEdge->getEnd() );
-                    else
-                        environment->addEdge( p2, p3 );
-                }
+                environment->addEdge( pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()] : (*fc)->getP1(),
+                        pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2() );
+                environment->addEdge( pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()] : (*fc)->getP1(),
+                        pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2() );
+                environment->addEdge( pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2(),
+                        pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()] : (*fc)->getP3() );
             }
         }
 
