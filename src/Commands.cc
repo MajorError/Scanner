@@ -75,13 +75,22 @@ namespace vtx1 {
 }
 
 namespace vtx2 {
-    MK_GUI_COMMAND(vertex, move, SE3<> start; pthread_t mover; static void* moveProcessor( void* ptr );)
+    // Params used to "lock" part of the motion, by setting that axis to 0
+    MK_GUI_COMMAND(vertex, move, SE3<> start; Vector<3> lock; pthread_t mover; static void* moveProcessor( void* ptr );)
     void vertex::move( string params ) {
+        if ( environment->getPoints().size() == 0 )
+            return;
         if ( !init ) {
+            if ( params.length() > 0 ) {
+                stringstream s( params );
+                s >> lock;
+            } else {
+                lock = makeVector( 1, 1, 1 );
+            }
             start = environment->getCameraPose();
             init = true;
             pthread_create( &mover, NULL, vertex::moveProcessor, (void*)this );
-        } else if ( environment->getPoints().size() > 0 ) {
+        } else {
             init = false;
             pthread_join( mover, NULL );
         }
@@ -99,15 +108,18 @@ namespace vtx2 {
         projection[0] /= rot[0][2];
         projection[1] /= rot[1][2];
         projection[2] /= rot[2][2];
+        Vector<3> lerp = makeVector( (1 - p->lock[0]) * target->getPosition()[0],
+                (1 - p->lock[1]) * target->getPosition()[1], (1 - p->lock[2]) * target->getPosition()[2] );
         while( p->init ) {
             camera = p->environment->getCameraPose();
             rot = camera.get_rotation().get_matrix();
             // Now project as camera + view * startPt
             // Calculate in a separate list to prevent flickering
-            Vector<3> tmp( camera.get_translation() );
-            tmp[0] += rot[0][2] * projection[0];
-            tmp[1] += rot[1][2] * projection[1];
-            tmp[2] += rot[2][2] * projection[2];
+            // Lerp with locked version from start frame
+            Vector<3> tmp;
+            tmp[0] = p->lock[0] * (camera.get_translation()[0] + rot[0][2] * projection[0]) + lerp[0];
+            tmp[1] = p->lock[1] * (camera.get_translation()[1] + rot[1][2] * projection[1]) + lerp[1];
+            tmp[2] = p->lock[2] * (camera.get_translation()[2] + rot[2][2] * projection[2]) + lerp[2];
             target->setPosition( tmp );
         }
         return NULL;

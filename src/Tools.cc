@@ -57,9 +57,24 @@ void creator::click() {
     commandList::exec( "vertex.create" );
 };
 
-MK_TOOL_PLUGIN( point_mover, "Space", );
-void point_mover::click() {
+MK_TOOL_PLUGIN( point_freemove, "Space", );
+void point_freemove::click() {
     commandList::exec( "vertex.move" );
+};
+
+MK_TOOL_PLUGIN( point_X_move, "Space", );
+void point_X_move::click() {
+    commandList::exec( "vertex.move 1 0 0" );
+};
+
+MK_TOOL_PLUGIN( point_Y_move, "Space", );
+void point_Y_move::click() {
+    commandList::exec( "vertex.move 0 1 0" );
+};
+
+MK_TOOL_PLUGIN( point_Z_move, "Space", );
+void point_Z_move::click() {
+    commandList::exec( "vertex.move 0 0 1" );
 };
 
 MK_TOOL_PLUGIN( connect, "Space", );
