@@ -387,7 +387,23 @@ namespace plane4 {
         // Generate a normalised axis
         Vector<3> axis = axisEdge->getStart()->getPosition() - axisEdge->getEnd()->getPosition();
         axis /= sqrt( axis * axis );
-        PolyFace* targetFace = environment->findClosestFace( p );
+        PolyFace* targetFace = NULL;
+        for( set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++ ) {
+            int nf = 0;
+            if ( (*curr)->getP1() == axisEdge->getStart() || (*curr)->getP1() == axisEdge->getEnd() )
+                nf++;
+            if ( (*curr)->getP2() == axisEdge->getStart() || (*curr)->getP2() == axisEdge->getEnd() )
+                nf++;
+            if ( (*curr)->getP3() == axisEdge->getStart() || (*curr)->getP3() == axisEdge->getEnd() )
+                nf++;
+            if ( nf >= 2 ) {
+                targetFace = *curr;
+                break;
+            }
+        }
+        if ( targetFace == NULL )
+            return;
         set<PolyFace*> planeTemplate;
         environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), planeTemplate );
         
@@ -436,7 +452,8 @@ namespace plane4 {
             for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
                 // Each new point is (pos - axisStart) * xform + axisStart
                 Point* p1 = NULL;
-                if ( pointMap.count( (*fc)->getP1() ) == 0 && (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() ) {
+                if ( pointMap.count( (*fc)->getP1() ) == 0 &&
+                        (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() ) {
                     p1 = new Point( ((*fc)->getP1()->getPosition() - axisEdge->getStart()->getPosition())
                             * xform + axisEdge->getStart()->getPosition() );
                     pointMap[(*fc)->getP1()] = p1;
@@ -448,7 +465,8 @@ namespace plane4 {
                         environment->addEdge( p1, (*fc)->getP3() );
                 }
                 Point* p2 = NULL;
-                if ( pointMap.count( (*fc)->getP2() ) == 0 && (*fc)->getP2() != axisEdge->getStart() && (*fc)->getP2() != axisEdge->getEnd() ) {
+                if ( pointMap.count( (*fc)->getP2() ) == 0 &&
+                        (*fc)->getP2() != axisEdge->getStart() && (*fc)->getP2() != axisEdge->getEnd() ) {
                     p2 = new Point( ((*fc)->getP2()->getPosition() - axisEdge->getStart()->getPosition())
                             * xform + axisEdge->getStart()->getPosition() );
                     pointMap[(*fc)->getP2()] = p2;
@@ -460,7 +478,8 @@ namespace plane4 {
                         environment->addEdge( p2, (*fc)->getP3() );
                 }
                 Point* p3 = NULL;
-                if ( pointMap.count( (*fc)->getP3() ) == 0 && (*fc)->getP3() != axisEdge->getStart() && (*fc)->getP3() != axisEdge->getEnd() ) {
+                if ( pointMap.count( (*fc)->getP3() ) == 0 &&
+                        (*fc)->getP3() != axisEdge->getStart() && (*fc)->getP3() != axisEdge->getEnd() ) {
                     p3 = new Point( ((*fc)->getP3()->getPosition() - axisEdge->getStart()->getPosition())
                             * xform + axisEdge->getStart()->getPosition() );
                     pointMap[(*fc)->getP3()] = p3;
@@ -483,7 +502,8 @@ namespace plane4 {
         // We have to record the edges, not just create them, so we don't see
         //    the new edges on the next iteration
         multimap<Point*,Point*> edgeTodo;
-        for( map< Point*, vector<Point*> >::iterator pointPair = pointProjection.begin(); pointPair != pointProjection.end(); pointPair++ ) {
+        for( map< Point*, vector<Point*> >::iterator pointPair = pointProjection.begin();
+                pointPair != pointProjection.end(); pointPair++ ) {
             Point* prev = pointPair->second.back();
             for( vector<Point*>::iterator curr = pointPair->second.begin(); curr != pointPair->second.end(); curr++ ) {
                 // Connect to the previous projected point
@@ -497,7 +517,8 @@ namespace plane4 {
                 prev = *curr;
             }
         }
-        for( multimap<Point*,Point*>::iterator pair = edgeTodo.begin(); pair != edgeTodo.end(); pair++ ) {
+        for( multimap<Point*,Point*>::iterator pair = edgeTodo.begin();
+                pair != edgeTodo.end(); pair++ ) {
             environment->addEdge( pair->first, pair->second );
         }
     }
