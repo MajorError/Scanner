@@ -397,38 +397,40 @@ namespace plane4 {
         transToOrigin[0] = makeVector( 1, 0, 0 );
         transToOrigin[1] = makeVector( 0, 1, 0 );
         transToOrigin[2] = -axisEdge->getStart()->getPosition();
-        SO3<> rotToX( axis, makeVector( 1, 0, 0 ) );
-        SO3<> rotBack = rotToX.inverse();
+        SO3<> rotToAxis( axis, makeVector( 1, 0, 0 ) );
+        SO3<> rotBack = rotToAxis.inverse();
         Matrix<3,3> transBack;
         transBack[0] = makeVector( 1, 0, 0 );
         transBack[1] = makeVector( 0, 1, 0 );
         transBack[2] = axisEdge->getStart()->getPosition();
         for ( double i = 1; i <= numFaces; i++ ) {
             double theta = i * freq;
-            /*double sinTheta = sin( theta );
+            double sinTheta = sin( theta );
             double cosTheta = cos( theta );
 
             Matrix<3,3> rot;
             rot[0] = makeVector( 1, 0, 0 );
-            rot[1] = makeVector( 0, cosTheta, sinTheta );
+            rot[1] = makeVector( 0, cosTheta, sinTheta  );
             rot[2] = makeVector( 0, -sinTheta, cosTheta );
-            Matrix<3,3> xform = transToOrigin * rotToX.get_matrix() * rot * rotBack.get_matrix() * transBack;*/
-            
-            Vector<3> currAxis = axis * theta;
-            double a = sin( theta ) / theta;
-            double b = (1 - cos( theta )) / (theta * theta);
-            Matrix<3,3> xform;
-            rodrigues_so3_exp( currAxis, a, b, xform );
+            Matrix<3,3> xform = rotToAxis.get_matrix() * rot * rotBack.get_matrix();
             
             // Ensure there is no duplication of points
             map<Point*,Point*> pointMap;
+            
             for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
+                // Each new point is (pos - axisStart) * xform + axisStart
                 Point* p1 = pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()]
-                        : pointMap[(*fc)->getP1()] = new Point( (*fc)->getP1()->getPosition() * xform );
+                        : pointMap[(*fc)->getP1()] = new Point(
+                            ((*fc)->getP1()->getPosition() - axisEdge->getStart()->getPosition())
+                            * xform + axisEdge->getStart()->getPosition() );
                 Point* p2 = pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()]
-                        : pointMap[(*fc)->getP2()] = new Point( (*fc)->getP2()->getPosition() * xform );
+                        : pointMap[(*fc)->getP2()] = new Point(
+                            ((*fc)->getP2()->getPosition() - axisEdge->getStart()->getPosition())
+                            * xform + axisEdge->getStart()->getPosition() );
                 Point* p3 = pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()]
-                        : pointMap[(*fc)->getP3()] = new Point( (*fc)->getP3()->getPosition() * xform );
+                        : pointMap[(*fc)->getP3()] = new Point(
+                            ((*fc)->getP3()->getPosition() - axisEdge->getStart()->getPosition())
+                            * xform + axisEdge->getStart()->getPosition() );
                 
                 if ( (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() )
                     environment->addPoint( p1 );
