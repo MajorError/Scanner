@@ -400,18 +400,60 @@ namespace plane4 {
             double b = (1 - cos( theta )) / (theta * theta);
             Matrix<3,3> rot;
             rodrigues_so3_exp( currAxis, a, b, rot );
+            // Ensure there is no duplication of points
+            map<Point*,Point*> pointMap;
             for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
-                Point* p1 = new Point( (*fc)->getP1()->getPosition() * rot );
-                Point* p2 = new Point( (*fc)->getP2()->getPosition() * rot );
-                Point* p3 = new Point( (*fc)->getP3()->getPosition() * rot );
+                Point* p1 = pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()]
+                        : new Point( (*fc)->getP1()->getPosition() * rot );
+                Point* p2 = pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()]
+                        : new Point( (*fc)->getP2()->getPosition() * rot );
+                Point* p3 = pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()]
+                        : new Point( (*fc)->getP3()->getPosition() * rot );
+                pointMap[(*fc)->getP1()] = p1;
+                pointMap[(*fc)->getP2()] = p2;
+                pointMap[(*fc)->getP3()] = p3;
+                
+                if ( (*fc)->getP1() != axisEdge->getStart() && (*fc)->getP1() != axisEdge->getEnd() )
+                    environment->addPoint( p1 );
+                if ( (*fc)->getP2() != axisEdge->getStart() && (*fc)->getP2() != axisEdge->getEnd() )
+                    environment->addPoint( p2 );
+                if ( (*fc)->getP3() != axisEdge->getStart() && (*fc)->getP3() != axisEdge->getEnd() )
+                    environment->addPoint( p3 );
 
-                environment->addPoint( p1 );
-                environment->addPoint( p2 );
-                environment->addPoint( p3 );
+                if ( (*fc)->getP1() == axisEdge->getStart() ) {
+                    environment->addEdge( axisEdge->getStart(), (*fc)->getP2() == axisEdge->getEnd() ? axisEdge->getStart() : p2 );
+                    environment->addEdge( axisEdge->getStart(), (*fc)->getP3() == axisEdge->getEnd() ? axisEdge->getStart() : p3 );
+                } else if ( (*fc)->getP1() == axisEdge->getEnd() ) {
+                    environment->addEdge( axisEdge->getEnd(), (*fc)->getP2() == axisEdge->getStart() ? axisEdge->getEnd() : p2 );
+                    environment->addEdge( axisEdge->getEnd(), (*fc)->getP3() == axisEdge->getStart() ? axisEdge->getEnd() : p3 );
+                } else {
+                    if ( (*fc)->getP2() == axisEdge->getStart() )
+                        environment->addEdge( p1, axisEdge->getStart() );
+                    else if ( (*fc)->getP2() == axisEdge->getEnd() )
+                        environment->addEdge( p1, axisEdge->getEnd() );
+                    else
+                        environment->addEdge( p1, p2 );
 
-                environment->addEdge( p1, p2 );
-                environment->addEdge( p1, p3 );
-                environment->addEdge( p2, p3 );
+                    if ( (*fc)->getP3() == axisEdge->getStart() )
+                        environment->addEdge( p1, axisEdge->getStart() );
+                    else if ( (*fc)->getP3() == axisEdge->getEnd() )
+                        environment->addEdge( p1, axisEdge->getEnd() );
+                    else
+                        environment->addEdge( p1, p3 );
+                }
+
+                if ( (*fc)->getP2() == axisEdge->getStart() ) {
+                    environment->addEdge( axisEdge->getStart(), (*fc)->getP3() == axisEdge->getEnd() ? axisEdge->getStart() : p3 );
+                } else if ( (*fc)->getP2() == axisEdge->getEnd() ) {
+                    environment->addEdge( axisEdge->getEnd(), (*fc)->getP3() == axisEdge->getStart() ? axisEdge->getEnd() : p3 );
+                } else {
+                    if ( (*fc)->getP3() == axisEdge->getStart() )
+                        environment->addEdge( p2, axisEdge->getStart() );
+                    else if ( (*fc)->getP3() == axisEdge->getEnd() )
+                        environment->addEdge( p2, axisEdge->getEnd() );
+                    else
+                        environment->addEdge( p2, p3 );
+                }
             }
         }
 
