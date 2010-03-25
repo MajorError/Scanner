@@ -987,9 +987,67 @@ namespace mesh3 {
             // Now apply the same vector to all points
             tmp -= targetStart;
             p->environment->lock();
-            for( std::list<Point*>::iterator curr = p->environment->getPoints().begin();
+            for( map< Point*, Vector<3> >::iterator curr = targetPoints.begin();
+                    curr != targetPoints.end(); curr++ ) {
+                curr->first->setPosition( curr->second + tmp );
+            }
+            p->environment->unlock();
+        }
+        return NULL;
+    }
+}
+
+namespace mesh4 {
+    MK_GUI_COMMAND(mesh, scale, SE3<> start; pthread_t scaler; static void* scaleProcessor( void* ptr );)
+    void mesh::scale( string params ) {
+        if ( environment->getPoints().size() == 0 )
+            return;
+        if ( !init ) {
+            start = environment->getCameraPose();
+            init = true;
+            pthread_create( &scaler, NULL, mesh::scaleProcessor, (void*)this );
+        } else {
+            init = false;
+            pthread_join( scaler, NULL );
+        }
+    }
+
+    void* mesh::scaleProcessor( void* ptr ) {
+        mesh *p = static_cast<mesh*>( ptr );
+        Vector<3> projection;
+        SE3<> camera( p->environment->getCameraPose() );
+        Point* target = p->environment->sortPoints( camera ).front();
+        Vector<3> targetStart = target->getPosition();
+        // start point on list ~ camera + view*t
+        Matrix<> rot = camera.get_rotation().get_matrix();
+        projection = target->getPosition();
+        projection -= camera.get_translation();
+        projection[0] /= rot[0][2];
+        projection[1] /= rot[1][2];
+        projection[2] /= rot[2][2];
+
+        map< Point*, Vector<3> > targetPoints;
+         for( std::list<Point*>::iterator curr = p->environment->getPoints().begin();
                     curr != p->environment->getPoints().end(); curr++ ) {
-                (*curr)->setPosition( targetPoints[*curr] + tmp );
+            targetPoints[*curr] = (*curr)->getPosition();
+        }
+        
+        while( p->init ) {
+            camera = p->environment->getCameraPose();
+            rot = camera.get_rotation().get_matrix();
+            // Work out position of target point, as in vertex.move
+            Vector<3> tmp;
+            tmp[0] = (camera.get_translation()[0] + rot[0][2] * projection[0]);
+            tmp[1] = (camera.get_translation()[1] + rot[1][2] * projection[1]);
+            tmp[2] = (camera.get_translation()[2] + rot[2][2] * projection[2]);
+
+            // Now calculate the scale vector to apply to all points
+            double scaleFactor = (tmp - targetStart) * (tmp - targetStart);
+
+            p->environment->lock();
+            for( map< Point*, Vector<3> >::iterator curr = targetPoints.begin();
+                    curr != targetPoints.end(); curr++ ) {
+                curr->first->setPosition( curr->second * scaleFactor );
             }
             p->environment->unlock();
         }
