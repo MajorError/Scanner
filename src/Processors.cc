@@ -4,6 +4,7 @@
 #include "VisionProcessor.h"
 #include "Environment.h"
 #include "Shiny.h"
+#include "Map.h"
 
 using namespace CVD;
 using namespace GVars3;
@@ -49,7 +50,8 @@ void ptam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
 
     mpTracker->TrackFrame( sceneBW, false/*!mpMap->IsGood()*/ );
     environment->setCameraPose( mpTracker->GetCurrentPose().inverse() );
-    // TODO: Is this slow? Worth it to prevent dep leakage?
+    if( !mpMap->IsGood() )
+        GUI.ParseLine( "text.draw Perform stereo init to start modelling" );
     environment->clearFeatures();
     for( unsigned int i = 0; i < mpMap->vpPoints.size(); i++ )
         if ( !mpMap->vpPoints[i]->bBad )
