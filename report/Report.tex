@@ -486,17 +486,38 @@ Given an initial camera pose $C$, and that $C_{rotation} = \left[
   \end{array}\right]$, the new vertex position at camera pose $C'$ is given by 
 \\
 
-$ \left[ 
+$$\displaystyle \left[ 
   \begin{array}{c}
     lock_x \times (C'_x + z'_1 \times \frac{Target_x - C_x}{z_1}) + (1 - lock_x) \times Target_x \\ 
     lock_y \times (C'_y + z'_2 \times \frac{Target_y - C_y}{z_2}) + (1 - lock_y) \times Target_y \\ 
     lock_z \times (C'_z + z'_3 \times \frac{Target_z - C_z}{z_3}) + (1 - lock_z) \times Target_z
-  \end{array}\right]$
-\\
+  \end{array}\right]$$
 }
 \item{\textbf{edge.connect}: This simple command is used to identify two vertices, and joins them together automatically with an \texttt{Edge} - automatically avoiding duplication and inserting \texttt{PolyFace}s as edge loops are completed.}
-\item{\textbf{edge.bisect}:}
-\item{\textbf{edge.remove}:}
+\item{\textbf{edge.remove}: This command is the functional inverse of the connect tool; it disconnects two vertices, destroying any \texttt{PolyFace}s that included these edges.}
+\item{\textbf{edge.bisect}: The last of the edge manipulation commands, this will insert an extra point on a given edge, splitting any \texttt{PolyFace}s on the way. The edge identification algorithm is the same as for removal; it seeks the point of intersection between the look-vector from the camera and the vector defined by the edge, within some given tolerance. The goal is to minimise $|TargetPoint ~-~ EdgePoint|$ in the following equations;
+\\
+        
+Let $u ~=~ \left[ 
+  \begin{array}{c}
+    z_1 \\ 
+    z_2 \\ 
+    z_3 
+  \end{array}\right]$, from the camera rotation, as before, and $v$ be the vector described by the edge in question. Therefore, we can prepare some variables; first, let $p_0$ be the camera's position, and the start point of the current edge be $q_0$. With these definitions in hand,
+\begin{eqnarray*}
+  w_0 &=& p_0 - q_0 \\
+  a &=& u \cdot u \\
+  b &=& u \cdot v \\
+  c &=& v \cdot v \\
+  d &=& u \cdot w_0 \\
+  e &=& v \cdot w_0 \\
+  Therefore:\\
+  EdgePoint &=& q_0 + v \times \frac{a \times e - b \times d}{a \times c - b \times b} \\
+  TargetPoint &=& p_0 + u \times \frac{b \times e - c \times d}{a \times c - b \times b}
+\end{eqnarray*}
+
+Once we have minimised the above constraint, and ensured that $EdgePoint$ is on the edge, by ensuring that $0 \leq v \cdot (EdgePoint - q_0) < |v|$, the target point for the bisected edge is at $EdgePoint$. The tool for this command also then automatically invokes \textbf{vertex.move}, so that the user may position the point as desired.
+}
 \item{\textbf{plane.move}:}
 \item{\textbf{plane.extrude}:}
 \item{\textbf{plane.split}:}
