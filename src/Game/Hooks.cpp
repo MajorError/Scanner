@@ -37,11 +37,12 @@ void tick::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     commandList::exec( cmd.str() );
 
     // Step simulation according to actual time passed - should bypass framerate issues
+    double subStep = GV3::get<double>( "physicsStep", 1.f/60.f );
     double dt = clock.getTimeMilliseconds();
-    clock.reset();
-    double subStep = 1.f/60.f;
-    for( double step = 0; step < dt / 100; step += subStep )
+    for( double step = 0; step < dt / 100; step += subStep ) {
         dynamicsWorld->stepSimulation( subStep, numeric_limits<int>::max(), btScalar(1.)/btScalar(600.) );
+    }
+    clock.reset();
     
     // Cull any objects that have fallen off the bottom of the world
     vector<Projectile*> validProjectiles;
