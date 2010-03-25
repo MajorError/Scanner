@@ -422,9 +422,63 @@ The \texttt{Environment} class is more than just pointers to data, however; it c
 \end{figure}
 
 \subsubsection{Vision Processors}
+\begin{enumerate}
+\item{\textbf{cam}: Extracts camera frames from the compiled-in \texttt{VideoSource}, which converts them to their RGB and Black \& White variants for passing on to other vision processors.}
+\item{\textbf{ptam}: Invokes the PTAM camera tracking system to track the current video frame. Once tracking is complete, this plugin also records the camera pose into the current \texttt{Environment}, as well as updating the list of features that PTAM is tracking. These features are used by many of the Commands, outlined below.}
+\item{\textbf{guiDispatch}: Dispatches any GUI events, and renders the current view. This extends the double-buffered \texttt{GLWindow2} and \texttt{ARDriver} classes from PTAM; in this way, they may reuse the camera calibration for AR projection, as discussed previously, while using our custom \texttt{ARPointRenderer} for actual object rendering.}
+\item{\textbf{commandList}: Synchronised plugin to execute commands in the main thread. This uses \texttt{pthread\_mutex} locks to present a thread-safe way of invoking commands from any thread in the system, and ensuring they are executed sequentially, without any interleaving. It offers a static method, \texttt{commandList::exec( string )}, to quickly add a command to the execution list, and then clears this entire list on each call to \texttt{doProcessing}.}
+\item{\textbf{textureExtractor}: Test the current texture frame against each polygon in the image to see if it is a better match for texturing than the viewpoint it previously had. Most of the program logic for this is encapsulated within the \texttt{PolyFace} class.}
+\item{\textbf{profiler}: Prints out hierarchical profiling timing information to the console. The run-time profiler used throughout the codebase is Shiny\ref{shiny}, a fast and low-overhead C++ profiler. Profiling points can be defined arbitrarily; either as an entire method, or for sub-components, to allow more specific behaviours to be timed. An example of the profiler's output can be seen below:
+\begin{verbatim}
+call tree                hits       self time      total time
+<root>                    1.0      8 us    0%     54 ms  100%
+  cam                     1.0     29 ms   53%     29 ms   53%
+  ptam                    1.0     13 ms   24%     13 ms   24%
+  gui                     1.0      5 ms    9%     13 ms   23%
+    DrawStuff             1.0     15 us    0%      8 ms   14%
+      DrawPoints          1.0      7 ms   12%      7 ms   12%
+      DrawFeatures        1.0     20 us    0%     20 us    0%
+      DrawTarget          1.0    842 us    2%    842 us    2%
+      DrawPolys           1.0     65 us    0%    200 us    0%
+        textureTidyup     9.0     19 us    0%     19 us    0%
+        retrieveTexture   9.0     12 us    0%     12 us    0%
+        drawTriangles     9.0    104 us    0%    104 us    0%
+  commands                1.0     19 us    0%     19 us    0%
+  textures                1.0     34 us    0%     34 us    0%
+\end{verbatim}
+}
+\end{enumerate}
 
 \subsubsection{Commands \& Tools}
+\begin{itemize}
+\item{\textbf{key.handle}:}
+\item{\textbf{edgelist.dump}:}
+\item{\textbf{pointlist.dump}:}
+\item{\textbf{polylist.dump}:}
+\item{\textbf{vertex.create}:}
+\item{\textbf{vertex.move}:}
+\item{\textbf{vertex.remove}:}
+\item{\textbf{edge.connect}:}
+\item{\textbf{edge.bisect}:}
+\item{\textbf{edge.remove}:}
+\item{\textbf{plane.move}:}
+\item{\textbf{plane.extrude}:}
+\item{\textbf{plane.split}:}
+\item{\textbf{plane.revolve}:}
+\item{\textbf{text.draw}:}
+\item{\textbf{texture.clean}:}
+\item{\textbf{texture.clear}:}
+\item{\textbf{textureBoundary.blend}:}
+\item{\textbf{shrinkwrap.exec}:}
+\item{\textbf{mesh.subdivide}:}
+\item{\textbf{mesh.smoothDeform}:}
+\item{\textbf{mesh.move}:}
+\item{\textbf{mesh.scale}:}
+\item{\textbf{code.save}:}
+\item{\textbf{code.load}:}
+\item{\textbf{obj.save}:}
 
+\end{itemize}
 \section{Platform Showcase}
 \subsection{The Game}
 Architecture capability
