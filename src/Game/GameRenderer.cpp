@@ -43,15 +43,16 @@ void GameRenderer::DrawStuff( SE3<> camera ) {
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
 
     glMatrixMode(GL_MODELVIEW);
+    glDisable( GL_CULL_FACE );
 
     if ( GV3::get<bool>( "drawModel", true ) )
         DrawPolys();
     if ( GV3::get<bool>( "drawWaypoints", true ) )
         renderWaypointGraph();
-    if ( GV3::get<bool>( "drawUnits", true ) )
-        renderUnits();
     if ( GV3::get<bool>( "drawProjectiles", true ) )
         renderProjectiles();
+    if ( GV3::get<bool>( "drawUnits", true ) )
+        renderUnits();
     
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
@@ -108,7 +109,6 @@ void GameRenderer::renderProjectiles() {
 };
 
 void GameRenderer::DrawCube() {
-    glDisable( GL_CULL_FACE );
     glBegin( GL_QUADS );
     
     // Bottom
@@ -154,5 +154,4 @@ void GameRenderer::DrawCube() {
     glVertex3d( 1.0, 1.0, -1.0 );
     
     glEnd();
-    glEnable( GL_CULL_FACE );
 };
