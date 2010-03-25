@@ -472,7 +472,7 @@ Given therefore that $C_{rotation} = \left[
   \end{array}\right]$.
 \\ \\
   
-Therefore, with arbitrary vectors $A$ and $B$, $A ~<~ B~$ iff \\$~(A - O ~x~ A - V) ~~<~~ (B - O ~x~ B - V)$. \\
+Therefore, with arbitrary vectors $A$ and $B$, $A ~<~ B~$ iff \\$~(A - O ~\times~ A - V) ~~<~~ (B - O ~\times~ B - V)$. \\
 }
 \item{\textbf{vertex.remove}: This command simply removes the targeted vertex. This vertex is identified from the look-vector using the same \texttt{closerVec} function as described previously.}
 \item{\textbf{vertex.move}: This command has two operation modes; the first is a free move, which moves the targeted vertex based on its fixed distance from the camera. The second mode is much the same, but it fixes the motion to be in only one of the three axes; this is simply done using the \texttt{lock} vector, which is 0 when movement in the given axis is to be ignored, and 1 otherwise. The actual movement is performed in a separate \texttt{p\_thread}, and updates the position of the target point as often as the OS' threading model permits according to the following equations:
@@ -493,9 +493,9 @@ $ Projection ~=~ \left[
     \frac{Target_z - C_z}{z_3}
   \end{array}\right]$, and $~~lerp ~=~ \left[ 
   \begin{array}{c}
-    (1 - lock_x) * Target_x \\ 
-    (1 - lock_y) * Target_y \\ 
-    (1 - lock_z) * Target_z
+    (1 - lock_x) \times Target_x \\ 
+    (1 - lock_y) \times Target_y \\ 
+    (1 - lock_z) \times Target_z
   \end{array}\right]$
 \\
   
@@ -504,9 +504,9 @@ Therefore, new vertex position at camera pose $C'$ is given by
 
 $ \left[ 
   \begin{array}{c}
-    lock_x * (C'_x + z'_1 * Projection_x) + lerp_x \\ 
-    lock_y * (C'_y + z'_2 * Projection_y) + lerp_y \\ 
-    lock_z * (C'_z + z'_3 * Projection_z) + lerp_z
+    lock_x \times (C'_x + z'_1 \times Projection_x) + lerp_x \\ 
+    lock_y \times (C'_y + z'_2 \times Projection_y) + lerp_y \\ 
+    lock_z \times (C'_z + z'_3 \times Projection_z) + lerp_z
   \end{array}\right]$
 \\
 }
