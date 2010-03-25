@@ -30,7 +30,7 @@ protected:
     void DrawSphere();
     Environment *env;
     std::map< Image< Rgb< byte > >*, GLuint > textures;
-    std::map< PolyFace*, Image< Rgb< byte > >* > textureUsage;
+    std::map< PolyFace*, Vector<6> > textureUsage;
 
 };
 
