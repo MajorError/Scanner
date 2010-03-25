@@ -153,6 +153,16 @@ void smooth_deform::click() {
     commandList::exec( "mesh.smoothDeform" );
 };
 
+MK_TOOL_PLUGIN( scale, "Space", );
+void scale::click() {
+    commandList::exec( "mesh.scale" );
+};
+
+MK_TOOL_PLUGIN( mesh_move, "Space", );
+void mesh_move::click() {
+    commandList::exec( "mesh.move" );
+};
+
 void* displayTimeout( void* ptr ) {
     string* text = static_cast<string*>( ptr );
     time_t start = time( NULL );

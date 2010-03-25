@@ -941,6 +941,62 @@ namespace mesh2 {
     }
 }
 
+namespace mesh3 {
+    MK_GUI_COMMAND(mesh, move, SE3<> start; pthread_t mover; static void* moveProcessor( void* ptr );)
+    void mesh::move( string params ) {
+        if ( environment->getPoints().size() == 0 )
+            return;
+        if ( !init ) {
+            start = environment->getCameraPose();
+            init = true;
+            pthread_create( &mover, NULL, mesh::moveProcessor, (void*)this );
+        } else {
+            init = false;
+            pthread_join( mover, NULL );
+        }
+    }
+
+    void* mesh::moveProcessor( void* ptr ) {
+        mesh *p = static_cast<mesh*>( ptr );
+        Vector<3> projection;
+        SE3<> camera( p->environment->getCameraPose() );
+        Point* target = p->environment->sortPoints( camera ).front();
+        Vector<3> targetStart = target->getPosition();
+        // start point on list ~ camera + view*t
+        Matrix<> rot = camera.get_rotation().get_matrix();
+        projection = target->getPosition();
+        projection -= camera.get_translation();
+        projection[0] /= rot[0][2];
+        projection[1] /= rot[1][2];
+        projection[2] /= rot[2][2];
+
+        map< Point*, Vector<3> > targetPoints;
+         for( std::list<Point*>::iterator curr = p->environment->getPoints().begin();
+                    curr != p->environment->getPoints().end(); curr++ ) {
+            targetPoints[*curr] = (*curr)->getPosition();
+        }
+        
+        while( p->init ) {
+            camera = p->environment->getCameraPose();
+            rot = camera.get_rotation().get_matrix();
+            // Work out position of target point, as in vertex.move
+            Vector<3> tmp;
+            tmp[0] = (camera.get_translation()[0] + rot[0][2] * projection[0]);
+            tmp[1] = (camera.get_translation()[1] + rot[1][2] * projection[1]);
+            tmp[2] = (camera.get_translation()[2] + rot[2][2] * projection[2]);
+            // Now apply the same vector to all points
+            tmp -= targetStart;
+            p->environment->lock();
+            for( std::list<Point*>::iterator curr = p->environment->getPoints().begin();
+                    curr != p->environment->getPoints().end(); curr++ ) {
+                (*curr)->setPosition( targetPoints[*curr] + tmp );
+            }
+            p->environment->unlock();
+        }
+        return NULL;
+    }
+}
+
 namespace code1 {
     MK_GUI_COMMAND(code, save,)
     void code::save( string filename ) {
