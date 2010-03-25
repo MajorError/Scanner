@@ -17,7 +17,8 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     PROFILE_FUNC();
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glEnable( GL_CULL_FACE );
+
+    glDisable( GL_CULL_FACE );
     glFrontFace( GL_CW );
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LEQUAL );
@@ -48,17 +49,16 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     glMatrixMode(GL_MODELVIEW);
 
     DrawPoints( camera );
-    if ( GV3::get<bool>( "drawModel", true ) )
-        DrawPolys();
     if ( GV3::get<bool>( "drawFeatures", true ) )
         DrawFeatures( camera );
     if ( GV3::get<bool>( "drawTarget", true ) )
         DrawTarget( camera );
+    if ( GV3::get<bool>( "drawModel", true ) )
+        DrawPolys();
     
 
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
 };
 
 void ARPointRenderer::DrawPoints( SE3<> camera ) {
@@ -74,15 +74,15 @@ void ARPointRenderer::DrawPoints( SE3<> camera ) {
             glScaled( ds, ds, ds );
             DrawSphere();
         }
-    }
-    if ( GV3::get<bool>( "drawPoints", true ) ) {
-        for ( list<Point*>::iterator curr = env->getPoints().begin();
-                curr != env->getPoints().end(); curr++ ) {
-            glLoadIdentity();
-            glTranslate<3>( (*curr)->getPosition() );
-            glScaled( ds, ds, ds );
-            DrawSphere();
-            glColor4d(0.92, 0.9, 0.85,1);
+        if ( GV3::get<bool>( "drawPoints", true ) ) {
+            for ( list<Point*>::iterator curr = env->getPoints().begin();
+                    curr != env->getPoints().end(); curr++ ) {
+                glLoadIdentity();
+                glTranslate<3>( (*curr)->getPosition() );
+                glScaled( ds, ds, ds );
+                DrawSphere();
+                glColor4d(0.92, 0.9, 0.85,1);
+            }
         }
     }
     env->unlock();
@@ -129,15 +129,15 @@ void ARPointRenderer::DrawPolys() {
             glVertex( (*curr)->getStart()->getPosition() );
             glVertex( (*curr)->getEnd()->getPosition() );
         }
-    }
-    if ( GV3::get<bool>( "drawClosestEdge", true ) ) {
-        glColor4d(1.0, 0.4, 0.0, 1.0);
-        Vector<3> pt;
-        double d = numeric_limits<double>::max();
-        Edge* best = env->findClosestEdge( pt, d );
-        if ( d < GV3::get<double>( "edgeTolerance", 0.5 ) ) {
-            glVertex( best->getStart()->getPosition() );
-            glVertex( best->getEnd()->getPosition() );
+        if ( GV3::get<bool>( "drawClosestEdge", true ) ) {
+            glColor4d(1.0, 0.4, 0.0, 1.0);
+            Vector<3> pt;
+            double d = numeric_limits<double>::max();
+            Edge* best = env->findClosestEdge( pt, d );
+            if ( d < GV3::get<double>( "edgeTolerance", 0.5 ) ) {
+                glVertex( best->getStart()->getPosition() );
+                glVertex( best->getEnd()->getPosition() );
+            }
         }
     }
     glEnd();
@@ -150,6 +150,7 @@ void ARPointRenderer::DrawPolys() {
     GLuint currTex;
 
     if ( GV3::get<bool>( "drawFaces", true ) ) {
+        env->lock();
         for( set<PolyFace*>::iterator it = env->getFaces().begin();
                 it != env->getFaces().end(); it++ ) {
             // No empty entries or null pointers, please!
@@ -158,6 +159,7 @@ void ARPointRenderer::DrawPolys() {
             // Set up texture info
             PROFILE_BEGIN( textureTidyup );
             if ( textureUsage[*it] != (*it)->getTextureSource() ) {
+                cerr << ">> Tidy up " << *it  << " (from " << textureUsage[*it] << " to " << (*it)->getTextureSource() << ")" << endl;
                 glDeleteTextures( 1, &(textures[(*it)->getTextureSource()]) );
                 glPrintErrors();
                 textures.erase( (*it)->getTextureSource() );
@@ -165,6 +167,7 @@ void ARPointRenderer::DrawPolys() {
             }
             PROFILE_END();
             if ( textures.count( (*it)->getTextureSource() ) == 0 ) {
+                cerr << "New texture for " << *it << endl;
                 PROFILE_BEGIN( setupNewTexture );
                 glGenTextures( 1, &currTex );
                 glPrintErrors();
@@ -219,25 +222,25 @@ void ARPointRenderer::DrawPolys() {
             }
             PROFILE_END();
         }
-    }
-    glDisable( GL_TEXTURE_RECTANGLE_ARB );
-    if ( GV3::get<bool>( "drawClosestFace", true ) ) {
-        glColor4d(1.0, 0.4, 0.0, 0.6);
-        Vector<3> pt;
-        PolyFace* best = env->findClosestFace( pt );
-        if ( best != NULL ) {
+        glDisable( GL_TEXTURE_RECTANGLE_ARB );
+        if ( GV3::get<bool>( "drawClosestFace", true ) ) {
+            glColor4d(1.0, 0.4, 0.0, 0.6);
+            Vector<3> pt;
+            PolyFace* best = env->findClosestFace( pt );
+            if ( best != NULL ) {
 
-            glBegin( GL_TRIANGLES );
-            glVertex( best->getP1()->getPosition() );
-            glVertex( best->getP2()->getPosition() );
-            glVertex( best->getP3()->getPosition() );
+                glBegin( GL_TRIANGLES );
+                glVertex( best->getP1()->getPosition() );
+                glVertex( best->getP2()->getPosition() );
+                glVertex( best->getP3()->getPosition() );
 
-            glVertex( best->getP2()->getPosition() );
-            glVertex( best->getP1()->getPosition() );
-            glVertex( best->getP3()->getPosition() );
-            glEnd();
+                glVertex( best->getP2()->getPosition() );
+                glVertex( best->getP1()->getPosition() );
+                glVertex( best->getP3()->getPosition() );
+                glEnd();
+            }
         }
-        
+        env->unlock();
     }
 };
 
