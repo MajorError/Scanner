@@ -67,9 +67,6 @@ void guiDispatch::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
         ATANCamera &camera = *environment->getCamera();
         ard = new ARDriver( camera, sceneRGB.size(), glw, environment );
         environment->setSceneSize( sceneRGB.size() );
-
-        GUI.ParseLine("GLWindow.AddMenu Menu Menu");
-        GUI.ParseLine("Menu.ShowMenu Root");
     }
 
     glWindow->swap_buffers();
