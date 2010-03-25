@@ -156,7 +156,7 @@ namespace game {
 
         // The world.
         btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-        dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -10 ) ) );
+        dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -15 ) ) );
         dynamicsWorld->setInternalTickCallback( tick::callback );
         
         return dynamicsWorld;
@@ -173,7 +173,7 @@ namespace ai1 {
         Vector<3> camPos = environment->getCameraPose().get_translation();
         Projectile* a = tick::director->addProjectile( tick::dynamicsWorld, camPos[0], camPos[1], camPos[2] );
 
-        Matrix<> rot = GV3::get<double>( "pushScale", 30 ) * environment->getCameraPose().get_rotation().get_matrix();
+        Matrix<> rot = GV3::get<double>( "pushScale", 80 ) * environment->getCameraPose().get_rotation().get_matrix();
         a->push( rot[0][2], rot[1][2], rot[2][2] );
     }
 }
