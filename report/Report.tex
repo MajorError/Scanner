@@ -333,7 +333,7 @@ The \texttt{Environment} class is more than just pointers to data, however; it c
 
 \subsection{Augmented Reality Rendering \& User Experience}
 
-The approach taken for rendering the scene in augmented reality is built on top of that in PTAM's demonstration application. This uses two passes of OpenGL rendering; first, it renders the scene onto a regular framebuffer in memory, and then in a second pass uses the PTAM camera calibration data to distort and render that framebuffer onto the screen. In order to render an Augmented Reality view of the model atop this camera plane, the UFB Linear Frustum Matrix from PTAM is applied as an OpenGL Projection matrix, permitting points in environment-space to be projected to image-space en masse.
+The approach taken for rendering the scene in augmented reality is built on top of that in PTAM's demonstration application. This uses two passes of OpenGL rendering; first, it renders the scene onto a regular framebuffer in memory, and then in a second pass uses the PTAM camera calibration data to distort and render that framebuffer onto the screen. In order to render an Augmented Reality view of the model atop this camera plane, the UFB Linear Frustum Matrix from PTAM is applied as an OpenGL Projection matrix, permitting points in \texttt{Environment}-space to be projected to image-space en masse.
 
 \begin{figure}
   \begin{center}
@@ -433,7 +433,32 @@ For the purposes of usability, vertices are rendered with an exaggerated size, t
   \label{pluginclasses}
 \end{figure}
 
+Broadly speaking, each \texttt{Plugin} object is a singleton instance of some subclass of the root \texttt{Plugin} type. This core type offers some basic structure as to what makes a ``plugin" in code. All plugins must have a ``short name", which is used to refer to it in configuration. Plugins are also given object-oriented style methods in GVars3, such that a plugin named \textit{``foo"} will automatically have functions registered with GVars3 such as  \texttt{\textit{foo}.enable},  \texttt{\textit{foo}.disable}, or others based on their sub-type. 
+
+As seen in Figure~\ref{pluginclasses}, there are three sub-types in use in the system. \texttt{Tool}s, for example, are used to process the clicks in the user interface (from any hotkey on the keyboard), invoking \texttt{GUICommand}s to perform some action on the \texttt{Environment}. Finally, \texttt{VisionProcessor}s are invoked in a constant processing loop to perform vision tasks, and provide the ``main loop" of the system.
+
+	As a coding standard, it is desirable that plugins are as easy to develop as possible. In order to encourage lots of small plugins, rather than monolithic chunks of code, much of the C++ syntactic overhead is removed through the use of preprocessor macros. For example, to declare a \texttt{VisionProcessor} all that is required is an indicator of the type, and optionally any \texttt{protected} variables it should require, thus:
+
+\begin{verbatim}
+MK_VISION_PLUGIN( MyVisionAlgorithm, pthread_t workerThread; );
+
+void MyVisionAlgorithm::doProcessing( CVD::Image<CVD::byte>& bw, 
+        CVD::Image< CVD::Rgb<CVD::byte> >& rgb ) {
+    // My code goes in here
+}
+\end{verbatim}
+
 \subsubsection{Vision Processors}
+As already discussed, \texttt{VisionProcessor} plugins provide the backbone of the main loop. In the main system there are six processors invoked in order, making up this main system loop. Each processor is given references to \texttt{Image}s of both black-and-white bytes and RGB bytes. Those in use in this system are:
+
+\begin{itemize}
+\item{\texttt{cam}: Responsible for extracting camera frames from PTAM's \texttt{VideoSource}.}
+\item{\texttt{ptam}: Invokes PTAM's tracking on each new frame, and updates the \texttt{Environment} with fresh lists of features, as well as the current camera pose. This separation permits decoupling of the PTAM system from the rest of the software.}
+\item{\texttt{guiDispatch}: Dispatches events to the GUI, and invokes the rendering of the scene on each iteration.}
+\item{\texttt{commandList}: Provides a simple interface, \texttt{static void commandList:: exec( string );} to permit threads across the system to update the \texttt{Environment} in a thread-safe manner, by enqueing GVars3 commands to be executed in the main thread, thereby trivially preventing many race conditions in the code.}
+\item{\texttt{textureExtractor}: One of the few completely automated processes in the system is that of texture extraction. This processor compares the current camera frame to the existing frame in use for each \texttt{PolyFace} in the system, and tests whether it would provide a better texture resolution.}
+\item{\texttt{profiler}: The system includes the Shiny Profiler\cite{shiny} for debugging purposes; this processor causes Shiny to aggregate data for the past iteration, and output it to the console. This provides detailed timing information for each of the commands and methods that have been invoked in the course of the past iteration.}
+\end{itemize}
 
 \subsubsection{Commands \& Tools}
 
