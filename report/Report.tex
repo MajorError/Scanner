@@ -496,7 +496,7 @@ $$\displaystyle \left[
 \item{\textbf{edge.connect}: This simple command is used to identify two vertices, and joins them together automatically with an \texttt{Edge} - automatically avoiding duplication and inserting \texttt{PolyFace}s as edge loops are completed.}
 \item{\textbf{edge.remove}: This command is the functional inverse of the connect tool; it disconnects two vertices, destroying any \texttt{PolyFace}s that included these edges.}
 \item{\textbf{edge.bisect}: The last of the edge manipulation commands, this will insert an extra point on a given edge, splitting any \texttt{PolyFace}s on the way. The edge identification algorithm is the same as for removal; it seeks the point of intersection between the look-vector from the camera and the vector defined by the edge, within some given tolerance. The goal is to minimise $|TargetPoint ~-~ EdgePoint|$ in the following equations;
-\\
+\\	
         
 Let $u ~=~ \left[ 
   \begin{array}{c}
