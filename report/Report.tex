@@ -234,7 +234,7 @@ It should be possible for the system to use some of the vision techniques above 
 
 \section{Implementation}
 \subsection{Architecture}
-In order to realise the above goals, a carefully planned and executed architecture is of prime importance. Broadly speaking, the system is realised as a collection of plugins in four primary areas, with a shared Model at its core. This vision is outlined in Figure~\ref{archmindmap}; here, the Model is represented as an Environment - lists of points in space, the edges connecting them, details of the current camera pose etc.
+In order to realise the above goals, a carefully planned and executed architecture is of prime importance. Broadly speaking, the system is realised as a collection of plugins in four primary areas, with a shared Model at its core. This vision is outlined in Figure~\ref{archmindmap}; here, the Model is represented as an Environment - lists of points in space, the edges connecting them, along with details of the current camera pose and the like.
 
 \begin{figure}[h]
   \begin{center}
@@ -275,9 +275,9 @@ In order to realise the above goals, a carefully planned and executed architectu
   \label{archmindmap}
 \end{figure}
 
-These areas, in blue, are the extension points for the system. In this way, the dependency on PTAM is isolated to the Vision Processors - responsible for any non-interactive ongoing computer vision tasks. ``Commands" in this vision are the direct means of manipulating this model; whether creating new geometry or editing existing polygons. ``Tools", by way of contrast, are the interface between the user's graphical frontend and the rest of the system's internals, interacting with these commands.
+These plugin areas, in blue, are the extension points for the system. In this way, the dependency on PTAM is isolated to the Vision Processors - responsible for any non-interactive ongoing computer vision tasks. ``Commands" in this vision are the direct means of manipulating this model; whether creating new geometry or editing existing polygons. ``Tools", by way of contrast, are the interface between the user's graphical frontend and the rest of the system's internals, interacting with these commands.
 
-The following sections will detail the implementation details of each of these sections in turn, including more formal diagrams as well as details and justification of the design decisions taken along the way. The order of these sections reflects the traditional delineation of \textit{Model, View, Controller} exhibited in well architected systems.
+The following sections will detail the implementation details of each of these sections in turn, including more formal diagrams as well as details and justification of the design decisions taken along the way. The organisation of these sections reflects the traditional delineation of \textit{Model, View, Controller} exhibited in well architected systems.
 
 \subsection{Model}
 
@@ -332,6 +332,18 @@ The aforementioned notion of an \textit{Environment} is carried through from vis
 The \texttt{Environment} class is more than just pointers to data, however; it contains a variety of common methods useful for interacting with the model at its lower levels. For example, it contains a list of ``features" extracted by vision algorithms (the details of which are discussed later), along with methods to extract a sorted list of these features based on the current camera position and orientation. Likewise, it can identify which \texttt{PolyFace} or \texttt{Edge} the camera is aimed at, and where on that target the camera is pointed. Other more obvious methods provide interfaces for adding to the model; a method \texttt{addEdge(Point*,Point*)} for example will ensure that the edge is not a duplicate, and automatically construct any new \texttt{PolyFace}s created by this new \texttt{Edge}.
 
 \subsection{Augmented Reality Rendering \& User Experience}
+
+The approach taken for rendering the scene in augmented reality is built on top of that in PTAM's demonstration application. This uses two passes of OpenGL rendering; first, it renders the scene onto a regular framebuffer in memory, and then in a second pass uses the PTAM camera calibration data to distort and render that framebuffer onto the screen. In order to render an Augmented Reality view of the model atop this camera plane, the UFB Linear Frustum Matrix from PTAM is applied as an OpenGL Projection matrix, permitting points in \texttt{Environment}-space to be projected to image-space en masse.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=340px]{MincePies}
+  \end{center}
+  \caption{An early modelling test, showing a textured AR box of mince pies overlaid on the camera plane \textbf{TODO: Better image showing highlighting, points around, etc?}}
+  \label{pies}
+\end{figure}
+
+For the purposes of usability, vertices are rendered with an exaggerated size, to facilitate using the camera to ``grab" them. All aspects of rendering are configured using variables in the GVar3 system. For example, a single keypress can be used to toggle rendering of various elements (edges, faces, vertices, camera plane, etc). Further settings include scale settings for things like vertices, or the sensitivity and accuracy of the camera ``pointer" system. Most interaction is done using the camera as a pointer, as described above, seeking feature points around the camera's look-vector; this setting simply adjusts how tolerant this should be of deviation from the precise vector. As seen in Figure~\ref{pies}, the UI is kept to an absolute minimum of clutter (even in early tests such as this). Other usability enhancements present in the system include highlighting of currently targetted objects; these present themselves as orange shading. When creating points it is useful to be able to see the feature points extracted by PTAM's analysis, so the renderer displays the nearest few points, scaled according to their distance from the look-vector of the camera. Usability tweaks like these permit the user to fully predict the behaviour of the system; which face is selected will never be a surprise, and points will always go where the user expects.	As this is an interactive modelling system, rather than a fully automated solution, transparency of operation is of the utmost importance.
 
 \subsection{Plugins}
 \begin{figure}[h]
@@ -408,7 +420,7 @@ The \texttt{Environment} class is more than just pointers to data, however; it c
             \inherit{Tool}
           \end{class}
 
-          \begin{class}[text width=40px]{ToggleGrid}{-3,-12}
+          \begin{class}[text width=40px]{ToggleFaces}{-3,-12}
             \inherit{Tool}
           \end{class}
 
@@ -420,6 +432,21 @@ The \texttt{Environment} class is more than just pointers to data, however; it c
   \caption{Plugin Class Diagram}
   \label{pluginclasses}
 \end{figure}
+
+Broadly speaking, each \texttt{Plugin} object is a singleton instance of some subclass of the root \texttt{Plugin} type. This core type offers some basic structure as to what makes a ``plugin" in code. All plugins must have a ``short name", which is used to refer to it in configuration. Plugins are also given object-oriented style methods in GVars3, such that a plugin named \textit{``foo"} will automatically have functions registered with GVars3 such as  \texttt{\textit{foo}.enable},  \texttt{\textit{foo}.disable}, or others based on their sub-type. 
+
+As seen in Figure~\ref{pluginclasses}, there are three sub-types in use in the system. \texttt{Tool}s, for example, are used to process the clicks in the user interface (from any hotkey on the keyboard), invoking \texttt{GUICommand}s to perform some action on the \texttt{Environment}. Finally, \texttt{VisionProcessor}s are invoked in a constant processing loop to perform vision tasks, and provide the ``main loop" of the system.
+
+As a coding standard, it is desirable that plugins are as easy to develop as possible. In order to encourage lots of small plugins, rather than monolithic chunks of code, much of the C++ syntactic overhead is removed through the use of preprocessor macros. For example, to declare a \texttt{VisionProcessor} all that is required is an indicator of the type, and optionally any \texttt{protected} variables it should require, thus:
+
+\begin{verbatim}
+MK_VISION_PLUGIN( MyVisionAlgorithm, pthread_t workerThread; );
+
+void MyVisionAlgorithm::doProcessing( CVD::Image<CVD::byte>& bw, 
+        CVD::Image< CVD::Rgb<CVD::byte> >& rgb ) {
+    // My code goes in here
+}
+\end{verbatim}
 
 \subsubsection{Vision Processors}
 \begin{enumerate}
