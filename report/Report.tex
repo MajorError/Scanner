@@ -575,12 +575,12 @@ Next, the command's mover thread pre-computes the set of target points to move, 
   \end{array}\right] \cdot RotationToAxis^{-1}
 \end{eqnarray*}
 The number of ``steps" to use in this revolve is determined by a configurable GVars3 variable; more steps will increase the quality of the finished geometry, but with it the complexity of the model.}
-\item{\textbf{texture.clean}:}
-\item{\textbf{texture.clear}:}
+\item{\textbf{mesh.move}: Commands based on \texttt{mesh.foo} manipulate the entire mesh as a whole. This command works in exactly the same manner as \texttt{vertex.move}, but applies the vector of movement to \textit{all} vertices of the mesh, instead of just that which is targetted. This command, and \texttt{mesh.scale} (below) are of particular use if larger meshes are to be inserted into the scene - whether through a file import, or by generating primitive shapes.}
+\item{\textbf{mesh.scale}: Along with being able to move an entire mesh, it makes sense to use the camera to scale it also; the scale of the axes in world-space are not fixed relative to any given objects, and thus it is unpredictable what size should be used for insertion of an object. This scale command works by scaling the points in the mesh according to the distance of the camera from its original pose. The scale is uniform in all axes.}
 \item{\textbf{mesh.subdivide}:}
 \item{\textbf{mesh.smoothDeform}:}
-\item{\textbf{mesh.move}:}
-\item{\textbf{mesh.scale}:}
+\item{\textbf{texture.clean}:}
+\item{\textbf{texture.clear}:}
 \item{\textbf{code.save}:}
 \item{\textbf{code.load}:}
 \item{\textbf{obj.save}:}
