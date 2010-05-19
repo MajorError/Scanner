@@ -480,6 +480,7 @@ call tree                hits       self time      total time
 \begin{itemize}
 \item{\textbf{key.handle}: This is a keypress handler, invoked via GVars3 from the GUI key Dispatch method. It searches the list of tools for any tools which have a matching hotkey to the passed in key, and invokes them; any which are enabled will receive a ``click".}
 \item{\textbf{edgelist.dump}, \textbf{pointlist.dump}, \textbf{polylist.dump}: These three debugging commands can be used to dump a list of \texttt{Edge}s, \texttt{Point}s, and \texttt{PolyFace}s to the console, respectively.}
+\item{\textbf{text.draw}: This command is designed to be invoked by other commands; it will cause text to be drawn as a ``status update" to the user using OpenGL. This ensures that consistent styling is used, and makes it easy to execute the drawing in the correct thread.}
 \item{\textbf{vertex.create}: Creates a \texttt{Point} on the feature closest to the look-vector from the camera. If invoked with parameters, it can create a \texttt{Point} at an arbitrary position (defined by the 3D co-ordinates given in the parameters). The closest point is found by sorting the vector of features with the \texttt{closerVec} function, which works between two vectors thus: 
 \\
 
@@ -545,15 +546,37 @@ Let $u ~=~ \left[
 
 Once we have minimised the above constraint, and ensured that $EdgePoint$ is on the edge, by ensuring that $0 \leq v \cdot (EdgePoint - q_0) < |v|$, the target point for the bisected edge is at $EdgePoint$. The tool for this command also then automatically invokes \textbf{vertex.move}, so that the user may position the point as desired.
 }
-\item{\textbf{plane.move}:}
-\item{\textbf{plane.extrude}:}
-\item{\textbf{plane.split}:}
-\item{\textbf{plane.revolve}:}
-\item{\textbf{text.draw}:}
+\item{\textbf{plane.split}: In a similar fashion to \texttt{edge.bisect}, this tool will take a \texttt{PolyFace} and split it at the targeted location. As above, it first finds the targetted face and the point on that face. Next, it removes the targetted \texttt{PolyFace} from the environment, creating a hole in the model. It then places a new vertex in the model at the targetted position, and connects it to the vertices of the old \texttt{PolyFace}, automatically constructing new faces in the process. Finally, it invokes the standard \texttt{vertex.move} tool to permit the user to manipulate the split and tweak its exact location.}
+\item{\textbf{plane.move}: With all of the ``primitive" manipulators complete, the next few tools analyse a higher level of geometric structure; namely, permitting the user to treat a collection of faces as a single plane. The constraint for ``planarity" is essentially defined by a tolerance of the angle across an edge; if it is sufficiently close to $0^\circ$, it will consider the attached faces to be part of a single plane. The easiest way to do this, is to consider the angle subtended between the surface normals of these faces, trivially found using the dot-product. The \texttt{Environment} class offers a recursive solution to this problem, which ensures that zero-area faces are ignored (often important when the method is used in the midst of a series of transformations).
+
+The actual movement of this face is handled in a similar fashion to the vertex movement already discussed. A separate worker thread first calculates the face that is currently being ``pointed at", along with the point of intersection between it and the camera's look-vector. To do this, each face is tested first to find its point of intersection: given the camera's look-vector, $z$, a face normal $n$, the camera's position $p_0$ and a point on the face, $p_1$, the shortest vector from the camera to the face can be found as the absolute magnitude of the vector:
+\begin{eqnarray*}
+  d ~=~ \frac{n \cdot (p_1 - p_0)}{n \cdot z}
+\end{eqnarray*}
+Finally, a fast bounds-check is used to see if the intersection point with the face's mathematical plane, $p_0 + d$, lies within the bounds of the tested face's actual geometry.
+
+Next, the command's mover thread pre-computes the set of target points to move, and caches their positions before the projection. It then updates positions by calculating the movement the point of intersection on the target face (as in \texttt{vertex.move} and moving all the target points by the same amount.}
+\item{\textbf{plane.extrude}: Many common candidates for modelling exhibit symmetrical structures; it thus makes sense for tools to support this mode of modelling. For those objects with lines of symmetry, this extrusion tool will permit the user to:
+
+\begin{enumerate}
+ \item{Model a single planar face of the object}
+ \item{Create a duplicate plane}
+ \item{Automatically connect the vertices of the two planes to form complete polygons}
+ \item{Invoke the \texttt{plane.move} tool to manually adjust the distance and direction of extrusion}
+\end{enumerate}
+}
+\item{\textbf{plane.revolve}: Not all symmetry is reflectional; a whole host of objects display rotational symmetry instead. Thus, it is desirable to support this in the modelling as well. To do this, the user need only model half of the rotational face as a plane, and ensure that one of its edges is the axis about which to revolve. Once this is complete, they must simply aim the camera at this axis edge, and invoke this tool to duplicate the original face and rotate it around the axis. The rotation is done with a simple transformation matrix, using a rotation to and from the axis of the revolve, provided by \texttt{TooN::SO3}, thus:
+\begin{eqnarray*}
+ RotationToAxis \cdot  \left[ 
+  \begin{array}{c c c}
+    1 & 0 & 0 \\ 
+    0 & cos( \theta ) & sin( \theta ) \\ 
+    0 & -sin( \theta ) & cos( \theta ) 
+  \end{array}\right] \cdot RotationToAxis^{-1}
+\end{eqnarray*}
+The number of ``steps" to use in this revolve is determined by a configurable GVars3 variable; more steps will increase the quality of the finished geometry, but with it the complexity of the model.}
 \item{\textbf{texture.clean}:}
 \item{\textbf{texture.clear}:}
-\item{\textbf{textureBoundary.blend}:}
-\item{\textbf{shrinkwrap.exec}:}
 \item{\textbf{mesh.subdivide}:}
 \item{\textbf{mesh.smoothDeform}:}
 \item{\textbf{mesh.move}:}
