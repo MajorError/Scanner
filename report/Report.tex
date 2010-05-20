@@ -591,9 +591,21 @@ The number of ``steps" to use in this revolve is determined by a configurable GV
 \item{Construct new \texttt{PolyFace}s by adding new edges to the model, completing the reconstruction of the model}
 \end{enumerate}
 
-The variable $smoothFactor$ above is in fact a GVars3 variable, \texttt{catmullSmooth}, to permit the user to configure how much smoothing should be applied in the linear interpolation; as it approaches zero, the positions of the points converge on their original positions. By default, this is kept fairly low so as to introduce some smoothing, but without as much mesh collapse as Catmull-Clark usually introduces.
+The variable $smoothFactor$ above is in fact a GVars3 variable, \texttt{catmullSmooth}, to permit the user to configure how much smoothing should be applied in the linear interpolation; as it approaches zero, the positions of the points converge on their original positions. By default, this is kept fairly low so as to introduce some smoothing, but without as much mesh collapse as Catmull-Clark usually causes. This tool can be invoked as many times as desired, to increase the mesh resolution as needed.
 }
-\item{\textbf{mesh.smoothDeform}:}
+\item{\textbf{mesh.smoothDeform}: This partner to the \texttt{mesh.subdivide} method is designed to make it easier to manipulate higher resolution models in a smooth fashion; particularly useful when using a high-res model to approximate smooth curves on an objects' faces. To use it, the user simply ``grabs" a point on the mesh, and as they pull it away it will attract the points connected to it, which will in turn attract their neighbours less strongly, et cetera. At its core, this command is very similar to \texttt{vertex.move}, but with an added step on each update; the smooth. GVars3 variables are used to define attraction and inertia factors, while the sterngth of the final pull is calculated as a weighting, $w$, based on the size of the movement of the target point, over the inertia - clamped such that $0 \leq w \leq 1$. The maximum and minimum weights, $w_{max}$ and $w_{min}$ for the other points are then found as the maximum and minimim values of:
+\begin{eqnarray*}
+ \frac{||TargetPos - PointPos||}{Attraction}
+\end{eqnarray*}
+Finally, point positions of all points except the target are updated. A per-vertex weight $w_{vtx}$ is calculated, and clamped between $0$ and $1$.
+\begin{eqnarray*}
+w_{vtx} ~=~ \frac{||TargetPos - PointPos|| \div Attraction - w_{min}}{w_{max} - w_{min}}
+\end{eqnarray*}
+\begin{eqnarray*}
+NewPos ~=~ OldPos ~+~ w \cdot (1 - w_{vtx}) \cdot (TargetPos - PointPos)
+\end{eqnarray*}
+This smoothing is calculated in real-time, as the user pulls the target point, so that they can see how the deformation alters the entire mesh.
+}
 \item{\textbf{texture.clean}:}
 \item{\textbf{texture.clear}:}
 \item{\textbf{code.save}:}
