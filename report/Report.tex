@@ -577,7 +577,22 @@ Next, the command's mover thread pre-computes the set of target points to move, 
 The number of ``steps" to use in this revolve is determined by a configurable GVars3 variable; more steps will increase the quality of the finished geometry, but with it the complexity of the model.}
 \item{\textbf{mesh.move}: Commands based on \texttt{mesh.foo} manipulate the entire mesh as a whole. This command works in exactly the same manner as \texttt{vertex.move}, but applies the vector of movement to \textit{all} vertices of the mesh, instead of just that which is targetted. This command, and \texttt{mesh.scale} (below) are of particular use if larger meshes are to be inserted into the scene - whether through a file import, or by generating primitive shapes.}
 \item{\textbf{mesh.scale}: Along with being able to move an entire mesh, it makes sense to use the camera to scale it also; the scale of the axes in world-space are not fixed relative to any given objects, and thus it is unpredictable what size should be used for insertion of an object. This scale command works by scaling the points in the mesh according to the distance of the camera from its original pose. The scale is uniform in all axes.}
-\item{\textbf{mesh.subdivide}:}
+\item{\textbf{mesh.subdivide}: An alternative experiment into ways of improving a mesh's quality, the goal of this command is to improve the resolution of the mesh, smoothing its hard edges, without losing too much detail. The method used is based on Catmull-Clark's mesh subdivision algorithm\cite{catmull}, thus:
+\begin{enumerate}
+\item{Add new points, on the centre of each face}
+\item{Clear all existing \texttt{PolyFace}s in the model}
+\item{For each original point in the mesh, calculate the average position of the points connected to it}
+\item{Calculate also the average face centre of the faces joined to the current point}
+\item{Update the position of the current point as:
+\begin{eqnarray*}
+ (1 - smoothFactor) \cdot CurrentPosition + smoothFactor \cdot \\ (FaceAvg + 2 \cdot EdgeAvg + (EdgeCount-3) \cdot \frac{CurrentPosition}{EdgeCount})
+\end{eqnarray*}
+}
+\item{Construct new \texttt{PolyFace}s by adding new edges to the model, completing the reconstruction of the model}
+\end{enumerate}
+
+The variable $smoothFactor$ above is in fact a GVars3 variable, \texttt{catmullSmooth}, to permit the user to configure how much smoothing should be applied in the linear interpolation; as it approaches zero, the positions of the points converge on their original positions. By default, this is kept fairly low so as to introduce some smoothing, but without as much mesh collapse as Catmull-Clark usually introduces.
+}
 \item{\textbf{mesh.smoothDeform}:}
 \item{\textbf{texture.clean}:}
 \item{\textbf{texture.clear}:}
