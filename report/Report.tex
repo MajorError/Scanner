@@ -606,8 +606,10 @@ NewPos ~=~ OldPos ~+~ w \cdot (1 - w_{vtx}) \cdot (TargetPos - PointPos)
 \end{eqnarray*}
 This smoothing is calculated in real-time, as the user pulls the target point, so that they can see how the deformation alters the entire mesh.
 }
-\item{\textbf{texture.clean}:}
-\item{\textbf{texture.clear}:}
+\item{\textbf{texture.clear}: As PTAM occasionally and temporarily loses the stability of its tracking, it can capture bad frames of texture - similarly, texture frames can be heavily blurred if the camera was in fast motion when the frame was captured. In this event, it is desirable to capture a new texture frame. The simplest way to do this, is simply to clear the existing texture, replacing it with a blank red image, and setting the camera pose for that frame to have been taken from ``infinity". As soon as the camera captures a suitable frame for texturing, which will cover the targetted face, the \texttt{textureExtractor} Vision Processor will update, per its usual operation.}
+\item{\textbf{texture.clean}: Often, textures are extracted from camera frames which are very close together, or which could cover more than one \texttt{PolyFace}. Due to the slight inaccuracies of both the PTAM tracking and the texture projection, coupled with the human eye's ability to detect discontinuites in an image, it is desirable to (within reason) choose shared frames of reduced quality, so as to visually improve the result. Furthermore, using fewer frames of video for texturing has the added bonus of reducing file sizes when saving the textures for export. This operation is completed in two passes. The first pass compares the camera pose for each pair of texture frames; if these are within a given tolerance, and the texture frame will cover both polygons, it will be shared between the two faces.
+
+In the second pass, the code examines adjacent pieces ot texture; if the frames are taken from sufficiently similar camera angles, it will choose whichever  image gives the most coverage - if the currently examined face is bounded on at least two sides by the same texture, the angle is within the tolerance, and the texture frame can cover the current face, then the replacement will be performed.}
 \item{\textbf{code.save}:}
 \item{\textbf{code.load}:}
 \item{\textbf{obj.save}:}
