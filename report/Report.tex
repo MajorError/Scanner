@@ -757,7 +757,45 @@ newmtl TextureMapped
      # map_bump -  Bump map
 \end{verbatim}
 
-Finally, the \texttt{.obj} file encodes the details of the model's geometry; the set of vertices, their texture co-ordinates, and the vertex normals. The last section of this file links the OBJ geometry to the material file, and applies the texture to the set of face definitions which follow. These definitions are made in such a way as to ensure that the points are connected in an order which will preserve their surface normals - implicit in the OBJ definition. With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information.}
+Finally, the \texttt{.obj} file encodes the details of the model's geometry; the set of vertices, their texture co-ordinates, and the vertex normals. The last section of this file links the OBJ geometry to the material file, and applies the texture to the set of face definitions which follow. These definitions are made in such a way as to ensure that the points are connected in an order which will preserve their surface normals - implicit in the OBJ definition. The OBJ file structure is as follows:
+
+\begin{verbatim}
+#
+# Header indicating how many vertices and faces are encoded
+#   in the file, for human interest
+#
+
+# Material library links:
+  mtllib scanner_model.mtl
+
+# Vertices:
+  v 0.112184 -0.549372 0.636787
+  v 0.130041 -0.377297 0.638883
+  v 0.246977 -0.535198 0.444692
+#  etc...
+
+# Texture Co-Ordinates:
+  vt 0.424639 0.217299
+  vt 0.273666 0.0712889
+  vt 0.33988 0.0545356
+#  etc...
+
+# Normals (currently one per face):
+  vn 0.0824474 -0.892047 0.444359
+  vn 0.200107 -0.88881 0.41228
+  vn 0.971032 -0.025272 -0.237608
+#  etc...
+
+g scanner_model  # Polygon group name
+# Faces:
+  usemtl TextureMapped   # Load this material from MTL file
+  f 9/1/1 35/2/1 33/3/1  # One triple per vertex in the face
+  f 9/4/2 39/6/2 35/5/2  # Each triple indicates vertex id,
+  f 9/7/3 19/9/3 35/8/3  #   texture co-ord id, and normal id
+#  etc...
+\end{verbatim}
+
+With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information.}
 
 \end{itemize}
 \section{Platform Showcase}
