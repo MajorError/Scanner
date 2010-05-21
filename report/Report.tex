@@ -706,9 +706,34 @@ This smoothing is calculated in real-time, as the user pulls the target point, s
 
 In the second pass, the code examines adjacent pieces ot texture; if the frames are taken from sufficiently similar camera angles, it will choose whichever  image gives the most coverage - if the currently examined face is bounded on at least two sides by the same texture, the angle is within the tolerance, and the texture frame can cover the current face, then the replacement will be performed.}
 \item{\textbf{code.save}, \textbf{code.load}: This simple pair of debugging commands demonstrate the power of separating Commands from Tools; they provide a simple way of exporting model geometry, and reloading it later. The save command simply streams a series of primitive commands - only \texttt{vertex.create} and \texttt{edge.connect} are required to reconstruct the model; GVars3 will then load the file later, and the model will be reconstructed. Both commands can take a filename as a parameter, to identify which file to use to save / load (otherwise it will use the default, ``scanner\_model.out").}
+
+\begin{figure}
+  \begin{center}
+    \begin{tabular}{| c | c || c|} \hline
+      \textbf{Data Type} & \textbf{Field} & \textbf{Value} \\ \hline
+      \texttt{byte} & ID Field Size & 0 \\ \hline
+      \texttt{byte} & Colour Map Type & 0 \textit{(none)} \\ \hline
+      \texttt{byte} & Image Type & 2 \textit{(RGB)} \\ \hline
+      \texttt{byte} & Colour Map Start & 0 \\ \hline
+      \texttt{short int} & Size of Colour Map & 0 \\ \hline
+      \texttt{byte} & Bits per Pixel in Map & 24 \\ \hline
+      \texttt{short int} & X Origin & 0 \\ \hline
+      \texttt{short int} & Y Origin & 0 \\ \hline
+      \texttt{short int} & Image Width & \texttt{Camera Frame Width} \\ \hline
+      \texttt{short int} & Image Height & \texttt{Frame Height $\cdot$ Num Frames} \\ \hline
+      \texttt{byte} & Bits per Pixel in Colour Data & 24 \\ \hline
+      \texttt{byte} & Image Descriptor Bits & 0 \\  \hline
+      \multicolumn{3}{|c|}{\textit{\texttt{B-G-R} bytes of texture data in reverse order follows}} \\
+      \multicolumn{3}{|c|}{\textit{\texttt{...}}}
+    \end{tabular}
+  \label{tga}
+  \end{center}
+  \caption{TARGA Image File Format}
+\end{figure}
+
 \item{\textbf{obj.save}: While the above provides one form of save utility, it does not satisfy the need to load models generated in this tool into any other industry standard tools. In order to do that, the Wavefront OBJ format was selected as the export format of choice. When invoked, this command will save using the specified file's basename. The Wavefront format allows for saving geometry, material data, and texture data as three separate files. As the texture is stored uncompressed, this command will first invoke the \texttt{texture.clean} command above before it saves. 
 
-The reduced set of texture frames are then stored, as a series of consecutive images in a single 24-bit RGB TARGA file. The material data is stored in a \texttt{.mtl} file, which is essentially a plain text format defining the ambient, diffuse, and specular components of the named material (fixed at $1$, $1$, and $0$ respectively). It also permits selection of alpha transparency, and the illumination model to be used, along with naming the TGA file to use for texturing. This file is more-or-less the same regardless of the model. Finally, the \texttt{.obj} file encodes the details of the model's geometry; the set of vertices, their texture co-ordinates, and the vertex normals. The last section of this file links the OBJ geometry to the material file, and applies the texture to the set of face definitions which follow. These definitions are made in such a way as to ensure that the points are connected in an order which will preserve their surface normals - implicit in the OBJ definition. With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information.}
+The reduced set of texture frames are then stored, as a series of consecutive images in a single 24-bit RGB TARGA file (see Figure~\ref{tga}). The material data is stored in a \texttt{.mtl} file, which is essentially a plain text format defining the ambient, diffuse, and specular components of the named material (fixed at $1$, $1$, and $0$ respectively). It also permits selection of alpha transparency, and the illumination model to be used, along with naming the TGA file to use for texturing. This file is more-or-less the same regardless of the model. Finally, the \texttt{.obj} file encodes the details of the model's geometry; the set of vertices, their texture co-ordinates, and the vertex normals. The last section of this file links the OBJ geometry to the material file, and applies the texture to the set of face definitions which follow. These definitions are made in such a way as to ensure that the points are connected in an order which will preserve their surface normals - implicit in the OBJ definition. With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information.}
 
 \end{itemize}
 \section{Platform Showcase}
