@@ -813,15 +813,48 @@ g scanner_model  # Polygon group name
 \end{figure}
 
 With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information. An example of this is shown in Figure~\ref{blender}.}
-
 \end{itemize}
+
 \section{Platform Showcase}
 \subsection{The Game}
-Architecture capability
+Throughout this project, there has been a conscious focus on the dual design goals of transparent \textit{modularity} and \textit{extensibility}. As architected, the system is capable of being extended in numerous directions, without the user ever having to be aware of the underlying complexity of systems of plugins or the various extension points in the system. In order to demonstrate the extent to which this extensibility can completely alter the behaviour of the system, this Platform Showcase was devised; an opportunity to prove that the system constructed is not only a modelling tool, but also a valid \textit{platform} for building Augmented Reality systems which may rely on models of the environment.
 
-Examples of AR games
+\begin{figure}[t]
+    \subfigure[levelHead]{\includegraphics[width=165px]{levelhead3}\label{levelhead}}
+    \quad
+    \subfigure[SCOPE]{\includegraphics[width=165px]{scope1}\label{scope}}
+    \caption{Examples of Augmented Reality Games}
+\end{figure}
 
-Premise of game
+One increasingly popular application of AR is in entertainment, where it has been used in a variety of videogames. Many of these games, such as the commercial title \textit{Eye of Judgement} \cite{eyeofjudgement} for the PlayStation 3, act like board games with which players interact using specially marked physical cards or tokens. This idea is expanded on in the levelHead \cite{levelhead} project (Figure~\ref{levelhead}), where the board is replaced by a marked cube that the player tilts and spins to control a character. The concept of augmenting simple tokens is studied well in a piece of interaction research by Frantz Lasorne in SCOPE \cite{scope}, pictured in Figure~\ref{scope}.
+
+As mobile phones become more powerful, it is possible for them to perform accurate camera tracking while displaying real-time 3D graphics. This allows more complex game interactions, such as Fanta's Virtual Tennis\cite{fantatennis} advertising game in which players print a marked paper tennis court and play tennis in real-time using two mobile phones as rackets. The Augmented Environments Lab at Georgia Tech has also experimented with several AR games, involving several different methods of interaction.
+
+\begin{wrapfigure}{r}{130pt}
+  \vspace{-20pt}
+  \begin{center}
+    \includegraphics[width=120px]{marker-axis1}
+  \end{center}
+  \vspace{-10pt}
+  \caption{A visual marker used to extract axes}
+  \label{markerar}
+\end{wrapfigure} 
+
+However, many of these AR experiences are based on techniques popularised by University of Washington ARToolkit \cite{artk}, which was itself based on earlier work \cite{artkpaper} in collaboration between the University of Washington and Hiroshima City University. This so-called \textit{marker based AR} requires tokens (Figure~\ref{markerar}) to extract co-ordinate axes and orient the augmented reality world. These are subject to a number of failure modes, including occlusion or a reduction in image quality due to, for example, motion blur (Figure~\ref{markerfail}). As PTAM tracks the scene based on a much larger number of feature points, if just one collection of points is obscured or untrackable it does not cause the entire track to fail.
+
+\begin{figure}[t]
+    \vspace{10pt}
+    \subfigure[Marker Occlusion]{\includegraphics[width=165px]{markerfail_occlusion}}
+    \quad
+    \subfigure[Poor Image Quality]{\includegraphics[width=165px]{markerfail_track}}
+    \vspace{10pt}
+    \caption{Failure modes for marker-based tracking, camera frames extracted from the levelHead demonstration video}
+    \vspace{10pt}
+    \label{markerfail}
+\end{figure}
+
+With this background in mind, the goal is to set up a game engine within the tool's platform, to demonstrate how one can integrate physics, AI, and interactive game elements into a coheisve AR gaming environment.
+
 \subsection{Real-Time Physics}
 Bullet
 
