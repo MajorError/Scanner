@@ -855,12 +855,23 @@ However, many of these AR experiences are based on techniques popularised by Uni
 
 With this background in mind, the goal is to set up a game engine within the tool's platform, to demonstrate how one can integrate physics, AI, and interactive game elements into a coheisve AR gaming environment.
 
+\subsection{Rendering}
+
 \subsection{Real-Time Physics}
-Bullet
+In order to offer real-time physics simulation, the Bullet Physics library was selected \cite{bullet}. This collision detection and rigid body physics library was first created by Erwin Coumans, from Sony Computer Entertainment, and has since become the most popular free/open source physics library in use today (rated 3\super{rd} according to \url{http://bulletphysics.org/wordpress/?p=88}, after the expensive closed-source solutions from nVidia and Havok). It has been used in a variety of commercial as well as free games, as well as powering award winning Visual Effects for Hollywood - notably the VES ``Outstanding Supporting Visual Effects in a Feature Motion Picture" for Framestore's work on Sherlock Holmes (\url{http://www.fxguide.com/article597.html} - fBounce is Framestore's custom Maya integration of Bullet).
 
-Bullet architecture - physics pipeline
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=340px]{BulletPipeline}
+  \end{center}
+  \caption{The Bullet Rigid Body Physics Pipeline (adapted from the Bullet Physics 2.76 SDK Manual)}
+  \label{bulletpipe}
+\end{figure} 
 
-Terrain generation
+Bullet's physics pipeline, seen in Figure~\ref{bulletpipe} starts with the most general simulation elements; it applies gravity to the scene, and predicts where the scene's transforms will move (Forward Dynamics). After this, the configured Broadphase Collision Detection algorithm quickly reduces the set of objects to perform Narrowphase collision detection on; it analyses the Axis Aligned Bounding Box (AABB) of each transform in the scene, and if there is a chance two objects are colliding, they will be passed on for Narrowphase collision. The Broadphase algorithm selected for this demonstration was a Sweep-and-Prune based 3D search - this is much more efficient than a Dynamic AABB Tree, but requires a fixed world size. Finally, the pipeline will solve the precise constraints on the forward dynamics and integrate the final positions of each transform in the scene.
+
+In order to initialise the physics world, it is necessary to transform the model of the world stored in the \texttt{Environment} into a terrain mesh that Bullet can use for collisions. For this purpose, there is a convenient construct in Bullet; the \texttt{btBvhTriangleMeshShape}. This takes as a parameter the \texttt{btTriangleMesh} generated face-by-face from the \texttt{Environment}'s model. Provided vertex ordering is taken into consideration (so that the implicit surface normals for collision are correct), this will provide a suitable rigid body for modelling the scene from a physics standpoint.
+
 \subsection{AI Navigation}
 Navmesh generation
 
