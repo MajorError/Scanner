@@ -5,6 +5,7 @@
 #include "Environment.h"
 #include "Shiny.h"
 #include "Map.h"
+#include <sys/time.h>
 
 using namespace CVD;
 using namespace GVars3;
@@ -124,4 +125,21 @@ void profiler::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB 
     PROFILE_UPDATE_ALL( 0 );
     PROFILE_OUTPUT_ALL();
     PROFILE_DESTROY_ALL();
-}
+};
+
+MK_VISION_PLUGIN( fps, timeval lastTime; int ctr; );
+void fps::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    timeval currTime;
+    gettimeofday( &currTime, NULL );
+    ctr = (ctr % 100) + 1;
+    // Average time in ms between frames
+    double ms = ((currTime.tv_sec - lastTime.tv_sec) * 1000 +
+			(currTime.tv_usec - lastTime.tv_usec) / 1000) / ctr;
+    stringstream s;
+    s << "text.draw " << floor( 1000 / ms ) << " FPS";
+    commandList::exec( s.str() );
+    if ( ctr == 1 ) {
+        lastTime.tv_sec = currTime.tv_sec;
+        lastTime.tv_usec = currTime.tv_usec;
+    }
+};
