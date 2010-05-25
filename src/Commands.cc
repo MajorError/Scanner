@@ -1274,4 +1274,33 @@ namespace obj1 {
 
         fclose( tga );
     };
-}
+};
+
+namespace randmodel {
+    MK_GUI_COMMAND(model, rand,)
+    void model::rand( string numPts ) {
+        if ( numPts.length() < 1 )
+            numPts = "10";
+        stringstream s( numPts );
+        int pts;
+        s >> pts;
+        cerr << "Adding " << pts << " connected points" << endl;
+
+        double edgeProb = GV3::get<double>( "edgeProb", 0.5 );
+        for (int i = 0; i < pts; i++) {
+            Point* p = new Point(
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5 );
+            environment->addPoint( p );
+            for( std::list<Point*>::iterator inner = environment->getPoints().begin();
+                    inner != environment->getPoints().end(); inner++ ) {
+                if ( static_cast<double>( std::rand() ) / RAND_MAX < edgeProb )
+                    environment->addEdge( p, *inner );
+            }
+        }
+        cerr << "Model size: " << environment->getPoints().size() << " points, " 
+                << environment->getEdges().size() << " edges, and "
+                << environment->getFaces().size() << " faces." << endl;
+    }
+};
