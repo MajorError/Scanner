@@ -715,7 +715,7 @@ In the second pass, the code examines adjacent pieces ot texture; if the frames 
 
 \begin{figure}
   \begin{center}
-    \begin{tabular}{| c | c || c|} \hline
+    \begin{tabular}{| c | c || c |} \hline
       \textbf{Data Type} & \textbf{Field} & \textbf{Value} \\ \hline
       \texttt{byte} & ID Field Size & 0 \\ \hline
       \texttt{byte} & Colour Map Type & 0 \textit{(none)} \\ \hline
@@ -891,7 +891,7 @@ Finally, all of these \texttt{Waypoint}s are encoded in a \texttt{WorldMap}, whi
 The final component of the game world is the \texttt{Director}: it controls the flow of the game, and maintains the state of the player's score. In this case, it is a fairly simple affair; over time, it randomly ``spawns" \texttt{AIUnit}s at a random point on one edge of the game world, and tells them to navigate to the far side - ideal for playing on a desk, in a similar fashion to popular Flash-based ``desktop tower defence" games. If an \texttt{AIUnit} reaches the far side, the player loses 300 points. The player can try and stop this by launching projectiles from their handheld camera - if one hits an \texttt{AIUnit} they gain 10 points, and if they knock one off the edge of the game world they earn 100 points. The mechanics are simple, but as a showcase of what a full-time games developer could do with the technology, it provides valuable evidence of the suitability of this sort of technology for recreational gameplay.
 
 \section{Evaluation}
-In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the system simply accomplishes the above goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
+In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the implementation detailed should accomplish the stated goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
 
 \subsection{Acceptance Testing}
 Acceptance testing should consist of attempting to model a collection of real-world objects, of varying complexity; for example, ranging from a book to a more complicated shape, such as a detailed model or a pair of shoes. If the finished product is capable, testing it on a variety of scales would be advantageous; say, the view from a balcony as well as the aforementioned articles. This model construction should take place in a noisy environment; with uncontrolled lighting, other objects in the area, and the like, in order to best simulate the environment in which the system is designed for use. 
@@ -903,6 +903,84 @@ The numerical analysis of the system's accuracy is altogether less straightforwa
 
 \subsection{Usability}
 A third factor that remains unmeasured is the extent to which a new user can pick up the software and learn to use it; one aspect of this is documentation, the other a highly qualitative ``user friendliness". This can hypothetically also be tested, by giving the system to a small cross-section of different users and observing how readily they learn to use it. Worthy of note here is the relative difficulty with which most users learn 3D packages, such as Maya or 3D Studio Max - most 3D tools are highly complex, with many months of learning curve. If a user can pick this system up and start using it to model and texture objects inside of an hour then it should rate quite highly on the usability scale!
+
+\subsection{Performance}
+A final key aspect for consideration is the performance of the system. Not only must it remain performant under usual modelling scenarios, but if it is to be used as a platform for other software it is important that its performance characteristics are well understood. The primary form of performance we will consider is the framerate of the software in use, measured in Frames Per Second (FPS). 
+
+\begin{figure}
+  \begin{center}
+    \subfigure[]{\includegraphics[width=160px]{PointsVsFramerate}\label{pointrate}}
+    \hspace{10px}
+    \subfigure[]{\includegraphics[width=160px]{EdgesVsFramerate}\label{edgerate}}
+    \subfigure[]{\includegraphics[width=165px]{FacesVsFramerate}\label{facerate}}
+  \end{center}
+  \caption{Framerate results of the first analysis of mesh complexity}
+  \label{framerate}
+\end{figure} 
+
+In order to produce models of various resolution to test how well the system scales, an extra command was created. This command would add a number of new \texttt{Point}s to the \texttt{Environment}, and connecting each added \texttt{Point} to every existing point with probability defined by a GVars3 controlled variable, \texttt{edgeProb}. Finally, the resulting size of the three aspects of the model (points, edges, and faces) were recorded after each command invocation. The framerate observed was taken as an approximate average of those calculated while panning the camera around the model - ensuring that PTAM was performing fresh tracking, and the rate shown was ``fair". Whilst the camera was stable, many sizes of model would often exhibit higher framerates than those recorded here; this appeared to be a compound result of PTAM's efficiency, and an OpenGL optimisation of the rendering. The tables of results are given below, with the graphs generated from these data in Figure~\ref{framerate}. The first section of data were generated with an \texttt{edgeProb} of 1, whilst the second were formed from an \texttt{edgeProb} of 0.5.
+
+\begin{center}
+\begin{tabular}{| c | c | c || c |} 
+\hline
+\textbf{Points}	& \textbf{Edges}	& \textbf{Faces}	& \textbf{Framerate} \\
+\hline
+\hline
+0	& 0	& 0	& 45 \\
+5	& 10	& 10	& 33 \\
+10	& 45	& 120	& 31 \\
+15	& 105	& 455	& 18 \\
+20	& 190	& 1140	& 6 \\
+\hline
+\hline
+0	& 0		& 0		& 45 \\
+5	& 7		& 3		& 33 \\
+6	& 10	& 5		& 31 \\
+7	& 12	& 5		& 31 \\
+10	& 23	& 15	& 30 \\
+15	& 52	& 61	& 30 \\
+20	& 97	& 155	& 27 \\
+25	& 153	& 311	& 25 \\
+30	& 214	& 495	& 23 \\
+35	& 294	& 794	& 12 \\
+\hline
+\end{tabular}
+\end{center} 
+
+In analysing these graphs, we can clearly see that as the overall complexity of the model increases, the framerate decreases in proportion. However, the first two graphs (Figures~\ref{pointrate} and \ref{edgerate}) also have clear dips in framerate (highlighted) corresponding to the more complex models in the \textit{first} data set. The fact that these spurious discontinuities are not present in Figure~\ref{facerate} suggest that the primary cause of the drop in framerate is the increase in number of faces. This hypothesis is borne out by the profiling data, which show a significant proportion of each frame's rendering devoted to rendering the textured \texttt{PolyFace}s.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=340px]{FacesVsFramerate2}
+  \end{center}
+  \caption{Second analysis of effect of face count on framerate}
+  \label{facesrate2}
+\end{figure}
+
+With this in mind, a second random mesh generator was written. Instead of focussing on number of points, it can be tasked to generate a mesh of a given number of faces, by iteratively generating a new \texttt{PolyFace} from the current new point, as well as the previous two generated points. The mesh is not as heavily connected as in the previous generator, but arguably grows at a more realistic rate of faces in relation to number of points and edges. The raw data for this analysis is again below, with the graph generated from it shown in Figure~\ref{facesrate2}.
+
+\begin{center}
+\begin{tabular}{| c || c |} 
+\hline
+\textbf{Number of Points}	& \textbf{Framerate} \\
+\hline
+\hline
+0	& 43 \\
+20	& 31 \\
+40	& 30 \\
+70	& 29 \\
+100	& 26 \\
+110	& 25 \\
+150	& 20 \\
+180	& 16 \\
+190	& 14 \\
+250	& 10 \\
+280	& 6 \\
+320	& 4 \\
+375	& 2 \\
+\hline
+\end{tabular}
+\end{center}
 
 \subsection{Summary}
 Combining these three approaches it should be possible to give both a qualitative and quantitative analysis of the suitability of the solution for purpose. If it can complete the above tasks, be found to be of reasonable accuracy, and can be picked up by new users with relative ease, it will be deemed to be a success. 
