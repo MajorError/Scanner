@@ -1276,7 +1276,7 @@ namespace obj1 {
     };
 };
 
-namespace randmodel {
+namespace randmodel1 {
     MK_GUI_COMMAND(model, rand,)
     void model::rand( string numPts ) {
         if ( numPts.length() < 1 )
@@ -1299,7 +1299,44 @@ namespace randmodel {
                     environment->addEdge( p, *inner );
             }
         }
-        cerr << "Model size: " << environment->getPoints().size() << " points, " 
+        cerr << "Model size: " << environment->getPoints().size() << " points, "
+                << environment->getEdges().size() << " edges, and "
+                << environment->getFaces().size() << " faces." << endl;
+    }
+};
+
+namespace randmodel2 {
+    MK_GUI_COMMAND(model, randFaces,)
+    void model::randFaces( string numFaces ) {
+        if ( numFaces.length() < 1 )
+            numFaces = "10";
+        stringstream s( numFaces );
+        int faces;
+        s >> faces;
+        cerr << "Adding " << faces << " new faces" << endl;
+        Point* p3 = new Point(
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5 );
+        environment->addPoint( p3 );
+        Point* p2 = new Point(
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5 );
+        environment->addPoint( p2 );
+        environment->addEdge( p3, p2 );
+        for (int i = 0; i < faces; i++) {
+            Point* p = new Point(
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5,
+                    2 * static_cast<double>( std::rand() ) / RAND_MAX - 0.5 );
+            environment->addPoint( p );
+            environment->addEdge( p, p2 );
+            environment->addEdge( p, p3 );
+            p3 = p2;
+            p2 = p;
+        }
+        cerr << "Model size: " << environment->getPoints().size() << " points, "
                 << environment->getEdges().size() << " edges, and "
                 << environment->getFaces().size() << " faces." << endl;
     }
