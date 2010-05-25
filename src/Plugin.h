@@ -24,10 +24,10 @@ public:
     Plugin() : enabled( true ), init( false ) {
     };
     virtual ~Plugin() {};
-    static void enable( void* ptr, std::string cmd, std::string params ) {
+    static void enable( void* ptr, std::string cmd = "", std::string params = "" ) {
         static_cast<Plugin*>( ptr )->enabled = true;
     };
-    static void disable( void* ptr, std::string cmd, std::string params ) {
+    static void disable( void* ptr, std::string cmd = "", std::string params = "" ) {
         static_cast<Plugin*>( ptr )->enabled = false;
     };
 
@@ -42,7 +42,6 @@ public:
      */
     virtual std::string getShortName() { return "PNULL"; };
 
-protected:
     bool enabled, init;
 };
 

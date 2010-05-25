@@ -223,3 +223,11 @@ MK_TOOL_PLUGIN( toggleNormals, "n", );
 void toggleNormals::click() {
     toggleVar( "drawNormals" );
 };
+
+MK_TOOL_PLUGIN( toggleProfiler, "p", );
+void toggleProfiler::click() {
+    if ( profiler::instance->enabled )
+        profiler::disable( profiler::instance );
+    else
+        profiler::enable( profiler::instance );
+};
