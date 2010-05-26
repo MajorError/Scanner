@@ -1,6 +1,7 @@
 #include <GL/gl.h>
 #include <fstream>
 #include <bits/stl_vector.h>
+#include <cvd/image_io.h>
 
 #include "Point.h"
 #include "Environment.h"
@@ -1341,3 +1342,17 @@ namespace randmodel2 {
                 << environment->getFaces().size() << " faces." << endl;
     }
 };
+
+MK_GUI_COMMAND( errormap, save, int sessionID; int currFrame; )
+void errormap::save( string params ) {
+    if ( !init ) {
+        init = true;
+        sessionID = rand();
+        currFrame = 0;
+    }
+    stringstream fname;
+    fname << "errormap_" << sessionID << "_" << currFrame++ << ".png";
+    cerr << "Saving error map to " << fname.str() << endl;
+
+    img_save( accuracy::instance->rendered, fname.str() );
+}

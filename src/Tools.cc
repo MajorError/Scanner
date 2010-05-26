@@ -231,3 +231,20 @@ void toggleProfiler::click() {
     else
         profiler::enable( profiler::instance );
 };
+
+MK_TOOL_PLUGIN( clearGUI, "0", );
+void clearGUI::click() {
+    GUI.ParseLine( "fps.disable" );
+    GUI.ParseLine( "drawGrid=0" );
+    GUI.ParseLine( "drawEdges=0" );
+    GUI.ParseLine( "drawPoints=0" );
+    GUI.ParseLine( "drawFeatures=0" );
+    GUI.ParseLine( "drawClosestPoint=0" );
+    GUI.ParseLine( "drawClosestEdge=0" );
+    GUI.ParseLine( "drawClosestFace=0" );
+};
+
+MK_TOOL_PLUGIN( saveErrorMap, "1", );
+void saveErrorMap::click() {
+    commandList::exec( "errormap.save" );
+};

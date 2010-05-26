@@ -6,6 +6,7 @@
 #include "Shiny.h"
 #include "Map.h"
 #include <sys/time.h>
+#include <cvd/gl_helpers.h>
 
 using namespace CVD;
 using namespace GVars3;
@@ -142,4 +143,33 @@ void fps::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         lastTime.tv_sec = currTime.tv_sec;
         lastTime.tv_usec = currTime.tv_usec;
     }
+};
+
+MK_VISION_PLUGIN( accuracy, public: Image< Rgb<byte> > rendered; );
+void accuracy::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    if ( !init ) {
+        init = true;
+        rendered.resize( sceneRGB.size() );
+    }
+
+    glReadPixels( rendered );
+
+    double diff = 0;
+    Image< Rgb<byte> >::iterator camPx = sceneRGB.begin();
+    Image< Rgb<byte> >::iterator arPx = rendered.end() - 1;
+    for( ; arPx >= rendered.begin(); arPx -= rendered.size().x ) {
+        for( int i = rendered.size().x - 1; i >= 0; i-- ) {
+            double currDiff = (abs( camPx->red - (arPx-i)->red ) 
+                    + abs( camPx->green - (arPx-i)->green )
+                    + abs( camPx->blue - (arPx-i)->blue )) / 3;
+            camPx++;
+
+            diff += currDiff;
+            (arPx-i)->red = currDiff;
+            (arPx-i)->green = currDiff;
+            (arPx-i)->blue = currDiff;
+        }
+    }
+    
+    cerr << "Average error: " << (diff / (rendered.size().x * rendered.size().y)) << endl;
 };
