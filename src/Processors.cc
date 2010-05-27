@@ -7,6 +7,7 @@
 #include "Map.h"
 #include <sys/time.h>
 #include <cvd/gl_helpers.h>
+#include <cvd/convolution.h>
 
 using namespace CVD;
 using namespace GVars3;
@@ -132,7 +133,7 @@ MK_VISION_PLUGIN( fps, timeval lastTime; int ctr; );
 void fps::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     timeval currTime;
     gettimeofday( &currTime, NULL );
-    ctr = (ctr % 100) + 1;
+    ctr = (ctr % 30) + 1;
     // Average time in ms between frames
     double ms = ((currTime.tv_sec - lastTime.tv_sec) * 1000 +
 			(currTime.tv_usec - lastTime.tv_usec) / 1000) / ctr;
@@ -145,14 +146,23 @@ void fps::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     }
 };
 
-MK_VISION_PLUGIN( accuracy, public: Image< Rgb<byte> > rendered; );
+MK_VISION_PLUGIN( accuracy, int ctr; public: Image< Rgb<byte> > rendered; );
 void accuracy::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     if ( !init ) {
         init = true;
         rendered.resize( sceneRGB.size() );
+        ctr = 0;
     }
 
+    if ( ctr++ % 30 )
+        return;
+    
     glReadPixels( rendered );
+
+    if ( GV3::get<bool>( "blurAccuracy", true ) ) {
+        convolveGaussian( rendered, 1.0 );
+        convolveGaussian( sceneRGB, 1.0 );
+    }
 
     double diff = 0;
     Image< Rgb<byte> >::iterator camPx = sceneRGB.begin();
@@ -161,7 +171,7 @@ void accuracy::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB 
         for( int i = rendered.size().x - 1; i >= 0; i-- ) {
             double currDiff = (abs( camPx->red - (arPx-i)->red ) 
                     + abs( camPx->green - (arPx-i)->green )
-                    + abs( camPx->blue - (arPx-i)->blue )) / (256.0*3.0);
+                    + abs( camPx->blue - (arPx-i)->blue )) / 3.0;
             camPx++;
 
             diff += currDiff;
@@ -171,5 +181,5 @@ void accuracy::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB 
         }
     }
     
-    cerr << "Average error: " << (100.0 * diff / (rendered.size().x * rendered.size().y)) << "%" << endl;
+    cerr << "Average error: " << (100.0 * diff / (256 * rendered.size().x * rendered.size().y)) << "%" << endl;
 };
