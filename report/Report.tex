@@ -933,6 +933,18 @@ From analysing these error maps, we can see that the average error across the su
 
 Of course, this highlights a problem with this approach to accuracy testing - as it is experimental itself, it is difficult to know to what extent \textit{it} can be trusted to deliver a valid judgement of the system's accuracy!
 
+\begin{figure}
+  \begin{center}
+    \subfigure[Error Histogram Pre-Modelling (0.1\%)]{\includegraphics[width=160px]{HistogramBlank}\label{histblank}}
+    \hspace{10px}
+    \subfigure[Error Histogram With Model \& UI (12.9\%)]{\includegraphics[width=160px]{HistogramModel}\label{histmodel}}
+  \end{center}
+  \caption{Example error histograms, from the maps in Figure~\ref{errormaps2}}
+  \label{histograms}
+\end{figure} 
+
+While the percentage error is easy to digest, the error map gives much more detailed information. Ideally, a measure somewhere between the two should provide an easy to compare metric, that provides more detailed information than just a percentage error. In order to do this, Figure~\ref{histograms} shows histograms generated showing the frequency of each amount of error. These make it easy to see that the errors present with a blank model are all present below a peak of 9\%, while those in the modelled case exhibit errors up to 74\% - although under 0.03\% of the image exhibits errors over 70\%. By way of contrast, approximately 40\% of the frame exhibits an error of under 10\%.
+
 %Another approach would be to perform feature detection on the source and AR camera frames, and estimate the motion of co-occurrent features between the two; any features that are not within the model would not have moved, but those which \textit{were} modelled, would be expected to exhibit some form of motion. 
 
 \subsection{Usability}
