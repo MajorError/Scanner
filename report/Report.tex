@@ -901,6 +901,28 @@ Once the modelling of each of these has been completed, they should be exported 
 \subsection{Accuracy}
 The numerical analysis of the system's accuracy is altogether less straightforward, as there is no perfect ``gold standard" approach against which the final product can be measured. Furthermore, an artistic ``from scratch" model against which to compare would be both hard to find and not necessarily created with accuracy in mind. If the hardware were available, the geometry that the system outputs can be compared against the point-cloud generate by a LIDAR scanner. This has the distinct advantage of testing the geometry separately from the texture. To some extent, the correctness of texture mapping can be inspected visually; however, a numerical approach would be desirable. To this end, an approach which compares the augmented-reality frame and the source camera frame from a few different perspectives would test the accuracy of the complete system; geometry, texture mapping, AR rendering, and even camera calibration. Of course, this means that if any one of these is deficient then the whole system will be deemed inaccurate. The obvious way of doing that would be to simply compare the pixel values of the two frames in the framebuffer. This would provide a quick and easy way of telling how accurate the system is overall; the average percentage pixel difference across the entire image should give an index of accuracy. Another approach would be to perform feature detection on the source and AR camera frames, and estimate the motion of co-occurrent features between the two; any features that are not within the model would not have moved, but those which \textit{were} modelled, would be expected to exhibit some form of motion. 
 
+\begin{figure}
+  \begin{center}
+    \subfigure[Modelling example - Desk Surface]{\includegraphics[width=160px]{DeskTest}\label{desktest}}
+    \hspace{10px}
+    \subfigure[Error Map Pre-Modelling (0.7\%)]{\includegraphics[width=160px]{DeskErrorBlank}\label{errorblank}}
+    \subfigure[Error Map With Model (7.2\%)]{\includegraphics[width=165px]{DeskErrorModel}\label{errormodel}}
+  \end{center}
+  \caption{Example error maps}
+  \label{errormaps}
+\end{figure} 
+
+\begin{figure}
+  \begin{center}
+    \subfigure[Error Map Pre-Modelling (0.1\%)]{\includegraphics[width=160px]{DeskErrorBlank2}\label{errorblank2}}
+    \hspace{10px}
+    \subfigure[Error Map With Model (5.5\%)]{\includegraphics[width=160px]{DeskErrorModel2}\label{errormodel2}}
+    \subfigure[Error Map With Model \& UI (12.9\%)]{\includegraphics[width=165px]{DeskErrorModelUI}\label{errormodelui}}
+  \end{center}
+  \caption{Example error maps, with blurring}
+  \label{errormaps2}
+\end{figure} 
+
 \subsection{Usability}
 A third factor that remains unmeasured is the extent to which a new user can pick up the software and learn to use it; one aspect of this is documentation, the other a highly qualitative ``user friendliness". This can hypothetically also be tested, by giving the system to a small cross-section of different users and observing how readily they learn to use it. Worthy of note here is the relative difficulty with which most users learn 3D packages, such as Maya or 3D Studio Max - most 3D tools are highly complex, with many months of learning curve. If a user can pick this system up and start using it to model and texture objects inside of an hour then it should rate quite highly on the usability scale!
 
