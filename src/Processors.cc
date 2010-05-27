@@ -161,7 +161,7 @@ void accuracy::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB 
         for( int i = rendered.size().x - 1; i >= 0; i-- ) {
             double currDiff = (abs( camPx->red - (arPx-i)->red ) 
                     + abs( camPx->green - (arPx-i)->green )
-                    + abs( camPx->blue - (arPx-i)->blue )) / 3;
+                    + abs( camPx->blue - (arPx-i)->blue )) / (256.0*3.0);
             camPx++;
 
             diff += currDiff;
@@ -171,5 +171,5 @@ void accuracy::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB 
         }
     }
     
-    cerr << "Average error: " << (diff / (rendered.size().x * rendered.size().y)) << endl;
+    cerr << "Average error: " << (100.0 * diff / (rendered.size().x * rendered.size().y)) << "%" << endl;
 };

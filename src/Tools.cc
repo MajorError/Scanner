@@ -239,9 +239,23 @@ void clearGUI::click() {
     GUI.ParseLine( "drawEdges=0" );
     GUI.ParseLine( "drawPoints=0" );
     GUI.ParseLine( "drawFeatures=0" );
+    GUI.ParseLine( "drawTarget=0" );
     GUI.ParseLine( "drawClosestPoint=0" );
     GUI.ParseLine( "drawClosestEdge=0" );
     GUI.ParseLine( "drawClosestFace=0" );
+};
+
+MK_TOOL_PLUGIN( restoreGUI, "9", );
+void restoreGUI::click() {
+    GUI.ParseLine( "fps.enable" );
+    GUI.ParseLine( "drawGrid=1" );
+    GUI.ParseLine( "drawEdges=1" );
+    GUI.ParseLine( "drawPoints=1" );
+    GUI.ParseLine( "drawFeatures=1" );
+    GUI.ParseLine( "drawTarget=1" );
+    GUI.ParseLine( "drawClosestPoint=1" );
+    GUI.ParseLine( "drawClosestEdge=1" );
+    GUI.ParseLine( "drawClosestFace=1" );
 };
 
 MK_TOOL_PLUGIN( saveErrorMap, "1", );
