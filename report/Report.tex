@@ -899,29 +899,41 @@ Acceptance testing should consist of attempting to model a collection of real-wo
 Once the modelling of each of these has been completed, they should be exported to disk, and imported into a 3D package for further analysis and raytracing; thus demonstrating the suitability of the system for producing data of real use. If the 3D package supports model checking, these static checks should be run on the produced model to check for invalidities such as degenerate faces and isolated vertices (as discussed in Section~\ref{approachmodel}).
 
 \subsection{Accuracy}
-The numerical analysis of the system's accuracy is altogether less straightforward, as there is no perfect ``gold standard" approach against which the final product can be measured. Furthermore, an artistic ``from scratch" model against which to compare would be both hard to find and not necessarily created with accuracy in mind. If the hardware were available, the geometry that the system outputs can be compared against the point-cloud generate by a LIDAR scanner. This has the distinct advantage of testing the geometry separately from the texture. To some extent, the correctness of texture mapping can be inspected visually; however, a numerical approach would be desirable. To this end, an approach which compares the augmented-reality frame and the source camera frame from a few different perspectives would test the accuracy of the complete system; geometry, texture mapping, AR rendering, and even camera calibration. Of course, this means that if any one of these is deficient then the whole system will be deemed inaccurate. The obvious way of doing that would be to simply compare the pixel values of the two frames in the framebuffer. This would provide a quick and easy way of telling how accurate the system is overall; the average percentage pixel difference across the entire image should give an index of accuracy. Another approach would be to perform feature detection on the source and AR camera frames, and estimate the motion of co-occurrent features between the two; any features that are not within the model would not have moved, but those which \textit{were} modelled, would be expected to exhibit some form of motion. 
-
 \begin{figure}
   \begin{center}
     \subfigure[Modelling example - Desk Surface]{\includegraphics[width=160px]{DeskTest}\label{desktest}}
     \hspace{10px}
     \subfigure[Error Map Pre-Modelling (0.7\%)]{\includegraphics[width=160px]{DeskErrorBlank}\label{errorblank}}
     \subfigure[Error Map With Model (7.2\%)]{\includegraphics[width=165px]{DeskErrorModel}\label{errormodel}}
+    \hspace{10px}
+    \subfigure[Error Map Intensity Scale]{\includegraphics[width=160px]{ErrorMapScale}\label{errorscale}}
   \end{center}
   \caption{Example error maps}
   \label{errormaps}
 \end{figure} 
 
+The numerical analysis of the system's accuracy is altogether less straightforward, as there is no perfect ``gold standard" approach against which the final product can be measured. Furthermore, an artistic ``from scratch" model against which to compare would be both hard to find and not necessarily created with geometric accuracy in mind. If the hardware were available, the geometry that the system outputs can be compared against the point-cloud generate by a LIDAR scanner. This would have the distinct advantage of testing the geometry separately from the texture - however, is infeasible at this time. To some extent, the correctness of texture mapping can be inspected visually; however, a numerical approach to all of the above would be desirable. To this end, an approach which compares the augmented-reality frame and the source camera frame from a few different perspectives would test the accuracy of the complete system; geometry, texture mapping, AR rendering, and even camera calibration. Of course, this means that if any one of these is deficient then the whole system will be deemed inaccurate. 
+
+In order to do this, \texttt{glReadPixels} was used to retrieve the contents of the AR rendered framebuffer into a CVD \texttt{Image\textless Rgb\textless byte\textgreater \textgreater}. By putting this code into a \texttt{VisionProcessor}, it would have access to the original camera frame, in the same format, and could compare the two pixel-by-pixel (bearing in mind the reverse ordering of OpenGL's rows; (0,0) in OpenGL is the bottom left of the frame, while the camera frames put the origin at the top left). By averaging the difference between corresponding pixels, a percentage difference between the images can be discerned. Furthermore, by recording the pixel-by-pixel average differences, a greyscale \textit{error map} can be saved to disk, showing where the errors between frames are strongest. An example of this error map can be seen in Figure~\ref{errormaps}.
+
 \begin{figure}
   \begin{center}
     \subfigure[Error Map Pre-Modelling (0.1\%)]{\includegraphics[width=160px]{DeskErrorBlank2}\label{errorblank2}}
     \hspace{10px}
-    \subfigure[Error Map With Model (5.5\%)]{\includegraphics[width=160px]{DeskErrorModel2}\label{errormodel2}}
-    \subfigure[Error Map With Model \& UI (12.9\%)]{\includegraphics[width=165px]{DeskErrorModelUI}\label{errormodelui}}
+    \subfigure[Error Map With Model \& UI (12.9\%)]{\includegraphics[width=160px]{DeskErrorModelUI}\label{errormodelui}}
+    \subfigure[Error Map With Model only (5.5\%)]{\includegraphics[width=160px]{DeskErrorModel2}\label{errormodel2}}
+    \hspace{10px}
+    \subfigure[Error Map Intensity Scale]{\includegraphics[width=160px]{ErrorMapScale}\label{errorscale}}
   \end{center}
   \caption{Example error maps, with blurring}
   \label{errormaps2}
 \end{figure} 
+
+From analysing these error maps, we can see that the average error across the surface of the desk is around 27\%, with peaks of up to 70\%. However, even when there is no model (as in Figure~\ref{errorblank}), there are clear errors to be seen, mostly on the edges of objects - resulting in a typical ``at rest" error of 7.2\%. This will, most likely, be a result of inaccuracy in either the camera calibration, or the UFB projection matrix used to re-project the camera frames for rendering in OpenGL. However, this minor amount of error could easily be amplified during tracking and texture projection to result in the inaccuracies seen above. One potential solution to this problem is to apply a gaussian convolution matrix to blur both the camera frame and the system's rendered output prior to comparing the two. This should reduce the amount of error due to mis-calibration, leaving a more accurate map of the system's error in its place. Examples of the output from pre-blurring the frames can be seen in Figure~\ref{errormaps2}, using a convolve matrix with $\sigma ~=~ 1.0$. As one might expect, this provides a much better indicator of accuracy - with no UI elements on screen, the error fell to 0.1\%. The average error for this map method on the desk image is closer to 23\% now, a not insignificant improvement.
+
+Of course, this highlights a problem with this approach to accuracy testing - as it is experimental itself, it is difficult to know to what extent \textit{it} can be trusted to deliver a valid judgement of the system's accuracy!
+
+%Another approach would be to perform feature detection on the source and AR camera frames, and estimate the motion of co-occurrent features between the two; any features that are not within the model would not have moved, but those which \textit{were} modelled, would be expected to exhibit some form of motion. 
 
 \subsection{Usability}
 A third factor that remains unmeasured is the extent to which a new user can pick up the software and learn to use it; one aspect of this is documentation, the other a highly qualitative ``user friendliness". This can hypothetically also be tested, by giving the system to a small cross-section of different users and observing how readily they learn to use it. Worthy of note here is the relative difficulty with which most users learn 3D packages, such as Maya or 3D Studio Max - most 3D tools are highly complex, with many months of learning curve. If a user can pick this system up and start using it to model and texture objects inside of an hour then it should rate quite highly on the usability scale!
