@@ -894,9 +894,11 @@ The final component of the game world is the \texttt{Director}: it controls the 
 In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the implementation detailed should accomplish the stated goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
 
 \subsection{Acceptance Testing}
-Acceptance testing should consist of attempting to model a collection of real-world objects, of varying complexity; for example, ranging from a book to a more complicated shape, such as a detailed model or a pair of shoes. If the finished product is capable, testing it on a variety of scales would be advantageous; say, the view from a balcony as well as the aforementioned articles. This model construction should take place in a noisy environment; with uncontrolled lighting, other objects in the area, and the like, in order to best simulate the environment in which the system is designed for use. 
+%Acceptance testing should consist of attempting to model a collection of real-world objects, of varying complexity; for example, ranging from a book to a more complicated shape, such as a detailed model or a pair of shoes. If the finished product is capable, testing it on a variety of scales would be advantageous; say, the view from a balcony as well as the aforementioned articles. This model construction should take place in a noisy environment; with uncontrolled lighting, other objects in the area, and the like, in order to best simulate the environment in which the system is designed for use. 
 
-Once the modelling of each of these has been completed, they should be exported to disk, and imported into a 3D package for further analysis and raytracing; thus demonstrating the suitability of the system for producing data of real use. If the 3D package supports model checking, these static checks should be run on the produced model to check for invalidities such as degenerate faces and isolated vertices (as discussed in Section~\ref{approachmodel}).
+%Once the modelling of each of these has been completed, they should be exported to disk, and imported into a 3D package for further analysis and raytracing; thus demonstrating the suitability of the system for producing data of real use. If the 3D package supports model checking, these static checks should be run on the produced model to check for invalidities such as degenerate faces and isolated vertices (as discussed in Section~\ref{approachmodel}).
+
+\textbf{TODO: Discuss utility of each tool in turn}
 
 \subsection{Accuracy}
 \begin{figure}
@@ -911,7 +913,6 @@ Once the modelling of each of these has been completed, they should be exported 
   \caption{Example error maps}
   \label{errormaps}
 \end{figure} 
-
 The numerical analysis of the system's accuracy is altogether less straightforward, as there is no perfect ``gold standard" approach against which the final product can be measured. Furthermore, an artistic ``from scratch" model against which to compare would be both hard to find and not necessarily created with geometric accuracy in mind. If the hardware were available, the geometry that the system outputs can be compared against the point-cloud generate by a LIDAR scanner. This would have the distinct advantage of testing the geometry separately from the texture - however, is infeasible at this time. To some extent, the correctness of texture mapping can be inspected visually; however, a numerical approach to all of the above would be desirable. To this end, an approach which compares the augmented-reality frame and the source camera frame from a few different perspectives would test the accuracy of the complete system; geometry, texture mapping, AR rendering, and even camera calibration. Of course, this means that if any one of these is deficient then the whole system will be deemed inaccurate. 
 
 In order to do this, \texttt{glReadPixels} was used to retrieve the contents of the AR rendered framebuffer into a CVD \texttt{Image\textless Rgb\textless byte\textgreater \textgreater}. By putting this code into a \texttt{VisionProcessor}, it would have access to the original camera frame, in the same format, and could compare the two pixel-by-pixel (bearing in mind the reverse ordering of OpenGL's rows; (0,0) in OpenGL is the bottom left of the frame, while the camera frames put the origin at the top left). By averaging the difference between corresponding pixels, a percentage difference between the images can be discerned. Furthermore, by recording the pixel-by-pixel average differences, a greyscale \textit{error map} can be saved to disk, showing where the errors between frames are strongest. An example of this error map can be seen in Figure~\ref{errormaps}.
@@ -1028,8 +1029,13 @@ With this in mind, a second random mesh generator was written. Instead of focuss
 \end{tabular}
 \end{center}
 
-\subsection{Summary}
-Combining these three approaches it should be possible to give both a qualitative and quantitative analysis of the suitability of the solution for purpose. If it can complete the above tasks, be found to be of reasonable accuracy, and can be picked up by new users with relative ease, it will be deemed to be a success. 
+\section{Conclusion}
+
+\textbf{TODO: Final summation of results, suitability, etc.}
+
+\section{Further Work}
+
+\textbf{TODO: Future directions - more visiony things? Edgelet refinement, etc? Dense reconstruction based on user-applied constraints?}
 
 \clearpage
 \renewcommand*{\refname}{\section{References}}
