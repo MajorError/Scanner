@@ -1351,119 +1351,125 @@ namespace obj2 {
         vector< Vector<2> > tex;       // Texture co-ordinate IDs
         char c;
 
-        while( obj.good() ) {
-            obj >> c;
+        while( obj.good() && !obj.eof() ) {
+            obj >> skipws >> c;
             if ( c == '#' ) {           // Comment : Skip line
-                while( c != '\n' )
-                    obj >> c;
+                string comment;
+                obj >> comment;
+                cerr << ">> Skip comment: " << comment << endl;
             } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
                 obj >> c;
-                if ( c == ' ' ) {       // Geometry vertex
-                    Vector<3> pos;
-                    obj >> pos;
-                    Point* p = new Point( pos );
-                    pts.push_back( p );
-                } else if ( c == 'n' ) { // Normal vector
+                if ( c == 'n' ) {       // Normal vector
                     Vector<3> n;
                     obj >> n;
+                    cerr << ">> Normal " << n << endl;
                     norm.push_back( n );
                 } else if ( c == 't' ) { // Texture co-ordinate
                     Vector<2> t;
                     obj >> t;
+                    cerr << ">> Texture co-ord " << t << endl;
                     tex.push_back( t );
+                } else {                // Geometry vertex
+                    Vector<3> pos;
+                    obj >> pos;
+                    cerr << ">> Point " << pos << endl;
+                    Point* p = new Point( pos );
+                    pts.push_back( p );
                 }
             } else if ( c == 'f' ) {    // face definition
-                while( c == ' ' )
-                    obj >> c;
-                string line; // Grab to the end of the line
-                obj >> line;
-                istringstream fl( line );
+                string p1, p2, p3; // Grab to the end of the line
+                obj >> p1 >> p2 >> p3;
+                istringstream fl1( p1 ), fl2( p2 ), fl3( p3 );
                 int v1 = -1, v2 = -1, v3 = -1;
                 int vt1 = -1, vt2 = -1, vt3 = -1;
                 int vn1 = -1, vn2 = -1, vn3 = -1;
                 // Get first vertex definition
-                fl >> v1;
-                if ( fl.peek() == '/' ) {
-                    fl.get();
-                    if ( fl.peek() == '/' ) {
-                        fl.get();
-                        fl >> vn1;
+                fl1 >> skipws >> v1;
+                if ( fl1.peek() == '/' ) {
+                    fl1.get();
+                    if ( fl1.peek() == '/' ) {
+                        fl1.get();
+                        fl1 >> skipws >> vn1;
                     } else {
-                        fl >> vt1;
-                        if ( fl.peek() == '/' ) {
-                            fl.get();
-                            fl >> vn1;
+                        fl1 >> skipws >> vt1;
+                        if ( fl1.peek() == '/' ) {
+                            fl1.get();
+                            fl1 >> skipws >> vn1;
                         }
                     }
                 }
                 // Second vertex definition
-                fl >> v2;
-                if ( fl.peek() == '/' ) {
-                    fl.get();
-                    if ( fl.peek() == '/' ) {
-                        fl.get();
-                        fl >> vn2;
+                fl2 >> skipws >> v2;
+                if ( fl2.peek() == '/' ) {
+                    fl2.get();
+                    if ( fl2.peek() == '/' ) {
+                        fl2.get();
+                        fl2 >> skipws >> vn2;
                     } else {
-                        fl >> vt2;
-                        if ( fl.peek() == '/' ) {
-                            fl.get();
-                            fl >> vn2;
+                        fl2 >> skipws >> vt2;
+                        if ( fl2.peek() == '/' ) {
+                            fl2.get();
+                            fl2 >> skipws >> vn2;
                         }
                     }
                 }
                 // Third vertex definition
-                fl >> v3;
-                if ( fl.peek() == '/' ) {
-                    fl.get();
-                    if ( fl.peek() == '/' ) {
-                        fl.get();
-                        fl >> vn3;
+                fl3 >> skipws >> v3;
+                if ( fl3.peek() == '/' ) {
+                    fl3.get();
+                    if ( fl3.peek() == '/' ) {
+                        fl3.get();
+                        fl3 >> skipws >> vn3;
                     } else {
-                        fl >> vt3;
-                        if ( fl.peek() == '/' ) {
-                            fl.get();
-                            fl >> vn3;
+                        fl3 >> skipws >> vt3;
+                        if ( fl3.peek() == '/' ) {
+                            fl3.get();
+                            fl3 >> skipws >> vn3;
                         }
                     }
                 }
                 bool hasNormal = vn1 >= 0 && vn2 >= 0 && vn3 >= 0;
                 bool hasTexture = vt1 >= 0 && vt2 >= 0 && vt3 >= 0;
+                cerr << "Face: (" << v1 << "," << v2 << "," << v3 << "). Normals: ("
+                        << vn1 << "," << vn2 << "," << vn3 << "). Textures: ("
+                        << vt1 << "," << vt2 << "," << vt3 << ")." << endl;
                 if ( v1 < 0 || v2 < 0 || v3 < 0 ) {
-                    cerr << "Invalid face definition! Skip." << endl;
+                    cerr << ">> Invalid face definition! Skip." << endl;
                 } else {
+                    cerr << ">> Got " << pts.size() << " points, " << norm.size()
+                        << " normals, and " << tex.size() << " texture co-ordinates at this time" << endl;
+                    cerr << ">> Parsed " << v1 << "," << v2 << "," << v3 << endl;
                     // Build PolyFace and add to the environment
                     FixedPolyFace* face = new FixedPolyFace( pts[v1], pts[v2], pts[v3] );
                     if ( hasTexture ) {
+                        cerr << ">> Fixing texture" << endl;
                         face->fixTexture( &texture );
                         face->p1 = tex[vt1];
                         face->p2 = tex[vt2];
                         face->p3 = tex[vt3];
                     }
                     if ( hasNormal ) {
+                        cerr << ">> Setting average face normal" << endl;
                         Vector<3> n = norm[vn1] + norm[vn2] + norm[vn3];
                         face->normal = n / (n * n);
                     }
+                    cerr << ">> Adding f to env" << endl;
+                    environment->getFaces().insert( face );
                 }
             } else if ( c == 'm' ) {    // mtllib
-                while( c != ' ' )
-                    obj >> c;
-                while( c == ' ' )
-                    obj >> c;
+                while( obj.peek() != ' ' )
+                    obj.get();
                 mtlLib.clear();
-                obj >> mtlLib;
+                obj >> skipws >> mtlLib;
                 cerr << ">> Got mtlLib = " << mtlLib << endl;
             } else if ( c == 'u' ) {    // usemtl
                 while( c != ' ' )
                     obj >> c;
-                while( c == ' ' )
-                    obj >> c;
                 mtlName.clear();
-                obj >> mtlName;
+                obj >> skipws >> mtlName;
                 cerr << ">> Got mtl = " << mtlName << endl;
             }
-
         }
-
         obj.close();
     };
 
