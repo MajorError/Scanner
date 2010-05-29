@@ -1277,6 +1277,44 @@ namespace obj1 {
     };
 };
 
+
+namespace obj2 {
+    /*
+     * Note here that we have to load three files, with the same basename; an
+     *   OBJ file for the geometry, an MTL file to define our texture mapping
+     *   and how we want it to look, and an image of the actual texture data.
+     */
+    MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtl, Image< Rgb<byte> > texture ); \
+        void loadMTL( string filename, string mtl, Image< Rgb<byte> > texture ); )
+    void obj::load( string filename ) {
+        if ( filename.length() < 1 )
+            filename = "scanner_model.obj";
+
+        string mtlLib = "UNKNOWN";
+        string mtl = "DEFAULT";
+        Image< Rgb<byte> > texture;
+
+        loadOBJ( filename, mtlLib, mtl );
+        loadMTL( mtlLib, mtl, texture );
+
+        cerr << "File loaded from " << filename << endl;
+    }
+
+    void obj::loadOBJ( string filename, string& mtlLib, string& mtl, Image< Rgb<byte> > texture ) {
+        ifstream obj;
+        obj.open( filename.c_str(), ios::in );
+
+        obj.close();
+    };
+
+    void obj::loadMTL( string filename, string mtl, Image< Rgb<byte> > texture ) {
+        ifstream mtl;
+        mtl.open( filename.c_str(), ios::in );
+        
+        mtl.close();
+    };
+};
+
 namespace randmodel1 {
     MK_GUI_COMMAND(model, rand,)
     void model::rand( string numPts ) {
