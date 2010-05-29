@@ -1,0 +1,13 @@
+# Blender3D MTL File: cat.blend
+# Material Count: 1
+newmtl teapot
+Ns 96.078431
+Kd 0.000000 0.000000 0.000000
+Ka 0.732557 0.732557 0.732557
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd 1
+
+

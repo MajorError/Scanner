@@ -1373,7 +1373,7 @@ namespace obj2 {
             obj >> skipws >> c;
             if ( c == '#' ) {           // Comment : Skip line
                 string comment;
-                obj >> comment;
+                obj >> noskipws >> comment;
                 //cerr << ">> Skip comment: " << comment << endl;
             } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
                 c = obj.peek();
@@ -1552,7 +1552,49 @@ namespace obj2 {
     void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ) {
         ifstream mtl;
         mtl.open( filename.c_str(), ios::in );
-        
+        char c;
+
+        while( mtl.good() && !mtl.eof() ) {
+            mtl >> skipws >> c;
+            if ( c == '#' ) {               // Comment : Skip line
+                string comment;
+                mtl >> noskipws >> comment;
+                //cerr << ">> Skip comment: " << comment << endl;
+            } else if ( c == 'n' ) {        // newmtl declaration
+                string test;
+                while( c != ' ' )
+                    mtl >> noskipws >> c;
+                mtl >> skipws >> test;
+                if ( test == mtlName ) {    // Found target material
+                    while( mtl.good() && !mtl.eof() ) {
+                        mtl >> skipws >> c;
+                        if ( c == 'K' ) {
+                            mtl >> c;
+                            if ( c == 'a' ) {
+                                // Fill the texture with the ambient colour
+                                Rgb<byte> colour;
+                                double r, g, b;
+                                mtl >> r >> g >> b;
+                                colour.red = r * 255;
+                                colour.green = g * 255;
+                                colour.blue = b * 255;
+                                texture.fill( colour );
+                            }
+                        } else if ( c == 'm' ) {
+                            string texMap;
+                            mtl >> texMap;
+                            // (NB: "m" already consumed)
+                            if ( texMap == "ap_Ka" ) { // Ambient map
+                                mtl >> skipws >> texMap;
+                                // Attempt to load the image specified into texture
+                                texture = img_load( texMap );
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
         mtl.close();
     };
 };
