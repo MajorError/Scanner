@@ -1304,6 +1304,114 @@ namespace obj2 {
         ifstream obj;
         obj.open( filename.c_str(), ios::in );
 
+        vector<Point*> pts;           // Point IDs
+        vector< Vector<3> > norm;      // Normals mapped by ID also
+        vector< Vector<2> > tex;       // Texture co-ordinate IDs
+        char c;
+
+        while( obj.good() ) {
+            obj >> c;
+            if ( c == '#' ) {           // Comment : Skip line
+                while( c != '\n' )
+                    obj >> c;
+            } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
+                obj >> c;
+                if ( c == ' ' ) {       // Geometry vertex
+                    Vector<3> pos;
+                    obj >> pos;
+                    Point* p = new Point( pos );
+                    environment->addPoint( p );
+                    pts.push_back( p );
+                } else if ( c == 'n' ) { // Normal vector
+                    Vector<3> n;
+                    obj >> n;
+                    norm.push_back( n );
+                } else if ( c == 't' ) { // Texture co-ordinate
+                    Vector<2> t;
+                    obj >> t;
+                    norm.push_back( t );
+                }
+            } else if ( c == 'f' ) {    // face definition
+                while( c == ' ' )
+                    obj >> c;
+                string line; // Grab to the end of the line
+                obj >> line;
+                istringstream fl( line );
+                int v1 = -1, v2 = -1, v3 = -1;
+                int vt1 = -1, vt2 = -1, vt3 = -1;
+                int vn1 = -1, vn2 = -1, vn3 = -1;
+                // Get first vertex definition
+                fl >> v1;
+                if ( fl.peek() == '/' ) {
+                    fl.get();
+                    if ( fl.peek == '/' ) {
+                        fl.get();
+                        fl >> vn1;
+                    } else {
+                        fl >> vt1;
+                        if ( fl.peek() == '/' ) {
+                            fl.get();
+                            fl >> vn1;
+                        }
+                    }
+                }
+                // Second vertex definition
+                fl >> v2;
+                if ( fl.peek() == '/' ) {
+                    fl.get();
+                    if ( fl.peek == '/' ) {
+                        fl.get();
+                        fl >> vn2;
+                    } else {
+                        fl >> vt2;
+                        if ( fl.peek() == '/' ) {
+                            fl.get();
+                            fl >> vn2;
+                        }
+                    }
+                }
+                // Third vertex definition
+                fl >> v3;
+                if ( fl.peek() == '/' ) {
+                    fl.get();
+                    if ( fl.peek == '/' ) {
+                        fl.get();
+                        fl >> vn3;
+                    } else {
+                        fl >> vt3;
+                        if ( fl.peek() == '/' ) {
+                            fl.get();
+                            fl >> vn3;
+                        }
+                    }
+                }
+                bool hasNormal = vn1 >= 0 && vn2 >= 0 && vn3 >= 0;
+                bool hasTexture = vt1 >= 0 && vt2 >= 0 && vt3 >= 0;
+                if ( v1 < 0 || v2 < 0 || v3 < 0 ) {
+                    cerr << "Invalid face definition! Skip." << endl;
+                } else {
+                    // Build PolyFace and add to the environment
+                }
+            } else if ( c == 'm' ) {    // mtllib
+                while( c != ' ' )
+                    obj >> c;
+                while( c == ' ' )
+                    obj >> c;
+                mtlLib.clear();
+                obj >> mtlLib;
+                cerr << ">> Got mtlLib = " << mtlLib << endl;
+            } else if ( c == 'u' ) {    // usemtl
+                while( c != ' ' )
+                    obj >> c;
+                while( c == ' ' )
+                    obj >> c;
+                mtl.clear();
+                obj >> mtl;
+                cerr << ">> Got mtl = " << mtl << endl;
+            }
+
+        }
+
         obj.close();
     };
 
