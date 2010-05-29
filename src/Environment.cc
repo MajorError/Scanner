@@ -17,7 +17,7 @@ Vector<3> Environment::v;
 Vector<3> Environment::o;
 
 Environment::Environment() {
-    // no-op
+    pthread_mutex_init( &mutex, NULL );
 };
 
 Environment::~Environment() {

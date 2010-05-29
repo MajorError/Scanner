@@ -1374,12 +1374,8 @@ namespace obj2 {
         while( obj.good() && !obj.eof() ) {
             obj >> skipws >> c;
             if ( c == '#' ) {               // Comment : Skip line
-                cerr << ">> ";
-                while( c != '\n' ) {
+                while( c != '\n' )
                     obj >> noskipws >> c;
-                    cerr << c;
-                }
-                cerr << endl;
             } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
                 c = obj.peek();
                 if ( c == 'n' ) {       // Normal vector
@@ -1537,6 +1533,9 @@ namespace obj2 {
                 mtlName.clear();
                 obj >> skipws >> mtlName;
                 cerr << ">> Using mtl = " << mtlName << endl;
+            } else {                    // Skip line
+                while( c != '\n' )
+                    obj >> noskipws >> c;
             }
         }
         obj.close();
@@ -1550,12 +1549,8 @@ namespace obj2 {
         while( mtl.good() && !mtl.eof() ) {
             mtl >> skipws >> c;
             if ( c == '#' ) {               // Comment : Skip line
-                cerr << ">> ";
-                while( c != '\n' ) {
+                while( c != '\n' )
                     mtl >> noskipws >> c;
-                    cerr << c;
-                }
-                cerr << endl;
             } else if ( c == 'n' ) {        // newmtl declaration
                 string test;
                 while( c != ' ' )
@@ -1587,10 +1582,16 @@ namespace obj2 {
                                 // Attempt to load the image specified into texture
                                 texture = img_load( texMap );
                             }
+                        } else {                    // Skip line
+                            while( c != '\n' )
+                                mtl >> noskipws >> c;
                         }
                     }
                     break;
                 }
+            } else {                    // Skip line
+                while( c != '\n' )
+                    mtl >> noskipws >> c;
             }
         }
         mtl.close();
