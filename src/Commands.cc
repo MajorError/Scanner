@@ -1003,6 +1003,17 @@ namespace mesh4 {
     void mesh::scale( string params ) {
         if ( environment->getPoints().size() == 0 )
             return;
+        if ( params.length() > 0 ) {
+            istringstream str( params );
+            double factor = 1.0;
+            str >> factor;
+            cerr << "Scaling mesh by a factor of " << factor << endl;
+            for( std::list<Point*>::iterator curr = environment->getPoints().begin();
+                    curr != environment->getPoints().end(); curr++ ) {
+                (*curr)->setPosition( (*curr)->getPosition() * factor );
+            }
+            return;
+        }
         if ( !init ) {
             start = environment->getCameraPose();
             init = true;
@@ -1346,6 +1357,7 @@ namespace obj2 {
         ifstream obj;
         obj.open( filename.c_str(), ios::in );
 
+        // Nota Bene!! IDs are 1-based, not 0-based like indices of these vectors!
         vector<Point*> pts;           // Point IDs
         vector< Vector<3> > norm;      // Normals mapped by ID also
         vector< Vector<2> > tex;       // Texture co-ordinate IDs
@@ -1362,7 +1374,7 @@ namespace obj2 {
                 if ( c == 'n' ) {       // Normal vector
                     Vector<3> n;
                     obj >> n;
-                    cerr << ">> Normal " << n << endl;
+                    //cerr << ">> Normal " << n << endl;
                     norm.push_back( n );
                 } else if ( c == 't' ) { // Texture co-ordinate
                     Vector<2> t;
@@ -1374,6 +1386,7 @@ namespace obj2 {
                     obj >> pos;
                     cerr << ">> Point " << pos << endl;
                     Point* p = new Point( pos );
+                    environment->addPoint( p );
                     pts.push_back( p );
                 }
             } else if ( c == 'f' ) {    // face definition
@@ -1428,32 +1441,35 @@ namespace obj2 {
                         }
                     }
                 }
-                bool hasNormal = vn1 >= 0 && vn2 >= 0 && vn3 >= 0;
-                bool hasTexture = vt1 >= 0 && vt2 >= 0 && vt3 >= 0;
-                cerr << "Face: (" << v1 << "," << v2 << "," << v3 << "). Normals: ("
+                bool hasNormal = vn1 > 0 && vn2 > 0 && vn3 > 0 && vn1 <= norm.size() && vn2 <= norm.size() && vn3 <= norm.size();
+                bool hasTexture = vt1 > 0 && vt2 > 0 && vt3 > 0 && vt1 <= tex.size() && vt2 <= tex.size() && vt3 <= tex.size();
+                /*cerr << "Face: (" << v1 << "," << v2 << "," << v3 << "). Normals: ("
                         << vn1 << "," << vn2 << "," << vn3 << "). Textures: ("
-                        << vt1 << "," << vt2 << "," << vt3 << ")." << endl;
-                if ( v1 < 0 || v2 < 0 || v3 < 0 ) {
+                        << vt1 << "," << vt2 << "," << vt3 << ")." << endl;*/
+                if ( v1 < 0 || v2 < 0 || v3 < 0 || v1 > pts.size() || v2 > pts.size() || v3 > pts.size() ) {
                     cerr << ">> Invalid face definition! Skip." << endl;
+                    cerr << "\tFace was: (" << v1 << "," << v2 << "," << v3 << ") / " << pts.size() << ". Normals: ("
+                        << vn1 << "," << vn2 << "," << vn3 << ") / " << norm.size() << ". Textures: ("
+                        << vt1 << "," << vt2 << "," << vt3 << ") / " << tex.size() << "." << endl;
                 } else {
-                    cerr << ">> Got " << pts.size() << " points, " << norm.size()
+                    /*cerr << ">> Got " << pts.size() << " points, " << norm.size()
                         << " normals, and " << tex.size() << " texture co-ordinates at this time" << endl;
-                    cerr << ">> Parsed " << v1 << "," << v2 << "," << v3 << endl;
+                    cerr << ">> Parsed " << v1 << "," << v2 << "," << v3 << endl;*/
                     // Build PolyFace and add to the environment
-                    FixedPolyFace* face = new FixedPolyFace( pts[v1], pts[v2], pts[v3] );
+                    FixedPolyFace* face = new FixedPolyFace( pts[v1-1], pts[v2-1], pts[v3-1] );
                     if ( hasTexture ) {
-                        cerr << ">> Fixing texture" << endl;
+                        //cerr << ">> Fixing texture" << endl;
                         face->fixTexture( &texture );
-                        face->p1 = tex[vt1];
-                        face->p2 = tex[vt2];
-                        face->p3 = tex[vt3];
+                        face->p1 = tex[vt1-1];
+                        face->p2 = tex[vt2-1];
+                        face->p3 = tex[vt3-1];
                     }
                     if ( hasNormal ) {
-                        cerr << ">> Setting average face normal" << endl;
-                        Vector<3> n = norm[vn1] + norm[vn2] + norm[vn3];
+                        //cerr << ">> Setting average face normal" << endl;
+                        Vector<3> n = norm[vn1-1] + norm[vn2-1] + norm[vn3-1];
                         face->normal = n / (n * n);
                     }
-                    cerr << ">> Adding f to env" << endl;
+                    //cerr << ">> Adding f to env" << endl;
                     environment->getFaces().insert( face );
                 }
             } else if ( c == 'm' ) {    // mtllib
