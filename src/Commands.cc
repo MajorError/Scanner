@@ -1297,25 +1297,29 @@ namespace obj2 {
     class FixedPolyFace : public PolyFace {
     public:
         Vector<3> normal;
-        Vector<2> p1, p2, p3;
+        Vector<2> t1, t2, t3;
 
 
+        // Preserve point ordering for these faces, since they provide the
+        //  correct implicit normal
         FixedPolyFace( Point* a, Point* b, Point* c ) : PolyFace( a, b, c ) {
-            // no-op
-        }
+            p1 = a;
+            p2 = b;
+            p3 = c;
+        };
 
-        virtual ~FixedPolyFace() {}
+        virtual ~FixedPolyFace() {};
         
         virtual Vector<2> getP1Coord( ATANCamera* cam ) {
-            return p1;
+            return t1;
         };
 
         virtual Vector<2> getP2Coord( ATANCamera* cam ) {
-            return p2;
+            return t2;
         };
 
         virtual Vector<2> getP3Coord( ATANCamera* cam ) {
-            return p3;
+            return t3;
         };
 
         virtual void setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
@@ -1347,8 +1351,10 @@ namespace obj2 {
         string mtlName = "DEFAULT";
         Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(ImageRef( 640, 480 ), Rgb<byte>( 0, 255, 0 ) );
 
+        environment->lock();
         loadOBJ( filename, mtlLib, mtlName, texture );
         loadMTL( mtlLib, mtlName, texture );
+        environment->unlock();
 
         cerr << "File loaded from " << filename << endl;
     }
@@ -1370,13 +1376,15 @@ namespace obj2 {
                 obj >> comment;
                 //cerr << ">> Skip comment: " << comment << endl;
             } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
-                obj >> c;
+                c = obj.peek();
                 if ( c == 'n' ) {       // Normal vector
+                    obj.get();
                     Vector<3> n;
                     obj >> n;
                     //cerr << ">> Normal " << n << endl;
                     norm.push_back( n );
                 } else if ( c == 't' ) { // Texture co-ordinate
+                    obj.get();
                     Vector<2> t;
                     obj >> t;
                     //cerr << ">> Texture co-ord " << t << endl;
@@ -1460,9 +1468,9 @@ namespace obj2 {
                     face->fixTexture( &texture );
                     if ( hasTexture ) {
                         //cerr << ">> Fixing texture" << endl;
-                        face->p1 = tex[vt1-1];
-                        face->p2 = tex[vt2-1];
-                        face->p3 = tex[vt3-1];
+                        face->t1 = tex[vt1-1];
+                        face->t2 = tex[vt2-1];
+                        face->t3 = tex[vt3-1];
                     }
                     if ( hasNormal ) {
                         //cerr << ">> Setting average face normal" << endl;
