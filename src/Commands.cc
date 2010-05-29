@@ -1481,6 +1481,55 @@ namespace obj2 {
                     }
                     face->normal = face->normal / (face->normal * face->normal);
                     //cerr << ">> Adding f to env" << endl;
+
+                    bool mkEdge = true;
+                    // Edge v1 <-> v2
+                    for( std::list<Edge*>::iterator curr = environment->getEdges().begin();
+                            curr != environment->getEdges().end(); curr++ ) {
+                        if( ((*curr)->getStart() == pts[v1-1] && (*curr)->getEnd() == pts[v2-1])
+                                || ((*curr)->getStart() == pts[v2-1] && (*curr)->getEnd() == pts[v1-1]) ) {
+                            mkEdge = false;
+                            break;
+                        }
+                    }
+                    if ( mkEdge ) {
+                        Edge* e = new Edge( pts[v1-1], pts[v2-1] );
+                        environment->getEdges().push_back( e );
+                        pts[v1-1]->addEdge( e );
+                        pts[v2-1]->addEdge( e );
+                    }
+                    mkEdge = true;
+                    // Edge v2 <-> v3
+                    for( std::list<Edge*>::iterator curr = environment->getEdges().begin();
+                            curr != environment->getEdges().end(); curr++ ) {
+                        if( ((*curr)->getStart() == pts[v3-1] && (*curr)->getEnd() == pts[v2-1])
+                                || ((*curr)->getStart() == pts[v2-1] && (*curr)->getEnd() == pts[v3-1]) ) {
+                            mkEdge = false;
+                            break;
+                        }
+                    }
+                    if ( mkEdge ) {
+                        Edge* e = new Edge( pts[v3-1], pts[v2-1] );
+                        environment->getEdges().push_back( e );
+                        pts[v3-1]->addEdge( e );
+                        pts[v2-1]->addEdge( e );
+                    }
+                    mkEdge = true;
+                    // Edge v3 <-> v1
+                    for( std::list<Edge*>::iterator curr = environment->getEdges().begin();
+                            curr != environment->getEdges().end(); curr++ ) {
+                        if( ((*curr)->getStart() == pts[v3-1] && (*curr)->getEnd() == pts[v1-1])
+                                || ((*curr)->getStart() == pts[v1-1] && (*curr)->getEnd() == pts[v3-1]) ) {
+                            mkEdge = false;
+                            break;
+                        }
+                    }
+                    if ( mkEdge ) {
+                        Edge* e = new Edge( pts[v1-1], pts[v3-1] );
+                        environment->getEdges().push_back( e );
+                        pts[v1-1]->addEdge( e );
+                        pts[v3-1]->addEdge( e );
+                    }
                     environment->getFaces().insert( face );
                 }
             } else if ( c == 'm' ) {    // mtllib
