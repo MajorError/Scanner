@@ -1357,7 +1357,7 @@ namespace obj2 {
         ifstream obj;
         obj.open( filename.c_str(), ios::in );
 
-        // Nota Bene!! IDs are 1-based, not 0-based like indices of these vectors!
+        // Nota Bene!! IDs are 1-based, not 0-based like vector indices!
         vector<Point*> pts;           // Point IDs
         vector< Vector<3> > norm;      // Normals mapped by ID also
         vector< Vector<2> > tex;       // Texture co-ordinate IDs
@@ -1368,7 +1368,7 @@ namespace obj2 {
             if ( c == '#' ) {           // Comment : Skip line
                 string comment;
                 obj >> comment;
-                cerr << ">> Skip comment: " << comment << endl;
+                //cerr << ">> Skip comment: " << comment << endl;
             } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
                 obj >> c;
                 if ( c == 'n' ) {       // Normal vector
@@ -1379,12 +1379,12 @@ namespace obj2 {
                 } else if ( c == 't' ) { // Texture co-ordinate
                     Vector<2> t;
                     obj >> t;
-                    cerr << ">> Texture co-ord " << t << endl;
+                    //cerr << ">> Texture co-ord " << t << endl;
                     tex.push_back( t );
                 } else {                // Geometry vertex
                     Vector<3> pos;
                     obj >> pos;
-                    cerr << ">> Point " << pos << endl;
+                    //cerr << ">> Point " << pos << endl;
                     Point* p = new Point( pos );
                     environment->addPoint( p );
                     pts.push_back( p );
@@ -1457,18 +1457,21 @@ namespace obj2 {
                     cerr << ">> Parsed " << v1 << "," << v2 << "," << v3 << endl;*/
                     // Build PolyFace and add to the environment
                     FixedPolyFace* face = new FixedPolyFace( pts[v1-1], pts[v2-1], pts[v3-1] );
+                    face->fixTexture( &texture );
                     if ( hasTexture ) {
                         //cerr << ">> Fixing texture" << endl;
-                        face->fixTexture( &texture );
                         face->p1 = tex[vt1-1];
                         face->p2 = tex[vt2-1];
                         face->p3 = tex[vt3-1];
                     }
                     if ( hasNormal ) {
                         //cerr << ">> Setting average face normal" << endl;
-                        Vector<3> n = norm[vn1-1] + norm[vn2-1] + norm[vn3-1];
-                        face->normal = n / (n * n);
+                        face->normal = norm[vn1-1] + norm[vn2-1] + norm[vn3-1];
+                    } else {
+                        face->normal = (pts[vt2-1]->getPosition() - pts[vt1-1]->getPosition())
+                                ^ (pts[vt3-1]->getPosition() - pts[vt1-1]->getPosition());
                     }
+                    face->normal = face->normal / (face->normal * face->normal);
                     //cerr << ">> Adding f to env" << endl;
                     environment->getFaces().insert( face );
                 }
@@ -1477,13 +1480,13 @@ namespace obj2 {
                     obj.get();
                 mtlLib.clear();
                 obj >> skipws >> mtlLib;
-                cerr << ">> Got mtlLib = " << mtlLib << endl;
+                cerr << ">> Using mtlLib = " << mtlLib << endl;
             } else if ( c == 'u' ) {    // usemtl
                 while( c != ' ' )
                     obj >> c;
                 mtlName.clear();
                 obj >> skipws >> mtlName;
-                cerr << ">> Got mtl = " << mtlName << endl;
+                cerr << ">> Using mtl = " << mtlName << endl;
             }
         }
         obj.close();
