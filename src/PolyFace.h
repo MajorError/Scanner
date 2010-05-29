@@ -25,20 +25,20 @@ public:
     PolyFace( Point* a, Point* b, Point* c );
     virtual ~PolyFace() {};
     Point* getP1();
-    Vector<2> getP1Coord( ATANCamera* cam );
+    virtual Vector<2> getP1Coord( ATANCamera* cam );
     Point* getP2();
-    Vector<2> getP2Coord( ATANCamera* cam );
+    virtual Vector<2> getP2Coord( ATANCamera* cam );
     Point* getP3();
-    Vector<2> getP3Coord( ATANCamera* cam );
+    virtual Vector<2> getP3Coord( ATANCamera* cam );
     void testBoundsAndSetTexture( Image< Rgb< byte > >* t, SE3<> vp, ATANCamera* cam );
     void testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera* cam );
-    void setTexture( Image< Rgb< byte > >& t, SE3<> vp );
+    virtual void setTexture( Image< Rgb< byte > >& t, SE3<> vp );
     void setTexture( Image< Rgb< byte > >* t, SE3<> vp );
     Image< Rgb< byte > >& getTexture();
     Image< Rgb< byte > >* getTextureSource();
     SE3<>& getTextureViewpoint();
     Vector<3> getFaceCentre();
-    Vector<3> getFaceNormal();
+    virtual Vector<3> getFaceNormal();
     bool hasFlippedNormal();
     bool operator()( PolyFace* a, PolyFace* b ) const;
 protected:

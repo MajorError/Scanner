@@ -1279,28 +1279,70 @@ namespace obj1 {
 
 
 namespace obj2 {
+    /**
+     * Custom subclass of PolyFace that won't accept new texture
+     * Also has a fixed normal vector
+     */
+    class FixedPolyFace : public PolyFace {
+    public:
+        Vector<3> normal;
+        Vector<2> p1, p2, p3;
+
+
+        FixedPolyFace( Point* a, Point* b, Point* c ) : PolyFace( a, b, c ) {
+            // no-op
+        }
+
+        virtual ~FixedPolyFace() {}
+        
+        virtual Vector<2> getP1Coord( ATANCamera* cam ) {
+            return p1;
+        };
+
+        virtual Vector<2> getP2Coord( ATANCamera* cam ) {
+            return p2;
+        };
+
+        virtual Vector<2> getP3Coord( ATANCamera* cam ) {
+            return p3;
+        };
+
+        virtual void setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
+            // no-op
+        }
+
+        void fixTexture( Image< Rgb<byte> >* t ) {
+            textureSource = t;
+            texture = *new Image< Rgb<byte> >( *t );
+        }
+
+        virtual Vector<3> getFaceNormal() {
+            return normal;
+        };
+    };
+
     /*
      * Note here that we have to load three files, with the same basename; an
      *   OBJ file for the geometry, an MTL file to define our texture mapping
      *   and how we want it to look, and an image of the actual texture data.
      */
-    MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtl, Image< Rgb<byte> > texture ); \
-        void loadMTL( string filename, string mtl, Image< Rgb<byte> > texture ); )
+    MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ); \
+        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ); )
     void obj::load( string filename ) {
         if ( filename.length() < 1 )
             filename = "scanner_model.obj";
 
         string mtlLib = "UNKNOWN";
-        string mtl = "DEFAULT";
-        Image< Rgb<byte> > texture;
+        string mtlName = "DEFAULT";
+        Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(ImageRef( 640, 480 ), Rgb<byte>( 0, 255, 0 ) );
 
-        loadOBJ( filename, mtlLib, mtl );
-        loadMTL( mtlLib, mtl, texture );
+        loadOBJ( filename, mtlLib, mtlName, texture );
+        loadMTL( mtlLib, mtlName, texture );
 
         cerr << "File loaded from " << filename << endl;
     }
 
-    void obj::loadOBJ( string filename, string& mtlLib, string& mtl, Image< Rgb<byte> > texture ) {
+    void obj::loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ) {
         ifstream obj;
         obj.open( filename.c_str(), ios::in );
 
@@ -1320,7 +1362,6 @@ namespace obj2 {
                     Vector<3> pos;
                     obj >> pos;
                     Point* p = new Point( pos );
-                    environment->addPoint( p );
                     pts.push_back( p );
                 } else if ( c == 'n' ) { // Normal vector
                     Vector<3> n;
@@ -1329,7 +1370,7 @@ namespace obj2 {
                 } else if ( c == 't' ) { // Texture co-ordinate
                     Vector<2> t;
                     obj >> t;
-                    norm.push_back( t );
+                    tex.push_back( t );
                 }
             } else if ( c == 'f' ) {    // face definition
                 while( c == ' ' )
@@ -1344,7 +1385,7 @@ namespace obj2 {
                 fl >> v1;
                 if ( fl.peek() == '/' ) {
                     fl.get();
-                    if ( fl.peek == '/' ) {
+                    if ( fl.peek() == '/' ) {
                         fl.get();
                         fl >> vn1;
                     } else {
@@ -1359,7 +1400,7 @@ namespace obj2 {
                 fl >> v2;
                 if ( fl.peek() == '/' ) {
                     fl.get();
-                    if ( fl.peek == '/' ) {
+                    if ( fl.peek() == '/' ) {
                         fl.get();
                         fl >> vn2;
                     } else {
@@ -1374,7 +1415,7 @@ namespace obj2 {
                 fl >> v3;
                 if ( fl.peek() == '/' ) {
                     fl.get();
-                    if ( fl.peek == '/' ) {
+                    if ( fl.peek() == '/' ) {
                         fl.get();
                         fl >> vn3;
                     } else {
@@ -1391,6 +1432,17 @@ namespace obj2 {
                     cerr << "Invalid face definition! Skip." << endl;
                 } else {
                     // Build PolyFace and add to the environment
+                    FixedPolyFace* face = new FixedPolyFace( pts[v1], pts[v2], pts[v3] );
+                    if ( hasTexture ) {
+                        face->fixTexture( &texture );
+                        face->p1 = tex[vt1];
+                        face->p2 = tex[vt2];
+                        face->p3 = tex[vt3];
+                    }
+                    if ( hasNormal ) {
+                        Vector<3> n = norm[vn1] + norm[vn2] + norm[vn3];
+                        face->normal = n / (n * n);
+                    }
                 }
             } else if ( c == 'm' ) {    // mtllib
                 while( c != ' ' )
@@ -1405,9 +1457,9 @@ namespace obj2 {
                     obj >> c;
                 while( c == ' ' )
                     obj >> c;
-                mtl.clear();
-                obj >> mtl;
-                cerr << ">> Got mtl = " << mtl << endl;
+                mtlName.clear();
+                obj >> mtlName;
+                cerr << ">> Got mtl = " << mtlName << endl;
             }
 
         }
@@ -1415,7 +1467,7 @@ namespace obj2 {
         obj.close();
     };
 
-    void obj::loadMTL( string filename, string mtl, Image< Rgb<byte> > texture ) {
+    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ) {
         ifstream mtl;
         mtl.open( filename.c_str(), ios::in );
         
