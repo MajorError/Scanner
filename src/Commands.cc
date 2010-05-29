@@ -1349,14 +1349,16 @@ namespace obj2 {
 
         string mtlLib = "UNKNOWN";
         string mtlName = "DEFAULT";
-        Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(ImageRef( 640, 480 ), Rgb<byte>( 0, 255, 0 ) );
+        Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(
+                ImageRef( 640, 480 ), Rgb<byte>( 0, 255, 0 ) );
 
         environment->lock();
         loadOBJ( filename, mtlLib, mtlName, texture );
+        cerr << "Geometry loaded. Loading MTL." << endl;
         loadMTL( mtlLib, mtlName, texture );
         environment->unlock();
 
-        cerr << "File loaded from " << filename << endl;
+        cerr << "OBJ loaded from " << filename << endl;
     }
 
     void obj::loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ) {
@@ -1371,28 +1373,28 @@ namespace obj2 {
 
         while( obj.good() && !obj.eof() ) {
             obj >> skipws >> c;
-            if ( c == '#' ) {           // Comment : Skip line
-                string comment;
-                obj >> noskipws >> comment;
-                //cerr << ">> Skip comment: " << comment << endl;
+            if ( c == '#' ) {               // Comment : Skip line
+                cerr << ">> ";
+                while( c != '\n' ) {
+                    obj >> noskipws >> c;
+                    cerr << c;
+                }
+                cerr << endl;
             } else if ( c == 'v' ) {    // vertex or normal or tex co-ord
                 c = obj.peek();
                 if ( c == 'n' ) {       // Normal vector
                     obj.get();
                     Vector<3> n;
                     obj >> n;
-                    //cerr << ">> Normal " << n << endl;
                     norm.push_back( n );
                 } else if ( c == 't' ) { // Texture co-ordinate
                     obj.get();
                     Vector<2> t;
                     obj >> t;
-                    //cerr << ">> Texture co-ord " << t << endl;
                     tex.push_back( t );
                 } else {                // Geometry vertex
                     Vector<3> pos;
                     obj >> pos;
-                    //cerr << ">> Point " << pos << endl;
                     Point* p = new Point( pos );
                     environment->addPoint( p );
                     pts.push_back( p );
@@ -1451,36 +1453,27 @@ namespace obj2 {
                 }
                 bool hasNormal = vn1 > 0 && vn2 > 0 && vn3 > 0 && vn1 <= norm.size() && vn2 <= norm.size() && vn3 <= norm.size();
                 bool hasTexture = vt1 > 0 && vt2 > 0 && vt3 > 0 && vt1 <= tex.size() && vt2 <= tex.size() && vt3 <= tex.size();
-                /*cerr << "Face: (" << v1 << "," << v2 << "," << v3 << "). Normals: ("
-                        << vn1 << "," << vn2 << "," << vn3 << "). Textures: ("
-                        << vt1 << "," << vt2 << "," << vt3 << ")." << endl;*/
                 if ( v1 < 0 || v2 < 0 || v3 < 0 || v1 > pts.size() || v2 > pts.size() || v3 > pts.size() ) {
                     cerr << ">> Invalid face definition! Skip." << endl;
                     cerr << "\tFace was: (" << v1 << "," << v2 << "," << v3 << ") / " << pts.size() << ". Normals: ("
                         << vn1 << "," << vn2 << "," << vn3 << ") / " << norm.size() << ". Textures: ("
                         << vt1 << "," << vt2 << "," << vt3 << ") / " << tex.size() << "." << endl;
                 } else {
-                    /*cerr << ">> Got " << pts.size() << " points, " << norm.size()
-                        << " normals, and " << tex.size() << " texture co-ordinates at this time" << endl;
-                    cerr << ">> Parsed " << v1 << "," << v2 << "," << v3 << endl;*/
                     // Build PolyFace and add to the environment
                     FixedPolyFace* face = new FixedPolyFace( pts[v1-1], pts[v2-1], pts[v3-1] );
                     face->fixTexture( &texture );
                     if ( hasTexture ) {
-                        //cerr << ">> Fixing texture" << endl;
                         face->t1 = tex[vt1-1];
                         face->t2 = tex[vt2-1];
                         face->t3 = tex[vt3-1];
                     }
                     if ( hasNormal ) {
-                        //cerr << ">> Setting average face normal" << endl;
                         face->normal = norm[vn1-1] + norm[vn2-1] + norm[vn3-1];
                     } else {
-                        face->normal = (pts[vt2-1]->getPosition() - pts[vt1-1]->getPosition())
-                                ^ (pts[vt3-1]->getPosition() - pts[vt1-1]->getPosition());
+                        face->normal = (pts[v2-1]->getPosition() - pts[v1-1]->getPosition())
+                                ^ (pts[v3-1]->getPosition() - pts[v1-1]->getPosition());
                     }
                     face->normal = face->normal / (face->normal * face->normal);
-                    //cerr << ">> Adding f to env" << endl;
 
                     bool mkEdge = true;
                     // Edge v1 <-> v2
@@ -1540,7 +1533,7 @@ namespace obj2 {
                 cerr << ">> Using mtlLib = " << mtlLib << endl;
             } else if ( c == 'u' ) {    // usemtl
                 while( c != ' ' )
-                    obj >> c;
+                    obj >> noskipws >> c;
                 mtlName.clear();
                 obj >> skipws >> mtlName;
                 cerr << ">> Using mtl = " << mtlName << endl;
@@ -1557,9 +1550,12 @@ namespace obj2 {
         while( mtl.good() && !mtl.eof() ) {
             mtl >> skipws >> c;
             if ( c == '#' ) {               // Comment : Skip line
-                string comment;
-                mtl >> noskipws >> comment;
-                //cerr << ">> Skip comment: " << comment << endl;
+                cerr << ">> ";
+                while( c != '\n' ) {
+                    mtl >> noskipws >> c;
+                    cerr << c;
+                }
+                cerr << endl;
             } else if ( c == 'n' ) {        // newmtl declaration
                 string test;
                 while( c != ' ' )
@@ -1578,6 +1574,7 @@ namespace obj2 {
                                 colour.red = r * 255;
                                 colour.green = g * 255;
                                 colour.blue = b * 255;
+                                cerr << ">> Filling texture with ambient colour " << colour << endl;
                                 texture.fill( colour );
                             }
                         } else if ( c == 'm' ) {
@@ -1586,6 +1583,7 @@ namespace obj2 {
                             // (NB: "m" already consumed)
                             if ( texMap == "ap_Ka" ) { // Ambient map
                                 mtl >> skipws >> texMap;
+                                cerr << ">> Loading texture from " << texMap << endl;
                                 // Attempt to load the image specified into texture
                                 texture = img_load( texMap );
                             }
