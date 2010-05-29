@@ -1342,7 +1342,7 @@ namespace obj2 {
      *   and how we want it to look, and an image of the actual texture data.
      */
     MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ); \
-        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ); \
+        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture, string &texImg ); \
         void loadTGA( string texImg, Image< Rgb<byte> > &texture ); )
     void obj::load( string filename ) {
         if ( filename.length() < 1 )
@@ -1544,7 +1544,7 @@ namespace obj2 {
         obj.close();
     };
 
-    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture, string texImg ) {
+    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture, string &texImg ) {
         ifstream mtl;
         mtl.open( filename.c_str(), ios::in );
         char c;
@@ -1581,7 +1581,7 @@ namespace obj2 {
                             // (NB: "m" already consumed)
                             if ( texMap == "ap_Ka" ) { // Ambient map
                                 mtl >> skipws >> texImg;
-                                cerr << ">> Loading texture from " << texMap << endl;
+                                cerr << ">> Loading texture from " << texImg << endl;
                             }
                         } else {                    // Skip line
                             while( c != '\n' )
@@ -1600,7 +1600,32 @@ namespace obj2 {
 
     void obj::loadTGA( string texImg, Image< Rgb<byte> > &texture ) {
         obj1::TGAHeader head;
-        FILE *tga = fopen( filename.c_str(), "r" );
+        FILE *tga = fopen( texImg.c_str(), "rb" );
+
+        if ( tga == NULL || ferror( tga ) ) {
+            perror( (texImg+" could not be opened for reading").c_str() );
+            return;
+        }
+
+        fread( &head, sizeof( obj1::TGAHeader ), 1, tga );
+        if ( head.imageType != 2 ) {
+            cerr << "Only TGA Type 2 images are supported at this time! (" << head.imageType << ")" << endl;
+        } else {
+            texture.resize( ImageRef( head.width, head.height ) );
+            
+            fseek( tga, head.idSize, SEEK_CUR );
+            for( int y = head.height - 1; y >= 0; y-- ) {
+                for( int x = 0; x < head.width; x++ ) {
+                    if ( head.bpp == 32 ) // Skip alpha bit
+                        fseek( tga, 1, SEEK_CUR );
+                    fread( &(texture[x][y].blue), sizeof( byte ), 1, tga );
+                    fread( &(texture[x][y].green), sizeof( byte ), 1, tga );
+                    fread( &(texture[x][y].red), sizeof( byte ), 1, tga );
+                }
+            }
+        }
+        
+        fclose( tga );
     };
 };
 
