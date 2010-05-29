@@ -1342,20 +1342,23 @@ namespace obj2 {
      *   and how we want it to look, and an image of the actual texture data.
      */
     MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ); \
-        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ); )
+        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ); \
+        void loadTGA( string texImg, Image< Rgb<byte> > &texture ); )
     void obj::load( string filename ) {
         if ( filename.length() < 1 )
             filename = "scanner_model.obj";
 
         string mtlLib = "UNKNOWN";
         string mtlName = "DEFAULT";
+        string texImg = "UNKNOWN";
         Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(
                 ImageRef( 640, 480 ), Rgb<byte>( 0, 255, 0 ) );
 
         environment->lock();
         loadOBJ( filename, mtlLib, mtlName, texture );
         cerr << "Geometry loaded. Loading MTL." << endl;
-        loadMTL( mtlLib, mtlName, texture );
+        loadMTL( mtlLib, mtlName, texture, texImg );
+        loadTGA( texImg, texture );
         environment->unlock();
 
         cerr << "OBJ loaded from " << filename << endl;
@@ -1541,7 +1544,7 @@ namespace obj2 {
         obj.close();
     };
 
-    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture ) {
+    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture, string texImg ) {
         ifstream mtl;
         mtl.open( filename.c_str(), ios::in );
         char c;
@@ -1577,10 +1580,8 @@ namespace obj2 {
                             mtl >> texMap;
                             // (NB: "m" already consumed)
                             if ( texMap == "ap_Ka" ) { // Ambient map
-                                mtl >> skipws >> texMap;
+                                mtl >> skipws >> texImg;
                                 cerr << ">> Loading texture from " << texMap << endl;
-                                // Attempt to load the image specified into texture
-                                texture = img_load( texMap );
                             }
                         } else {                    // Skip line
                             while( c != '\n' )
@@ -1595,6 +1596,11 @@ namespace obj2 {
             }
         }
         mtl.close();
+    };
+
+    void obj::loadTGA( string texImg, Image< Rgb<byte> > &texture ) {
+        obj1::TGAHeader head;
+        FILE *tga = fopen( filename.c_str(), "r" );
     };
 };
 
