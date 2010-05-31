@@ -1322,13 +1322,17 @@ namespace obj2 {
             return t3;
         };
 
-        virtual void setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
+        virtual void setTexture( Image< Rgb<byte> >& t, SE3<> vp ) {
             // no-op
+        }
+
+        virtual Image< Rgb<byte> >& getTexture() {
+            return *textureSource;
         }
 
         void fixTexture( Image< Rgb<byte> >* t ) {
             textureSource = t;
-            texture = *new Image< Rgb<byte> >( *t );
+            texture.fill( Rgb<byte>( 0, 0, 0 ) );
         }
 
         virtual Vector<3> getFaceNormal() {
@@ -1352,13 +1356,18 @@ namespace obj2 {
         string mtlName = "DEFAULT";
         string texImg = "UNKNOWN";
         Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(
-                ImageRef( 640, 480 ), Rgb<byte>( 0, 255, 0 ) );
+                ImageRef( 1, 1 ), Rgb<byte>( 0, 255, 0 ) );
 
         environment->lock();
         loadOBJ( filename, mtlLib, mtlName, texture );
         cerr << "Geometry loaded. Loading MTL." << endl;
         loadMTL( mtlLib, mtlName, texture, texImg );
         loadTGA( texImg, texture );
+        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
+                curr != environment->getFaces().end(); curr++ ) {
+            cerr << &texture << " == " << &(*curr)->getTexture() << " && "
+                 << texture[639][0] << " == " << (*curr)->getTexture()[639][0] << endl;
+        }
         environment->unlock();
 
         cerr << "OBJ loaded from " << filename << endl;
@@ -1402,9 +1411,15 @@ namespace obj2 {
                 string p1, p2, p3; // Grab to the end of the line
                 obj >> p1 >> p2 >> p3;
                 istringstream fl1( p1 ), fl2( p2 ), fl3( p3 );
-                int v1 = -1, v2 = -1, v3 = -1;
-                int vt1 = -1, vt2 = -1, vt3 = -1;
-                int vn1 = -1, vn2 = -1, vn3 = -1;
+                unsigned int v1 = numeric_limits<unsigned int>::max(),
+                             v2 = numeric_limits<unsigned int>::max(),
+                             v3 = numeric_limits<unsigned int>::max();
+                unsigned int vt1 = numeric_limits<unsigned int>::max(),
+                             vt2 = numeric_limits<unsigned int>::max(),
+                             vt3 = numeric_limits<unsigned int>::max();
+                unsigned int vn1 = numeric_limits<unsigned int>::max(),
+                             vn2 = numeric_limits<unsigned int>::max(),
+                             vn3 = numeric_limits<unsigned int>::max();
                 // Get first vertex definition
                 fl1 >> skipws >> v1;
                 if ( fl1.peek() == '/' ) {
@@ -1450,9 +1465,9 @@ namespace obj2 {
                         }
                     }
                 }
-                bool hasNormal = vn1 > 0 && vn2 > 0 && vn3 > 0 && vn1 <= norm.size() && vn2 <= norm.size() && vn3 <= norm.size();
-                bool hasTexture = vt1 > 0 && vt2 > 0 && vt3 > 0 && vt1 <= tex.size() && vt2 <= tex.size() && vt3 <= tex.size();
-                if ( v1 < 0 || v2 < 0 || v3 < 0 || v1 > pts.size() || v2 > pts.size() || v3 > pts.size() ) {
+                bool hasNormal = vn1 <= norm.size() && vn2 <= norm.size() && vn3 <= norm.size();
+                bool hasTexture = vt1 <= tex.size() && vt2 <= tex.size() && vt3 <= tex.size();
+                if ( v1 > pts.size() || v2 > pts.size() || v3 > pts.size() ) {
                     cerr << ">> Invalid face definition! Skip." << endl;
                     cerr << "\tFace was: (" << v1 << "," << v2 << "," << v3 << ") / " << pts.size() << ". Normals: ("
                         << vn1 << "," << vn2 << "," << vn3 << ") / " << norm.size() << ". Textures: ("
@@ -1573,7 +1588,7 @@ namespace obj2 {
                                 colour.green = g * 255;
                                 colour.blue = b * 255;
                                 cerr << ">> Filling texture with ambient colour " << colour << endl;
-                                texture.fill( colour );
+                                //texture.fill( colour );
                             }
                         } else if ( c == 'm' ) {
                             string texMap;
@@ -1615,11 +1630,11 @@ namespace obj2 {
         if ( head.imageType != 2 ) {
             cerr << "Only TGA Type 2 images are supported at this time! (" << head.imageType << ")" << endl;
         } else {
-            texture.resize( ImageRef( head.height, head.width ) );
+            texture.resize( ImageRef( head.width, head.height ) );
             
             fseek( tga, head.idSize, SEEK_CUR );
-            for( int y = head.height - 1; y >= 0; y-- ) {
-                for( int x = 0; x < head.width; x++ ) {
+            for( int x = head.height - 1; x >= 0; x-- ) {
+                for( int y = 0; y < head.width; y++ ) {
                     if ( head.bpp == 32 ) // Skip alpha bit
                         fseek( tga, 1, SEEK_CUR );
                     if ( !fread( &texture[x][y].blue, sizeof( byte ), 1, tga ) ) {

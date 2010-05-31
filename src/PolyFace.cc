@@ -103,6 +103,7 @@ void PolyFace::testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera*
 };
 
 void PolyFace::setTexture( Image< Rgb< byte > >& t, SE3<> vp ) {
+    texture.make_unique();
     texture.copy_from( t );
     textureViewpoint = vp;
 

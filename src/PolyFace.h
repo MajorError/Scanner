@@ -34,7 +34,7 @@ public:
     void testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera* cam );
     virtual void setTexture( Image< Rgb< byte > >& t, SE3<> vp );
     void setTexture( Image< Rgb< byte > >* t, SE3<> vp );
-    Image< Rgb< byte > >& getTexture();
+    virtual Image< Rgb< byte > >& getTexture();
     Image< Rgb< byte > >* getTextureSource();
     SE3<>& getTextureViewpoint();
     Vector<3> getFaceCentre();
