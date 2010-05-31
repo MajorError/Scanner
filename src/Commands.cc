@@ -10,6 +10,7 @@
 #include "Game/GameRenderer.h"
 #include "Game/WorldMap.h"
 #include "Game/GameFactory.h"
+#include "stacktrace.h"
 
 #define PI 3.14159265
 
@@ -1324,16 +1325,20 @@ namespace obj2 {
 
         virtual void setTexture( Image< Rgb<byte> >& t, SE3<> vp ) {
             // no-op
-        }
+        };
+
+        virtual void testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera* cam ) {
+            // no-op
+        };
 
         virtual Image< Rgb<byte> >& getTexture() {
             return *textureSource;
-        }
+        };
 
         void fixTexture( Image< Rgb<byte> >* t ) {
             textureSource = t;
             texture.fill( Rgb<byte>( 0, 0, 0 ) );
-        }
+        };
 
         virtual Vector<3> getFaceNormal() {
             return normal;
@@ -1345,9 +1350,9 @@ namespace obj2 {
      *   OBJ file for the geometry, an MTL file to define our texture mapping
      *   and how we want it to look, and an image of the actual texture data.
      */
-    MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ); \
-        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture, string &texImg ); \
-        void loadTGA( string texImg, Image< Rgb<byte> > &texture ); )
+    MK_GUI_COMMAND(obj, load, void loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > *texture ); \
+        void loadMTL( string filename, string mtlName, Image< Rgb<byte> > *texture, string &texImg ); \
+        void loadTGA( string texImg, Image< Rgb<byte> > *texture ); )
     void obj::load( string filename ) {
         if ( filename.length() < 1 )
             filename = "scanner_model.obj";
@@ -1355,25 +1360,19 @@ namespace obj2 {
         string mtlLib = "UNKNOWN";
         string mtlName = "DEFAULT";
         string texImg = "UNKNOWN";
-        Image< Rgb<byte> > texture = *new Image< Rgb<byte> >(
+        Image< Rgb<byte> >* texture = new Image< Rgb<byte> >(
                 ImageRef( 1, 1 ), Rgb<byte>( 0, 255, 0 ) );
 
         environment->lock();
         loadOBJ( filename, mtlLib, mtlName, texture );
-        cerr << "Geometry loaded. Loading MTL." << endl;
         loadMTL( mtlLib, mtlName, texture, texImg );
         loadTGA( texImg, texture );
-        for( std::set<PolyFace*>::iterator curr = environment->getFaces().begin();
-                curr != environment->getFaces().end(); curr++ ) {
-            cerr << &texture << " == " << &(*curr)->getTexture() << " && "
-                 << texture[639][0] << " == " << (*curr)->getTexture()[639][0] << endl;
-        }
         environment->unlock();
 
         cerr << "OBJ loaded from " << filename << endl;
     }
 
-    void obj::loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > &texture ) {
+    void obj::loadOBJ( string filename, string& mtlLib, string& mtlName, Image< Rgb<byte> > *texture ) {
         ifstream obj;
         obj.open( filename.c_str(), ios::in );
 
@@ -1475,7 +1474,7 @@ namespace obj2 {
                 } else {
                     // Build PolyFace and add to the environment
                     FixedPolyFace* face = new FixedPolyFace( pts[v1-1], pts[v2-1], pts[v3-1] );
-                    face->fixTexture( &texture );
+                    face->fixTexture( texture );
                     if ( hasTexture ) {
                         face->t1 = tex[vt1-1];
                         face->t2 = tex[vt2-1];
@@ -1559,7 +1558,7 @@ namespace obj2 {
         obj.close();
     };
 
-    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > &texture, string &texImg ) {
+    void obj::loadMTL( string filename, string mtlName, Image< Rgb<byte> > *texture, string &texImg ) {
         ifstream mtl;
         mtl.open( filename.c_str(), ios::in );
         char c;
@@ -1588,7 +1587,7 @@ namespace obj2 {
                                 colour.green = g * 255;
                                 colour.blue = b * 255;
                                 cerr << ">> Filling texture with ambient colour " << colour << endl;
-                                //texture.fill( colour );
+                                texture->fill( colour );
                             }
                         } else if ( c == 'm' ) {
                             string texMap;
@@ -1613,7 +1612,7 @@ namespace obj2 {
         mtl.close();
     };
 
-    void obj::loadTGA( string texImg, Image< Rgb<byte> > &texture ) {
+    void obj::loadTGA( string texImg, Image< Rgb<byte> > *texture ) {
         obj1::TGAHeader head;
         FILE *tga = fopen( texImg.c_str(), "rb" );
 
@@ -1630,24 +1629,24 @@ namespace obj2 {
         if ( head.imageType != 2 ) {
             cerr << "Only TGA Type 2 images are supported at this time! (" << head.imageType << ")" << endl;
         } else {
-            texture.resize( ImageRef( head.width, head.height ) );
+            texture->resize( ImageRef( head.width, head.height ) );
             
             fseek( tga, head.idSize, SEEK_CUR );
             for( int x = head.height - 1; x >= 0; x-- ) {
                 for( int y = 0; y < head.width; y++ ) {
                     if ( head.bpp == 32 ) // Skip alpha bit
                         fseek( tga, 1, SEEK_CUR );
-                    if ( !fread( &texture[x][y].blue, sizeof( byte ), 1, tga ) ) {
+                    if ( !fread( &(*texture)[x][y].blue, sizeof( byte ), 1, tga ) ) {
                         perror( "Error reading byte" );
                         fclose( tga );
                         return;
                     }
-                    if ( !fread( &texture[x][y].green, sizeof( byte ), 1, tga ) ) {
+                    if ( !fread( &(*texture)[x][y].green, sizeof( byte ), 1, tga ) ) {
                         perror( "Error reading byte" );
                         fclose( tga );
                         return;
                     }
-                    if ( !fread( &texture[x][y].red, sizeof( byte ), 1, tga ) ) {
+                    if ( !fread( &(*texture)[x][y].red, sizeof( byte ), 1, tga ) ) {
                         perror( "Error reading byte" );
                         fclose( tga );
                         return;

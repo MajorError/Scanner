@@ -31,7 +31,7 @@ public:
     Point* getP3();
     virtual Vector<2> getP3Coord( ATANCamera* cam );
     void testBoundsAndSetTexture( Image< Rgb< byte > >* t, SE3<> vp, ATANCamera* cam );
-    void testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera* cam );
+    virtual void testAndSetTexture( Image< Rgb< byte > >& t, SE3<> vp, ATANCamera* cam );
     virtual void setTexture( Image< Rgb< byte > >& t, SE3<> vp );
     void setTexture( Image< Rgb< byte > >* t, SE3<> vp );
     virtual Image< Rgb< byte > >& getTexture();

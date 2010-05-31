@@ -96,6 +96,8 @@ void commandList::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneR
 
     pthread_mutex_lock( &mutex );
     for( unsigned int i = 0; i < commands.size(); i++ ) {
+        if ( GV3::get<bool>( "echo", false ) )
+            cerr << commands[i] << endl;
         GUI.ParseLine( commands[i] );
     }
     commands.clear();

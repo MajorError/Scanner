@@ -158,7 +158,7 @@ void ARPointRenderer::DrawPolys() {
                 continue;
             // Set up texture info
             PROFILE_BEGIN( textureTidyup );
-            if ( textureUsage[*it] != (*it)->getTextureViewpoint().ln() ) {
+            if ( textureUsage.count( *it ) > 0 && textureUsage[*it] != (*it)->getTextureViewpoint().ln() ) {
                 glDeleteTextures( 1, &(textures[(*it)->getTextureSource()]) );
                 glPrintErrors();
                 textures.erase( (*it)->getTextureSource() );
