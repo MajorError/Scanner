@@ -487,6 +487,7 @@ call tree               hits       self time      total time
 \end{enumerate}
 
 \subsubsection{Commands \& Tools}
+\label{cmdTools}
 \begin{itemize}
 \item{\textbf{key.handle}: This is a keypress handler, invoked via GVars3 from the GUI key Dispatch method. It searches the list of tools for any tools which have a matching hotkey to the passed in key, and invokes them; any which are enabled will receive a ``click".}
 \item{\textbf{edgelist.dump}, \textbf{pointlist.dump}, \textbf{polylist.dump}: These three debugging commands can be used to dump a list of \texttt{Edge}s, \texttt{Point}s, or \texttt{PolyFace}s to the console, respectively.}
@@ -894,11 +895,52 @@ The final component of the game world is the \texttt{Director}: it controls the 
 In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the implementation detailed should accomplish the stated goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
 
 \subsection{Acceptance Testing}
-%Acceptance testing should consist of attempting to model a collection of real-world objects, of varying complexity; for example, ranging from a book to a more complicated shape, such as a detailed model or a pair of shoes. If the finished product is capable, testing it on a variety of scales would be advantageous; say, the view from a balcony as well as the aforementioned articles. This model construction should take place in a noisy environment; with uncontrolled lighting, other objects in the area, and the like, in order to best simulate the environment in which the system is designed for use. 
+The various tools described in Section~\ref{cmdTools} are each an experiment in user interaction. As this is an entirely novel user interface, it is valuable to consider each of these tools with respect to their usability and utility to a modeller.
 
-%Once the modelling of each of these has been completed, they should be exported to disk, and imported into a 3D package for further analysis and raytracing; thus demonstrating the suitability of the system for producing data of real use. If the 3D package supports model checking, these static checks should be run on the produced model to check for invalidities such as degenerate faces and isolated vertices (as discussed in Section~\ref{approachmodel}).
+\begin{itemize}
+\item{\textbf{key.handle}: }
 
-\textbf{TODO: Discuss utility of each tool in turn}
+\item{\textbf{edgelist.dump}, \textbf{pointlist.dump}, \textbf{polylist.dump}: }
+
+\item{\textbf{text.draw}: }
+
+\item{\textbf{vertex.create}: }
+
+\item{\textbf{vertex.remove}: }
+
+\item{\textbf{vertex.move}: }
+
+\item{\textbf{edge.connect}: }
+
+\item{\textbf{edge.remove}: }
+
+\item{\textbf{edge.bisect}: }
+
+\item{\textbf{plane.split}: }
+
+\item{\textbf{plane.move}: }
+
+\item{\textbf{plane.extrude}: }
+
+\item{\textbf{plane.revolve}: }
+
+\item{\textbf{mesh.move}: }
+
+\item{\textbf{mesh.scale}: }
+
+
+\item{\textbf{mesh.subdivide}: }
+
+\item{\textbf{mesh.smoothDeform}: }
+
+\item{\textbf{texture.clear}: }
+
+\item{\textbf{texture.clean}: }
+
+\item{\textbf{code.save}, \textbf{code.load}: }
+
+\item{\textbf{obj.save}: }
+\end{itemize}
 
 \subsection{Accuracy}
 \begin{figure}
@@ -908,7 +950,7 @@ In order to ascertain the extent to which the finished product meets these crite
     \subfigure[Error Map Pre-Modelling (0.7\%)]{\includegraphics[width=160px]{DeskErrorBlank}\label{errorblank}}
     \subfigure[Error Map With Model (7.2\%)]{\includegraphics[width=165px]{DeskErrorModel}\label{errormodel}}
     \hspace{10px}
-    \subfigure[Error Map Intensity Scale]{\includegraphics[width=160px]{ErrorMapScale}\label{errorscale}}
+    \subfigure[Error Map Intensity Scale]{\includegraphics[width=160px]{ErrorMapScale}\label{errorscale1}}
   \end{center}
   \caption{Example error maps}
   \label{errormaps}
@@ -924,7 +966,7 @@ In order to do this, \texttt{glReadPixels} was used to retrieve the contents of 
     \subfigure[Error Map With Model \& UI (12.9\%)]{\includegraphics[width=160px]{DeskErrorModelUI}\label{errormodelui}}
     \subfigure[Error Map With Model only (5.5\%)]{\includegraphics[width=160px]{DeskErrorModel2}\label{errormodel2}}
     \hspace{10px}
-    \subfigure[Error Map Intensity Scale]{\includegraphics[width=160px]{ErrorMapScale}\label{errorscale}}
+    \subfigure[Error Map Intensity Scale]{\includegraphics[width=160px]{ErrorMapScale}\label{errorscale2}}
   \end{center}
   \caption{Example error maps, with blurring}
   \label{errormaps2}
