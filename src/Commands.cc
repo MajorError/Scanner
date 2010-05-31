@@ -1607,20 +1607,36 @@ namespace obj2 {
             return;
         }
 
-        fread( &head, sizeof( obj1::TGAHeader ), 1, tga );
+        if ( !fread( &head, sizeof( obj1::TGAHeader ), 1, tga ) ) {
+            perror( "Couldn't read TGA header" );
+            fclose( tga );
+            return;
+        }
         if ( head.imageType != 2 ) {
             cerr << "Only TGA Type 2 images are supported at this time! (" << head.imageType << ")" << endl;
         } else {
-            texture.resize( ImageRef( head.width, head.height ) );
+            texture.resize( ImageRef( head.height, head.width ) );
             
             fseek( tga, head.idSize, SEEK_CUR );
             for( int y = head.height - 1; y >= 0; y-- ) {
                 for( int x = 0; x < head.width; x++ ) {
                     if ( head.bpp == 32 ) // Skip alpha bit
                         fseek( tga, 1, SEEK_CUR );
-                    fread( &(texture[x][y].blue), sizeof( byte ), 1, tga );
-                    fread( &(texture[x][y].green), sizeof( byte ), 1, tga );
-                    fread( &(texture[x][y].red), sizeof( byte ), 1, tga );
+                    if ( !fread( &texture[x][y].blue, sizeof( byte ), 1, tga ) ) {
+                        perror( "Error reading byte" );
+                        fclose( tga );
+                        return;
+                    }
+                    if ( !fread( &texture[x][y].green, sizeof( byte ), 1, tga ) ) {
+                        perror( "Error reading byte" );
+                        fclose( tga );
+                        return;
+                    }
+                    if ( !fread( &texture[x][y].red, sizeof( byte ), 1, tga ) ) {
+                        perror( "Error reading byte" );
+                        fclose( tga );
+                        return;
+                    }
                 }
             }
         }
