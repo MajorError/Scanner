@@ -13,12 +13,12 @@ btCollisionShape* AIUnit::boxShape;
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), xPosPrev( x ),
         yPosPrev( y ), zPosPrev( z ), map( m ), search( m ) {
-    btVector3 inertia( 1, 1, 1 );
+    btVector3 inertia( 1000, 1000, 1000 );
     double ds = GV3::get<double>( "ptSize", 0.03 );
     double scale = GV3::get<double>( "physicsScale" );
     if ( AIUnit::boxShape == NULL ) {
         AIUnit::boxShape = new btBoxShape( btVector3( scale * ds, scale * ds, scale * ds ) );
-        AIUnit::boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 0.5 ), inertia );
+        AIUnit::boxShape->calculateLocalInertia( GV3::get<double>( "aiMass", 5 ), inertia );
     }
     btDefaultMotionState* boxMotionState = new btDefaultMotionState( btTransform( btQuaternion( 0, 0, 0, 1 ), scale * btVector3( x, y, z ) ) );
     btRigidBody::btRigidBodyConstructionInfo boxRigidBodyCI( GV3::get<double>( "aiMass" ), boxMotionState, boxShape, inertia );
@@ -68,7 +68,6 @@ void AIUnit::tick( Director* d ) {
     // Just need to be vertically above a point for a "hit"
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
             && ABSDIFF( path.front()->y, yPos ) < tolerance ) {
-        cerr << "HIT (" << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << ")" << endl;
         lastNode = currTick;
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
@@ -90,8 +89,8 @@ void AIUnit::tick( Director* d ) {
         navigateTo( path.back() );
 
     tolerance /= GV3::get<double>( "physicsScale" );
-    if ( ABSDIFF( xPosPrev, xPos ) < tolerance && ABSDIFF( yPosPrev, yPos ) < tolerance
-        && ABSDIFF( zPosPrev, zPos ) < tolerance /*&& currTick % GV3::get<int>( "aiThrustFreq", 3000 ) == 0*/ ) {
+    if ( currTick > GV3::get<int>( "aiPatience" ) / 10 && ABSDIFF( xPosPrev, xPos ) < tolerance &&
+        ABSDIFF( yPosPrev, yPos ) < tolerance && ABSDIFF( zPosPrev, zPos ) < tolerance ) {
         // Set up new {x,y,z}Dir
         xDir = path.front()->x - xPos;
         yDir = path.front()->y - yPos;
@@ -103,12 +102,9 @@ void AIUnit::tick( Director* d ) {
         yDir /= div;
 
         boxBody->clearForces();
-        cerr << ">> At (" << ABSDIFF( path.front()->x, xPos ) << ", " << ABSDIFF( path.front()->y, yPos )
-             << ", " << ABSDIFF( path.front()->z, zPos ) << ") " << "{" << abs( boxBody->getAngularVelocity().getZ() ) << "}  "
-             << "apply force " << xDir << ", " << yDir << ", " << zDir << endl;
         boxBody->applyCentralImpulse( btVector3( xDir, yDir, zDir ) );
-        boxBody->activate( true );
     }
+    boxBody->activate( true );
     xPosPrev = xPos;
     yPosPrev = yPos;
     zPosPrev = zPos;

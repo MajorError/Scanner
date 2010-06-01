@@ -91,12 +91,6 @@ void Director::tick() {
             double x = target->x;
             double y = target->y;
             double z = target->z+0.5;
-            if ( target->traversable.empty() ) {
-                x += 0.1;
-            } else {
-               x += (target->traversable.back()->x - target->x) * 0.25;
-               y += (target->traversable.back()->y - target->y) * 0.25;
-            }
             AIUnit* a = addAI( dynamicsWorld, x, y, z );
             // Choose a goal point
             target = NULL;

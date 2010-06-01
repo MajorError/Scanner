@@ -21,20 +21,54 @@ WorldMap* GameFactory::create( Environment* env ) {
 
     double maxGradient = GV3::get<double>( "maxGradient", 1.0 );
 
+    set<Point*> onEdge;
+    // Populate the sets of points which mark the edge of the world,
+    //    and thus should be ignored (the edge isn't safe)
+    for( list<Edge*>::iterator e = env->getEdges().begin(); e != env->getEdges().end(); e++ ) {
+        int count = 0;
+        for( set<PolyFace*>::iterator face = env->getFaces().begin(); face != env->getFaces().end(); face++ ) {
+            if ( ((*e)->getStart() == (*face)->getP1() && (*e)->getEnd() == (*face)->getP2()) ||
+                 ((*e)->getEnd() == (*face)->getP1() && (*e)->getStart() == (*face)->getP2()) ||
+                 ((*e)->getStart() == (*face)->getP3() && (*e)->getEnd() == (*face)->getP2()) ||
+                 ((*e)->getEnd() == (*face)->getP3() && (*e)->getStart() == (*face)->getP2()) ||
+                 ((*e)->getStart() == (*face)->getP1() && (*e)->getEnd() == (*face)->getP3()) ||
+                 ((*e)->getEnd() == (*face)->getP1() && (*e)->getStart() == (*face)->getP3()) )
+                count++;
+            if ( count > 1 )
+                break;
+        }
+        if ( count <= 1 ) {
+            onEdge.insert( (*e)->getStart() );
+            onEdge.insert( (*e)->getEnd() );
+        }
+    }
+
     map<Point*,Waypoint*> wps;
     // Populate Waypoints in the WorldMap
     for( list<Point*>::iterator curr = env->getPoints().begin(); curr != env->getPoints().end(); curr++ ) {
         Waypoint* w = new Waypoint;
-        w->x = (*curr)->getPosition()[0];
-        w->y = (*curr)->getPosition()[1];
-        w->z = (*curr)->getPosition()[2];
+        if ( onEdge.count( *curr ) ) { // Move edge points in by 10%
+            Vector<3> pos = makeVector( 0, 0, 0 );
+            for( list<Edge*>::iterator e = (*curr)->getEdges().begin(); e != (*curr)->getEdges().end(); e++ ) {
+                pos += ((*e)->getStart() == *curr ? (*e)->getEnd() : (*e)->getStart())->getPosition();
+            }
+            pos *= 0.1 / (*curr)->getEdges().size();
+            w->x = (*curr)->getPosition()[0] * 0.9 + pos[0];
+            w->y = (*curr)->getPosition()[1] * 0.9 + pos[1];
+            w->z = (*curr)->getPosition()[2] * 0.9 + pos[2];
+        } else {
+            w->x = (*curr)->getPosition()[0];
+            w->y = (*curr)->getPosition()[1];
+            w->z = (*curr)->getPosition()[2];
+        }
         wps[*curr] = w;
         m->addWaypoint( w );
     }
 
     // Connect these Waypoints per the geometry in the map
     for( list<Edge*>::iterator curr = env->getEdges().begin(); curr != env->getEdges().end(); curr++ ) {
-        link( m, maxGradient, wps[(*curr)->getStart()], wps[(*curr)->getEnd()] );
+        if ( onEdge.count( (*curr)->getStart() ) == 0 && onEdge.count( (*curr)->getEnd() ) == 0 )
+            link( m, maxGradient, wps[(*curr)->getStart()], wps[(*curr)->getEnd()] );
     }
 
     map<PolyFace*,Waypoint*> fwps;
@@ -70,7 +104,7 @@ WorldMap* GameFactory::create( Environment* env ) {
     }
 
     // Remove non-navigable waypoints from the map
-    //m->tidyWaypoints();
+    m->tidyWaypoints();
 
     return m;
 };
