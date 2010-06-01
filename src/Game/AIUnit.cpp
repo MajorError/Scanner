@@ -63,10 +63,11 @@ void AIUnit::tick( Director* d ) {
     if ( path.size() < 1 )
         return;
 
-    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) / 2 );
+    double tolerance = GV3::get<double>( "aiTolerance", GV3::get<double>( "ptSize" ) );
+    // Just need to be vertically above a point for a "hit"
     if ( ABSDIFF( path.front()->x, xPos ) < tolerance
-            && ABSDIFF( path.front()->y, yPos ) < tolerance
-            && ABSDIFF( path.front()->z, zPos ) < tolerance ) {
+            && ABSDIFF( path.front()->y, yPos ) < tolerance ) {
+        cerr << "HIT (" << path.front()->x << ", " << path.front()->y << ", " << path.front()->z << ")" << endl;
         lastNode = currTick;
         // Test if this is a goal object to be deleted (i.e. not in the node graph)
         if ( path.front()->traversable.size() == 0 )
@@ -84,24 +85,24 @@ void AIUnit::tick( Director* d ) {
         }
     }
     // Replan if we haven't seen a node recently
-    if ( currTick - lastNode > GV3::get<int>( "aiPatience", 10000 ) )
+    if ( currTick - lastNode > GV3::get<int>( "aiPatience", 100000 ) )
         navigateTo( path.back() );
 
-    if ( currTick % 1000 == 0 ) {
+    if ( currTick % GV3::get<int>( "aiThrustFreq", 3000 ) == 0 ) {
         // Set up new {x,y,z}Dir
         xDir = path.front()->x - xPos;
         yDir = path.front()->y - yPos;
-        zDir = (path.front()->z + AIUnit::boxShape->getLocalScaling().z() / 2) - zPos;
+        zDir = 1.0; // Constant slight "up hop" when applying force
         
-        // Normalise the vector, apply velocity
-        double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / GV3::get<double>( "aiSpeed", 10 ) ;
+        // Normalise the (x,y) vector of movement, apply velocity
+        double div = (abs( xDir ) + abs( yDir )) / GV3::get<double>( "aiSpeed", 20 ) ;
         xDir /= div;
         yDir /= div;
-        zDir /= div;
-    
-        //boxBody->translate( btVector3( xDir, yDir, zDir ) );
-        //boxBody->clearForces();
-        cerr << ">> Apply force " << xDir << ", " << yDir << ", " << zDir << endl;
+
+        boxBody->clearForces();
+        cerr << ">> At (" << ABSDIFF( path.front()->x, xPos ) << ", " << ABSDIFF( path.front()->y, yPos )
+             << ", " << ABSDIFF( path.front()->z, zPos ) << ") " << "{" << abs( boxBody->getAngularVelocity().getZ() ) << "}  "
+             << "apply force " << xDir << ", " << yDir << ", " << zDir << endl;
         boxBody->applyCentralImpulse( btVector3( xDir, yDir, zDir ) );
         boxBody->activate( true );
     }
