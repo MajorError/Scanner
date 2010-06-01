@@ -13,7 +13,7 @@ btCollisionShape* AIUnit::boxShape;
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
 : currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
     btVector3 inertia( 1, 1, 1 );
-    double ds = GV3::get<double>( "ptSize", 0.05 );
+    double ds = GV3::get<double>( "ptSize", 0.03 );
     double scale = GV3::get<double>( "physicsScale" );
     if ( AIUnit::boxShape == NULL ) {
         AIUnit::boxShape = new btBoxShape( btVector3( scale * ds, scale * ds, scale * ds ) );
@@ -84,19 +84,27 @@ void AIUnit::tick( Director* d ) {
         }
     }
     // Replan if we haven't seen a node recently
-    if ( currTick - lastNode > GV3::get<int>( "aiPatience", 500 ) )
+    if ( currTick - lastNode > GV3::get<int>( "aiPatience", 10000 ) )
         navigateTo( path.back() );
-    // Set up new {x,y,z}Dir
-    xDir = path.front()->x - xPos;
-    yDir = path.front()->y - yPos;
-    zDir = path.front()->z - zPos;
-    // Normalise the vector, apply velocity
-    double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / GV3::get<double>( "aiSpeed", 0.1 ) ;
-    xDir /= div;
-    yDir /= div;
-    zDir /= div;
-    boxBody->translate( btVector3( xDir, yDir, zDir ) );
-    boxBody->activate( true );
+
+    if ( currTick % 1000 == 0 ) {
+        // Set up new {x,y,z}Dir
+        xDir = path.front()->x - xPos;
+        yDir = path.front()->y - yPos;
+        zDir = (path.front()->z + AIUnit::boxShape->getLocalScaling().z() / 2) - zPos;
+        
+        // Normalise the vector, apply velocity
+        double div = (abs( xDir ) + abs( yDir ) + abs( zDir )) / GV3::get<double>( "aiSpeed", 10 ) ;
+        xDir /= div;
+        yDir /= div;
+        zDir /= div;
+    
+        //boxBody->translate( btVector3( xDir, yDir, zDir ) );
+        //boxBody->clearForces();
+        cerr << ">> Apply force " << xDir << ", " << yDir << ", " << zDir << endl;
+        boxBody->applyCentralImpulse( btVector3( xDir, yDir, zDir ) );
+        boxBody->activate( true );
+    }
 };
 
 double AIUnit::getX() {
@@ -128,6 +136,11 @@ void AIUnit::navigateTo( Waypoint* goal ) {
     path.push_front( from );
     if( path.back()->x != goal->x || path.back()->y != goal->y || path.back()->z != goal->z )
         path.push_back( goal );
+    cerr << "Got Path from (" << xPos << "," << yPos << "," << zPos << "): ";
+    for( list<Waypoint*>::iterator pt = path.begin(); pt != path.end(); pt++ ) {
+        cerr << "(" << (*pt)->x << "," << (*pt)->y << "," << (*pt)->z << ")  ";
+    }
+    cerr << endl;
 };
 
 void AIUnit::push( double x, double y, double z ) {

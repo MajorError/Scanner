@@ -89,12 +89,18 @@ inline void GameFactory::link( WorldMap* m, double maxGradient, Waypoint* w1, Wa
 };
 
 void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorld* world ) {
-    btVector3 aabbMin( -1000, -1000, -1000 );
-    btVector3 aabbMax( 1000, 1000, 1000 );
+    btVector3 aabbMin( -10, -10, -10 );
+    btVector3 aabbMax( 10, 10, 10 );
 
     // Place triangles on each of the polyfaces for regular colliders
     btTriangleMesh* terrainMesh = new btTriangleMesh;
     double scale = GV3::get<double>( "physicsScale", 1000 );
+    aabbMin.setX( scale * aabbMin.getX() );
+    aabbMin.setY( scale * aabbMin.getY() );
+    aabbMin.setZ( scale * aabbMin.getZ() );
+    aabbMax.setX( scale * aabbMax.getX() );
+    aabbMax.setY( scale * aabbMax.getY() );
+    aabbMax.setZ( scale * aabbMax.getZ() );
     for( set<PolyFace*>::iterator curr = env->getFaces().begin(); curr != env->getFaces().end(); curr++ ) {
         Vector<3> p = scale * (*curr)->getP1()->getPosition();
         btVector3 v1( p[0], p[1], p[2] );
@@ -102,6 +108,7 @@ void GameFactory::setupCollisionPlanes( Environment* env, btDiscreteDynamicsWorl
         btVector3 v2( p[0], p[1], p[2] );
         p = scale * (*curr)->getP3()->getPosition();
         btVector3 v3( p[0], p[1], p[2] );
+        // Expand AABB bounds
         if ( (*curr)->hasFlippedNormal() )
             terrainMesh->addTriangle( v1, v3, v2 );
         else

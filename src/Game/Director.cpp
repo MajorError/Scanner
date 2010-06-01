@@ -57,15 +57,15 @@ Projectile* Director::addProjectile( btDynamicsWorld* w, double x, double y, dou
 
 
 void Director::registerImpact() {
-    score += 10;
+    score += GV3::get<int>( "game.impactScore", 0 );
 };
 
 void Director::registerDeath() {
-    score += 100;
+    score += GV3::get<int>( "game.deathScore", 100 );
 };
 
 void Director::registerAIWin() {
-    score -= 300;
+    score += GV3::get<int>( "game.goalScore", -300 );
 };
 
 int Director::getScore() {
@@ -79,7 +79,7 @@ void Director::tick() {
     for( vector<Projectile*>::iterator curr = projectiles.begin(); curr != projectiles.end(); curr++ )
         (*curr)->tick();
     
-    if ( currTick - lastSpawn > GV3::get<int>( "spawnFreq", 5000 )
+    if ( currTick - lastSpawn > GV3::get<int>( "spawnFreq", 3000 )
             && ((double)rand() / (double)RAND_MAX) < GV3::get<double>( "spawnProb", 0.0001 ) ) {
         lastSpawn = currTick;
         // Spawn a new character

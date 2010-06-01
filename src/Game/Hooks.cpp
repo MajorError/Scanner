@@ -142,10 +142,7 @@ namespace game {
 
     btDiscreteDynamicsWorld* game::initBullet() {
         cerr << "Bullet init" << endl;
-        int maxProxies = 1024;
-        btVector3 worldAabbMin( -10000, -10000, -10000 );
-        btVector3 worldAabbMax( 10000, 10000, 10000 );
-        btAxisSweep3* broadphase = new btAxisSweep3( worldAabbMin, worldAabbMax, maxProxies );
+        btDbvtBroadphase* broadphase = new btDbvtBroadphase();
 
         // Set up the collision configuration and dispatcher
         btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
