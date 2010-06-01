@@ -11,7 +11,8 @@ int AIUnit::type = (1 << 1);
 btCollisionShape* AIUnit::boxShape;
 
 AIUnit::AIUnit( WorldMap* m, btDynamicsWorld* w, double x, double y, double z )
-: currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), map( m ), search( m ) {
+: currTick( 0 ), lastNode( 0 ), xPos( x ), yPos( y ), zPos( z ), xPosPrev( x ),
+        yPosPrev( y ), zPosPrev( z ), map( m ), search( m ) {
     btVector3 inertia( 1, 1, 1 );
     double ds = GV3::get<double>( "ptSize", 0.03 );
     double scale = GV3::get<double>( "physicsScale" );
@@ -88,7 +89,9 @@ void AIUnit::tick( Director* d ) {
     if ( currTick - lastNode > GV3::get<int>( "aiPatience", 100000 ) )
         navigateTo( path.back() );
 
-    if ( currTick % GV3::get<int>( "aiThrustFreq", 3000 ) == 0 ) {
+    tolerance /= GV3::get<double>( "physicsScale" );
+    if ( ABSDIFF( xPosPrev, xPos ) < tolerance && ABSDIFF( yPosPrev, yPos ) < tolerance
+        && ABSDIFF( zPosPrev, zPos ) < tolerance /*&& currTick % GV3::get<int>( "aiThrustFreq", 3000 ) == 0*/ ) {
         // Set up new {x,y,z}Dir
         xDir = path.front()->x - xPos;
         yDir = path.front()->y - yPos;
@@ -106,6 +109,9 @@ void AIUnit::tick( Director* d ) {
         boxBody->applyCentralImpulse( btVector3( xDir, yDir, zDir ) );
         boxBody->activate( true );
     }
+    xPosPrev = xPos;
+    yPosPrev = yPos;
+    zPosPrev = zPos;
 };
 
 double AIUnit::getX() {

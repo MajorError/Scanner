@@ -31,6 +31,7 @@ private:
     int currTick, lastNode;
     double xDir, yDir, zDir;
     double xPos, yPos, zPos;
+    double xPosPrev, yPosPrev, zPosPrev;
     double rotAngle;
     Vector<3> rotAxis;
     btRigidBody* boxBody;
