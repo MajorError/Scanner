@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for file in $@; do
+  vars=$(cat $file | grep 'GV3::get<[^>]*>([^)]*"[^"]*"' | sed 's/.*GV3::get<[^>]*>([^"]*"//g' | sed 's/",/ = /g' | sed 's/).*//g');
+  if [ -n "$vars" ]; then
+    echo;
+    echo "# `basename $file | sed 's/\.[^\.]*$//g'`:";
+    echo "$vars";
+  fi
+done
