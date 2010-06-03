@@ -513,7 +513,9 @@ Given therefore that $C_{rotation} = \left[
   
 Therefore, with arbitrary vectors $A$ and $B$, $A ~<~ B~$ iff \\$~(A - O ~\times~ A - V) ~~<~~ (B - O ~\times~ B - V)$. \\
 }
+
 \item{\textbf{vertex.remove}: This command simply removes the targeted vertex. This vertex is identified from the look-vector using the same \texttt{closerVec} function as described previously.}
+
 \item{\textbf{vertex.move}: This command has two operation modes; the first is a free move, which moves the targeted vertex based on its fixed distance from the camera. The second mode is much the same, but it fixes the motion to be in only one of the three axes; this is simply done using the \texttt{lock} vector, which is 0 when movement in the given axis is to be ignored, and 1 otherwise. The actual movement is performed in a separate \texttt{p\_thread}, and updates the position of the target point as often as the OS' threading model permits according to the following equations:
 \\
 
@@ -532,7 +534,11 @@ $$\displaystyle \left[
     lock_z \times (C'_z + z'_3 \times \frac{Target_z - C_z}{z_3}) + (1 - lock_z) \times Target_z
   \end{array}\right]$$
 }
+
+\item{\textbf{vertex.moveOnAxis}: TODO}
+
 \item{\textbf{edge.connect}: This simple command is used to identify two vertices, and joins them together automatically with an \texttt{Edge} - automatically avoiding duplication and inserting \texttt{PolyFace}s as edge loops are completed.}
+
 \item{\textbf{edge.remove}: This command is the functional inverse of the connect tool; it disconnects two vertices, destroying any \texttt{PolyFace}s that included these edges.}
 
 \begin{figure}
@@ -581,7 +587,9 @@ Once we have minimised the above constraint, we ensure that the co-ordinates of 
 
 We therefore know that the target point for the bisected edge is located at $EdgePoint$. The tool for this command also then automatically invokes \textbf{vertex.move}, so that the user may position the point as desired.
 }
+
 \item{\textbf{plane.split}: In a similar fashion to \texttt{edge.bisect}, this tool will take a \texttt{PolyFace} and split it at the targeted location. As above, it first finds the targetted face and the point on that face. Next, it removes the targetted \texttt{PolyFace} from the environment, creating a hole in the model. It then places a new vertex in the model at the targetted position, and connects it to the vertices of the old \texttt{PolyFace}, automatically constructing new faces in the process. Finally, it invokes the standard \texttt{vertex.move} tool to permit the user to manipulate the split and tweak its exact location.}
+
 \item{\textbf{plane.move}: With all of the ``primitive" manipulators complete, the next few tools analyse a higher level of geometric structure; namely, permitting the user to treat a collection of faces as a single plane. The constraint for ``planarity" is essentially defined by a tolerance of the angle across an edge; if it is sufficiently close to $0^\circ$, it will consider the attached faces to be part of a single plane. The easiest way to do this, is to consider the angle subtended between the surface normals of these faces, trivially found using the dot-product. The \texttt{Environment} class offers a recursive solution to this problem, which ensures that zero-area faces are ignored (often important when the method is used in the midst of a series of transformations).
 
 The actual movement of this face is handled in a similar fashion to the vertex movement already discussed. A separate worker thread first calculates the face that is currently being ``pointed at", along with the point of intersection between it and the camera's look-vector. To do this, each face is tested first to find its point of intersection: given the camera's look-vector, $z$, a face normal $n$, the camera's position $p_0$ and a point on the face, $p_1$, the shortest vector from the camera to the face can be found as the absolute magnitude of the vector:
@@ -591,6 +599,7 @@ The actual movement of this face is handled in a similar fashion to the vertex m
 Finally, a fast bounds-check is used to see if the intersection point with the face's mathematical plane, $p_0 + d$, lies within the bounds of the tested face's actual geometry.
 
 Next, the command's mover thread pre-computes the set of target points to move, and caches their positions before the projection. It then updates positions by calculating the movement the point of intersection on the target face (as in \texttt{vertex.move} and moving all the target points by the same amount.}
+
 \item{\textbf{plane.extrude}: Many common candidates for modelling exhibit symmetrical structures; it thus makes sense for tools to support this mode of modelling. For those objects with lines of symmetry, this extrusion tool will permit the user to:
 
 \begin{enumerate}
@@ -600,6 +609,7 @@ Next, the command's mover thread pre-computes the set of target points to move, 
  \item{Invoke the \texttt{plane.move} tool to manually adjust the distance and direction of extrusion}
 \end{enumerate}
 }
+
 \item{\textbf{plane.revolve}: Not all symmetry is reflectional; a whole host of objects display rotational symmetry instead. Thus, it is desirable to support this in the modelling as well. To do this, the user need only model half of the rotational face as a plane, and ensure that one of its edges is the axis about which to revolve. Once this is complete, they must simply aim the camera at this axis edge, and invoke this tool to duplicate the original face and rotate it around the axis. The rotation is done with a simple transformation matrix, using a rotation to and from the axis of the revolve, provided by \texttt{TooN::SO3}, thus:
 \begin{eqnarray*}
  RotationToAxis \cdot  \left[ 
@@ -610,7 +620,9 @@ Next, the command's mover thread pre-computes the set of target points to move, 
   \end{array}\right] \cdot RotationToAxis^{-1}
 \end{eqnarray*}
 The number of ``steps" to use in this revolve is determined by a configurable GVars3 variable; more steps will increase the quality of the finished geometry, but with it the complexity of the model.}
+
 \item{\textbf{mesh.move}: Commands based on \texttt{mesh.\textit{foo}} manipulate the entire mesh as a whole. This command works in exactly the same manner as the \texttt{vertex.move} command, but applies the vector of movement to \textit{all} vertices of the mesh, instead of just that which is targetted. This command, and \texttt{mesh.scale} (below) are of particular use if larger meshes are to be inserted into the scene - whether through a file import, or by generating primitive shapes.}
+
 \item{\textbf{mesh.scale}: Along with being able to move an entire mesh, it makes sense to use the camera to scale it also; the scale of the axes in world-space are not fixed relative to any given objects, and thus it is unpredictable what size should be used for insertion of an object. This scale command works by scaling the points in the mesh according to the distance of the camera from its original pose. The scale is uniform in all axes.}
 
 \begin{figure}
@@ -642,6 +654,7 @@ The number of ``steps" to use in this revolve is determined by a configurable GV
  (1 - smoothFactor) \cdot CurrentPos + smoothFactor \cdot \\ \left(FaceAvg + 2 \cdot EdgeAvg + (EdgeCount-3) \cdot \frac{CurrentPos}{EdgeCount}\right)
 \end{eqnarray*}
 }
+
 \item{Construct new \texttt{PolyFace}s by adding new edges to the model, completing the reconstruction of the model}
 \end{enumerate}
 
@@ -899,10 +912,10 @@ In order to ascertain the extent to which the finished product meets these crite
 The various tools described in Section~\ref{cmdTools} are each an experiment in user interaction. As this is an entirely novel user interface, it is valuable to consider each of the available styles of interacting with the model, with respect to their usability and utility to a modeller.
 
 \begin{itemize}
-\item{\textbf{Vertex Manipulation}: 
-\textbf{vertex.create}:
-\textbf{vertex.remove}:
-\textbf{vertex.move}: }
+\item{\textbf{Vertex Manipulation}: It is vital that this most fundamental form of interaction works well; to this end, a fair amount of testing and iterative improvement went into its design throughout the development process. Provided there is a sufficiently prominent feature, it is very quick and almost trivial to place a point in 3D space. The ``coloured balls" targetting system makes it easy to see where the candidate points are, and obvious where the created vertex will be placed. However, there is one critically important caveat; if PTAM does not register a feature where the user desires a vertex, they must choose the "next best" option, which could be a fair distance away. This problem is exacerbated by PTAM's reliance only on the Shi-Tomasi \cite{shitomasi} corner detection algorithm for feature analysis. An extension of PTAM has been described by its original author \cite{ptamedges} which considers not only corners, but also edgelets in its feature map, in an effort to improve its agility. Unfortunately, at the time of writing this version of PTAM is unavailable to the general public, and thus could not be integrated with the rest of the modelling system to test to what extent it would improve the modelling process.
+
+Again, the UI cues as to vertex selection make it clear which vertex will be deleted or moved by the other vertex tools. However, as mentioned previously moving a vertex accurately can be quite challenging. The \textit{``freemove"} variant of the tool permits completely unencumbered motion - but it is hard to tell how much the point has moved in the camera's view axis. For this reason, it is possible to constrain the motion to be only in one axis at a time - an improvement in some cases, but often requires adjustment from each of the tools in turn to achieve the desired translation. This led to the creation of the \textit{third} option (as sure an indicator as any that this interface problem hasn't been solved!): to first identify an axis of motion, and then place the target point anywhere on this axis. This is perhaps the most versatile form of movement, as it permits the user to accurately predict where the point will end up, and by aiming their camera at the same point from two separate views they will almost certainly get the vertex placed where it should be. It is then that slight tweaks from the other tools can be useful to correct the position of the vertex by only a small amount.
+}
 
 \item{\textbf{Edge Manipulation}:
 \textbf{edge.connect}:
