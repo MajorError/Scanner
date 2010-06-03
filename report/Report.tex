@@ -917,10 +917,17 @@ The various tools described in Section~\ref{cmdTools} are each an experiment in 
 Again, the UI cues as to vertex selection make it clear which vertex will be deleted or moved by the other vertex tools. However, as mentioned previously moving a vertex accurately can be quite challenging. The \textit{``freemove"} variant of the tool permits completely unencumbered motion - but it is hard to tell how much the point has moved in the camera's view axis. For this reason, it is possible to constrain the motion to be only in one axis at a time - an improvement in some cases, but often requires adjustment from each of the tools in turn to achieve the desired translation. This led to the creation of the \textit{third} option (as sure an indicator as any that this interface problem hasn't been solved!): to first identify an axis of motion, and then place the target point anywhere on this axis. This is perhaps the most versatile form of movement, as it permits the user to accurately predict where the point will end up, and by aiming their camera at the same point from two separate views they will almost certainly get the vertex placed where it should be. It is then that slight tweaks from the other tools can be useful to correct the position of the vertex by only a small amount.
 }
 
-\item{\textbf{Edge Manipulation}:
-\textbf{edge.connect}:
-\textbf{edge.remove}:
-\textbf{edge.bisect}: }
+\item{\textbf{Edge Manipulation}: The closest point of approach basis for edge selection works just as well as the vertex selection, and uses similar visual cues. Such consitency should help to significantly lower the barrier to entry for newcomers learning to use the system. Edge connection is a simple enough primitive operation that nothing can realistically go wrong; it is resilient to user mistakes such as edge loops, and reconnecting already connected edges. No failure cases have been found in which a valid \texttt{PolyFace} is \textit{not} constructed automatically. When the wrong edge is added, it is easy to remove, helping to keep the software resilient; a user should never have to restart an entire model due to a simple mistake.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=340px]{EdgeRefinement}
+  \end{center}
+  \caption{A 2D example of refining a curve by manual edge bisection}
+  \label{refine}
+\end{figure} 
+
+When modelling curves or other complex geometry, the edge bisection tool allows iterative refinement of the curve without too much complexity; see Figure~\ref{refine} for an example of this in practice.}
 
 \item{\textbf{Plane Manipulation}:
 \textbf{plane.split}:
@@ -934,7 +941,7 @@ Again, the UI cues as to vertex selection make it clear which vertex will be del
 \textbf{mesh.subdivide}:
 \textbf{mesh.smoothDeform}: }
 
-\item{\textbf{Texture Repair}:
+\item{\textbf{Texture Application \& Repair}:
 \textbf{texture.clear}:
 \textbf{texture.clean}: }
 
