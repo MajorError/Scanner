@@ -80,6 +80,11 @@ void point_freemove::click() {
     commandList::exec( "vertex.move" );
 };
 
+MK_TOOL_PLUGIN( point_axismove, "Space", );
+void point_axismove::click() {
+    commandList::exec( "vertex.moveOnAxis" );
+};
+
 MK_TOOL_PLUGIN( point_X_move, "Space", );
 void point_X_move::click() {
     commandList::exec( "vertex.move 1 0 0" );

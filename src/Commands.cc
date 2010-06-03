@@ -138,6 +138,56 @@ namespace vtx3 {
     }
 }
 
+namespace vtx4 {
+    // Params used to "lock" part of the motion, by setting that axis to 0
+    MK_GUI_COMMAND(vertex, moveOnAxis, SE3<> start; pthread_t mover; static void* moveProcessor( void* ptr );)
+    void vertex::moveOnAxis( string params ) {
+        if ( environment->getPoints().size() == 0 )
+            return;
+        if ( !init ) {
+            start = environment->getCameraPose();
+            
+            init = true;
+            pthread_create( &mover, NULL, vertex::moveProcessor, (void*)this );
+        } else {
+            init = false;
+            pthread_join( mover, NULL );
+        }
+    }
+
+    void* vertex::moveProcessor( void* ptr ) {
+        vertex *p = static_cast<vertex*>( ptr );
+        SE3<> camera = p->environment->getCameraPose();
+        Matrix<> rot = p->start.get_rotation().get_matrix();
+        Vector<3> axis( makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+        Vector<3> axisPt( p->start.get_translation() );
+        Point* target = p->environment->sortPoints( camera ).front();
+        while( p->init ) {
+            // Move is projection of (nearest point of) intersection between
+            //   "axis" and camera look vector, "z"
+            camera = p->environment->getCameraPose();
+            rot = camera.get_rotation().get_matrix();
+            Vector<3> z( makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+            Vector<3> zPt( camera.get_translation() );
+            
+            // Find the closest distance between axis and z, given that
+            // L1 = axisPt + mu0*axis, and L2 = zPt + mu1*z
+            Vector<3> w0 = axisPt - zPt;
+            double a = axis * axis;
+            double b = axis * z;
+            double c = z * z;
+            double d = axis * w0;
+            double e = z * w0;
+
+            if ( (a*c - b*b) <= 0 )
+                cerr << ">> Unsolvable constraint!" << endl;
+            else
+                target->setPosition( axisPt + axis * (a*e - b*d) / (a*c - b*b) );
+        }
+        return NULL;
+    }
+}
+
 namespace edge1 {
     MK_GUI_COMMAND(edge, connect, Point* from; )
     void edge::connect( string params ) {
