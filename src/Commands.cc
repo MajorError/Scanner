@@ -1118,9 +1118,6 @@ namespace obj1 {
         if ( filename.length() < 1 )
             filename = "scanner_model";
 
-        // Clean our textures first, to minimise its size
-        GUI.ParseLine( "texture.clean" );
-
         // Furst, serialise textures as concat TGA, storing mapping of offsets
         map< Image< Rgb<byte> >*,int> textures;
         saveTGA( filename, textures );

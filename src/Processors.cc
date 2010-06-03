@@ -124,6 +124,17 @@ void textureExtractor::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& s
     PROFILE_END();
 };
 
+MK_VISION_PLUGIN( textureCleaner, int frameNo; );
+void textureCleaner::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    if ( !init ) {
+        frameNo = 0;
+        init = true;
+    }
+    if ( frameNo++ % GV3::get<int>( "texCleanFreq", 10000 ) ) {
+        GUI.ParseLine( "texture.clean" );
+    }
+};
+
 MK_VISION_PLUGIN( profiler, );
 void profiler::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     PROFILE_UPDATE_ALL( 0 );
