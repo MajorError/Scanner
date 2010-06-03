@@ -819,6 +819,7 @@ g scanner_model  # Polygon group name
 \end{figure}
 
 With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information. An example of this is shown in Figure~\ref{blender}.}
+\item{\textbf{obj.load}: TODO}
 \end{itemize}
 
 \section{Platform Showcase}
@@ -895,51 +896,38 @@ The final component of the game world is the \texttt{Director}: it controls the 
 In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the implementation detailed should accomplish the stated goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
 
 \subsection{Acceptance Testing}
-The various tools described in Section~\ref{cmdTools} are each an experiment in user interaction. As this is an entirely novel user interface, it is valuable to consider each of these tools with respect to their usability and utility to a modeller.
+The various tools described in Section~\ref{cmdTools} are each an experiment in user interaction. As this is an entirely novel user interface, it is valuable to consider each of the available styles of interacting with the model, with respect to their usability and utility to a modeller.
 
 \begin{itemize}
-\item{\textbf{key.handle}: }
+\item{\textbf{Vertex Manipulation}: 
+\textbf{vertex.create}:
+\textbf{vertex.remove}:
+\textbf{vertex.move}: }
 
-\item{\textbf{edgelist.dump}, \textbf{pointlist.dump}, \textbf{polylist.dump}: }
+\item{\textbf{Edge Manipulation}:
+\textbf{edge.connect}:
+\textbf{edge.remove}:
+\textbf{edge.bisect}: }
 
-\item{\textbf{text.draw}: }
+\item{\textbf{Plane Manipulation}:
+\textbf{plane.split}:
+\textbf{plane.move}:
+\textbf{plane.extrude}:
+\textbf{plane.revolve}: }
 
-\item{\textbf{vertex.create}: }
+\item{\textbf{Whole-Mesh Editing}:
+\textbf{mesh.move}:
+\textbf{mesh.scale}:
+\textbf{mesh.subdivide}:
+\textbf{mesh.smoothDeform}: }
 
-\item{\textbf{vertex.remove}: }
+\item{\textbf{Texture Repair}:
+\textbf{texture.clear}:
+\textbf{texture.clean}: }
 
-\item{\textbf{vertex.move}: }
-
-\item{\textbf{edge.connect}: }
-
-\item{\textbf{edge.remove}: }
-
-\item{\textbf{edge.bisect}: }
-
-\item{\textbf{plane.split}: }
-
-\item{\textbf{plane.move}: }
-
-\item{\textbf{plane.extrude}: }
-
-\item{\textbf{plane.revolve}: }
-
-\item{\textbf{mesh.move}: }
-
-\item{\textbf{mesh.scale}: }
-
-
-\item{\textbf{mesh.subdivide}: }
-
-\item{\textbf{mesh.smoothDeform}: }
-
-\item{\textbf{texture.clear}: }
-
-\item{\textbf{texture.clean}: }
-
-\item{\textbf{code.save}, \textbf{code.load}: }
-
-\item{\textbf{obj.save}: }
+\item{\textbf{Saving \& Loading}:
+\textbf{code.save}, \textbf{code.load}:
+\textbf{obj.save}, \textbf{obj.load}: }
 \end{itemize}
 
 \subsection{Accuracy}
