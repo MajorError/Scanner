@@ -578,7 +578,8 @@ namespace text1 {
 
 // Syntax: text.drawHudRing numItems highlightID cameraStartZ cameraZ Item1 .... ItemN
 namespace text2 {
-    MK_GUI_COMMAND(text, drawHudRing,)
+    MK_GUI_COMMAND(text, drawHudRing, void draw( ImageRef &textPos, string curr, \
+                        bool doHighlight, bool forwards, string prev = "" );)
     void text::drawHudRing( string params ) {
         stringstream p( params );
         string curr;
@@ -593,55 +594,83 @@ namespace text2 {
 
         glMatrixMode( GL_PROJECTION );
         glPushMatrix();
-        ImageRef textPos( GV3::get<ImageRef>( "VideoSource.Resolution" ) );
+        ImageRef imgSize( GV3::get<ImageRef>( "VideoSource.Resolution" ) );
+        ImageRef textPos( imgSize );
         textPos.x /= 2;
         textPos.y /= 2;
         pair<double, double> highlightSize = glGetExtends( items.at( highlight ), 1.8, 0.2 );
         textPos.x -= 10 * highlightSize.first / 2;
+        int centreTextX = textPos.x;
+
         bool doHighlight = true;
         for( vector<string>::iterator curr = items.begin() + highlight;
-                curr != items.end(); curr++ ) {
+                textPos.x < imgSize.x; curr++ ) {
+            if ( curr == items.end() )
+                curr = items.begin();
 
-            pair<double, double> textSize = glGetExtends( *curr, 1.8, 0.2 );
-            textSize.first *= 10;
-            textSize.second *= 10;
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
-
-            // Bounding Box
-            if ( doHighlight ) {
-                doHighlight = false;
-                glColor4d(1.0, 0.4, 0.0, 1.0);
-            } else {
-                glColor4d( 0.35, 0.5, 0.9, 1.0 );
-            }
-            glBegin( GL_QUADS );
-            glVertex3d( textPos.x - 5, textPos.y - textSize.second, 1.0 );
-            glVertex3d( textPos.x + textSize.first + 10, textPos.y - textSize.second, 1.0 );
-            glVertex3d( textPos.x + textSize.first + 10, textPos.y + textSize.second/2-1, 1.0 );
-            glVertex3d( textPos.x - 5, textPos.y + textSize.second/2-1, 1.0 );
-            glEnd();
-
-            glColor4d( 0.5, 0.65, 1.0, 1.0 );
-            glLineWidth( 1.5 );
-            glBegin( GL_LINE_STRIP );
-            glVertex3d( textPos.x - 5, textPos.y - textSize.second, 1.0 );
-            glVertex3d( textPos.x + textSize.first + 10, textPos.y - textSize.second, 1.0 );
-            glVertex3d( textPos.x + textSize.first + 10, textPos.y + textSize.second/2-1, 1.0 );
-            glVertex3d( textPos.x - 5, textPos.y + textSize.second/2-1, 1.0 );
-            glVertex3d( textPos.x - 5, textPos.y - textSize.second, 1.0 );
-            glEnd();
-
-            // Text draw
-            glTranslate( textPos );
-            glColor4d( 1.0, 1.0, 1.0, 1.0 );
-            glScalef( 10, -10, 1 );
-            glDrawText( *curr, FILL, 1.8, 0.2 );
-
-            textPos.x += textSize.first + 20;
+            draw( textPos, *curr, doHighlight, true );
+            doHighlight = false;
         }
+
+        pair<double, double> prevItemSize = glGetExtends(
+               items.at( highlight == 0 ? items.size()-1 : highlight-1 ), 1.8, 0.2 );
+        textPos.x = centreTextX - 20 - 10 * prevItemSize.first;
+
+        for( vector<string>::iterator curr = (highlight == 0 ? items.end()-1 : items.begin() + highlight - 1);
+                textPos.x > -200; curr-- ) {
+            string prev = *(curr == items.begin() ? items.end()-1 : curr-1);
+            draw( textPos, *curr, doHighlight, false, prev );
+
+            if ( curr == items.begin() )
+                curr = items.end();
+        }
+        
         glPopMatrix();
-    }
+    };
+
+    inline void text::draw( ImageRef &textPos, string curr, bool doHighlight, bool forwards, string prev ) {
+        pair<double, double> textSize = glGetExtends( curr, 1.8, 0.2 );
+        textSize.first *= 10;
+        textSize.second *= 10;
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // Bounding Box
+        if ( doHighlight )
+            glColor4d( 1.0, 0.4, 0.0, 1.0 );
+        else
+            glColor4d( 0.35, 0.5, 0.9, 1.0 );
+        glBegin( GL_QUADS );
+        glVertex3d( textPos.x - 5, textPos.y - textSize.second, 1.0 );
+        glVertex3d( textPos.x + textSize.first + 10, textPos.y - textSize.second, 1.0 );
+        glVertex3d( textPos.x + textSize.first + 10, textPos.y + textSize.second/2-1, 1.0 );
+        glVertex3d( textPos.x - 5, textPos.y + textSize.second/2-1, 1.0 );
+        glEnd();
+
+        glColor4d( 0.5, 0.65, 1.0, 1.0 );
+        glLineWidth( 1.5 );
+        glBegin( GL_LINE_STRIP );
+        glVertex3d( textPos.x - 5, textPos.y - textSize.second, 1.0 );
+        glVertex3d( textPos.x + textSize.first + 10, textPos.y - textSize.second, 1.0 );
+        glVertex3d( textPos.x + textSize.first + 10, textPos.y + textSize.second/2-1, 1.0 );
+        glVertex3d( textPos.x - 5, textPos.y + textSize.second/2-1, 1.0 );
+        glVertex3d( textPos.x - 5, textPos.y - textSize.second, 1.0 );
+        glEnd();
+
+        // Text draw
+        glTranslate( textPos );
+        glColor4d( 1.0, 1.0, 1.0, 1.0 );
+        glScalef( 10, -10, 1 );
+        glDrawText( curr, FILL, 1.8, 0.2 );
+        glLoadIdentity();
+
+
+        if ( forwards ) {
+            textPos.x += 20 + textSize.first;
+        } else {
+            textPos.x -= 20 + 10 * glGetExtends( prev, 1.8, 0.2 ).first;
+        }
+    };
 }
 
 namespace tex1 {
