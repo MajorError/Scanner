@@ -3,6 +3,7 @@
 #include <cvd/Linux/dvbuffer3.h>
 #include <cvd/colourspace_convert.h>
 #include <cvd/colourspaces.h>
+#include <gvars3/gvars3.h>
 
 using namespace CVD;
 using namespace std;
@@ -13,6 +14,8 @@ VideoSource::VideoSource()
   DVBuffer3<yuv411>* pvb= new DVBuffer3<yuv411>();
   mptr = pvb;
   mirSize = pvb->size();
+  // Ensure that a default value is set
+  GVars3::GV3::get<ImageRef>("VideoSource.Resolution", mirSize);
   cout << "  ... got video source." << endl;
 };
 

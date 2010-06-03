@@ -33,10 +33,26 @@ void toolsel::click() {
     commandList::exec( "toolselproc.activate" );
 };
 
+
+
 void* toolsel::displayTimeout( void* ptr ) {
     toolsel* ts = static_cast<toolsel*>( ptr );
+    Matrix<> startRot = ts->environment->getCameraPose().get_rotation().get_matrix();
+    Vector<3> startZ( makeVector( startRot[0][2], startRot[1][2], startRot[2][2] ) );
+
+    stringstream cmdA;
+    stringstream cmdB;
+    for( vector<Tool*>::iterator t = Tool::list.begin() + 2; t != Tool::list.end(); t++ ) {
+        cmdB << (*t)->getShortName() << ' ';
+    }
     while( ts->running && time( NULL ) < ts->start + 10 ) {
-        commandList::exec( "text.draw " + Tool::list[ts->curr]->getShortName() );
+        //commandList::exec( "text.draw " + Tool::list[ts->curr]->getShortName() );
+        Matrix<> rot = ts->environment->getCameraPose().get_rotation().get_matrix();
+        Vector<3> currZ( makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+        cmdA << "text.drawHudRing " << Tool::list.size() - 2 << ' ' << ts->curr
+                << ' ' << startZ << ' ' << currZ << ' ';
+        commandList::exec( cmdA.str() + cmdB.str() );
+        cmdA.str( "" );
         usleep(10);
     }
     ts->running = false;
