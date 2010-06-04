@@ -932,13 +932,16 @@ When modelling curves or other complex geometry, the edge bisection tool allows 
 \item{\textbf{Plane Manipulation}: A variety of features use whole-plane detection to manipulate the model. This detection tends to work well; no cases have been found in which it will incorrectly select non-planar faces. Moving these planes is similar to moving points; keeping the plane a fixed distance from the camera makes it easy to move the plane around. One limitation of the implementation of plane movement is that it won't allow a user to \textit{rotate} the plane - it remains parallel to its original pose. In many cases this is desirable - particularly when extruding the face of an object, as it helps the user be more accurate. In fact, most cases that might benefit from rotating a plane can be more accurately fixed with the vertex movement tools already evaluated, since the inaccuracy would likely be down to just one or two vertices, not a consistent error in all of those on the plane. Therefore, while this is a limitation, the improved accuracy it offers the most probable use cases makes it a limitation worth maintaining.
 
 Extruding a plane is easy to achieve, and because of the rotation invariance of \texttt{plane.move} it is easy to see from multiple angles before placing the final extruded plane's position. The plane split feature provides much the same user experience as edge bisection above. However, it creates more polygons per split than bisecting an edge. Furthermore, through experimentation it has become apparent that few real-world objects can benefit from this mode of editing; most refinement opportunities exist on the edges of a mesh, not in the centre of a face.
-\textbf{plane.revolve}: }
 
-\item{\textbf{Whole-Mesh Editing}:
-\textbf{mesh.move}:
-\textbf{mesh.scale}:
-\textbf{mesh.subdivide}:
-\textbf{mesh.smoothDeform}: }
+The final plane manipulation tool to discuss is that for revolving about an axis. This tool poses an interesting challenge; as already discussed, it is difficult to place vertices on objects with non-corner features. A prime example of this would be a wine bottle; plenty of smooth curves, and very few corners. As a result of this, it is difficult to place vertices on the mesh with sufficient accuracy to make this tool as powerful as it should be. The tool itself works more-or-less exactly as one would wish - but only small errors in placement of the axis can result in a wildly incorrect mesh. (TODO: image to illustrate the problem?)
+}
+
+\item{\textbf{Whole-Mesh Editing}: Moving an entire mesh will be a rare occurence in general usage; perhaps when loading it from disk, or if the object being modelled were to move (although here it would be easier to move the object than the model!). Nevertheless, the feature is available, and it works as expected - with the same rotation invariance as the plane movement.
+
+Scaling a mesh is again likely only to be useful when loading from hard disk. The user interaction for this primitive is perhaps less obvious than it could be; by scaling the mesh based on the camera's distance from its starting pose there is no obvious ``centre point" to return to - the user must simply adjust the mesh until it ``looks right". In another situation this might be a problem, but with the continuous visual feedback from the augmented-reality view, it is in practice quite easy to get the scale right - just not necessarily to undo it!
+
+Subdivision and smooth deformation are something of a ``mixed bag"; it is important that the user has experience using them, to know when it is suitable to use them. Subdivision can be very useful on a very smooth mesh, essentially performing the same work as \texttt{edge.bisect} but in an automated fashion on the entire model at once. The smooth deformation mode does not work so well; for small deformations there is (we find in real-world testing) little need to ``pull" all of the points simultaneously, and large deformations are quite unlikely. Future work, however, could investigate using a similar approach to do so-called ``voxel sculpting" to start from a primitive shape (cube, cylinder, etc) and work towards a smooth mesh by ``pulling" voxels as if the mesh were modelling clay. This approach is taken by the GPGPU accelerated modelling tool, 3D-Coat (\url{http://www.3d-coat.com/}).
+}
 
 \item{\textbf{Texture Application \& Repair}:
 \textbf{texture.clear}:
@@ -1084,7 +1087,7 @@ With this in mind, a second random mesh generator was written. Instead of focuss
 
 \section{Further Work}
 
-\textbf{TODO: Future directions - more visiony things? Edgelet refinement, etc? Dense reconstruction based on user-applied constraints?}
+\textbf{TODO: Future directions - more visiony things? Edgelet refinement, etc? Dense reconstruction based on user-applied constraints? Undo etc, more usability stuff? Mouse interaction better? Multiple meshes? Object recognition?}
 
 \clearpage
 \renewcommand*{\refname}{\section{References}}
