@@ -929,10 +929,9 @@ Again, the UI cues as to vertex selection make it clear which vertex will be del
 
 When modelling curves or other complex geometry, the edge bisection tool allows iterative refinement of the curve without too much complexity; see Figure~\ref{refine} for an example of this in practice.}
 
-\item{\textbf{Plane Manipulation}:
-\textbf{plane.split}:
-\textbf{plane.move}:
-\textbf{plane.extrude}:
+\item{\textbf{Plane Manipulation}: A variety of features use whole-plane detection to manipulate the model. This detection tends to work well; no cases have been found in which it will incorrectly select non-planar faces. Moving these planes is similar to moving points; keeping the plane a fixed distance from the camera makes it easy to move the plane around. One limitation of the implementation of plane movement is that it won't allow a user to \textit{rotate} the plane - it remains parallel to its original pose. In many cases this is desirable - particularly when extruding the face of an object, as it helps the user be more accurate. In fact, most cases that might benefit from rotating a plane can be more accurately fixed with the vertex movement tools already evaluated, since the inaccuracy would likely be down to just one or two vertices, not a consistent error in all of those on the plane. Therefore, while this is a limitation, the improved accuracy it offers the most probable use cases makes it a limitation worth maintaining.
+
+Extruding a plane is easy to achieve, and because of the rotation invariance of \texttt{plane.move} it is easy to see from multiple angles before placing the final extruded plane's position. The plane split feature provides much the same user experience as edge bisection above. However, it creates more polygons per split than bisecting an edge. Furthermore, through experimentation it has become apparent that few real-world objects can benefit from this mode of editing; most refinement opportunities exist on the edges of a mesh, not in the centre of a face.
 \textbf{plane.revolve}: }
 
 \item{\textbf{Whole-Mesh Editing}:
