@@ -471,18 +471,6 @@ namespace plane4 {
         set<PolyFace*> planeTemplate;
         environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), planeTemplate );
         
-        double numFaces = GV3::get<double>( "revolveFaces", 10 );
-        double freq = (PI * 2) / numFaces;
-        Matrix<3,3> transToOrigin;
-        transToOrigin[0] = makeVector( 1, 0, 0 );
-        transToOrigin[1] = makeVector( 0, 1, 0 );
-        transToOrigin[2] = -axisEdge->getStart()->getPosition();
-        SO3<> rotToAxis( axis, makeVector( 1, 0, 0 ) );
-        SO3<> rotBack = rotToAxis.inverse();
-        Matrix<3,3> transBack;
-        transBack[0] = makeVector( 1, 0, 0 );
-        transBack[1] = makeVector( 0, 1, 0 );
-        transBack[2] = axisEdge->getStart()->getPosition();
         map< Point*, vector<Point*> > pointProjection;
         set<Point*> visited;
         for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
@@ -499,6 +487,12 @@ namespace plane4 {
                 visited.insert( (*fc)->getP3() );
             }
         }
+
+        double numFaces = GV3::get<double>( "revolveFaces", 10 );
+        double freq = (PI * 2) / numFaces;
+
+        SO3<> rotToAxis( axis, makeVector( 1, 0, 0 ) );
+        SO3<> rotBack = rotToAxis.inverse();
         for ( double i = 1; i <= numFaces; i++ ) {
             double theta = i * freq;
             double sinTheta = sin( theta );
