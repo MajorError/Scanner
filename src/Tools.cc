@@ -212,6 +212,12 @@ void toggleVar( string varName ) {
     commandList::exec( varName+"="+(GV3::get<bool>( varName, true ) ? "0" : "1") );
     pthread_create( &t, NULL, displayTimeout, text );
 };
+
+MK_GUI_COMMAND( var, toggle, )
+void var::toggle( string varName ) {
+    toggleVar( varName );
+};
+
 MK_TOOL_PLUGIN( toggleBG, "b", );
 void toggleBG::click() {
     toggleVar( "drawBackground" );

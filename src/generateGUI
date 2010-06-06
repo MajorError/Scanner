@@ -1,0 +1,27 @@
+#!/bin/bash
+
+for file in $@; do
+  vars=$(cat $file | grep 'GV3::get<[^>]*>([^)]*"[^"]*"' | sed 's/.*GV3::get<[^>]*>([^"]*"//g' | sed 's/",[ ]*/=/g' | sed 's/).*//g');
+  if [ -n "$vars" ]; then
+    echo;
+    curr=$(basename $file | sed 's/\.[^\.]*$//g');
+    echo "// $curr:";
+    echo "$curr.Destroy";
+    echo "GUI.AddWindow $curr \"Configure $curr\" 500";
+    echo;
+    for v in $vars; do
+      var=$(echo $v | sed 's/=.*//g');
+      default=$(echo $v | sed 's/.*=//g');
+      if [[ "$default" =~ ^[^a-zA-Z]+$ || "$default" == "false" || "$default" == "true" ]]; then
+        echo "$curr.AddMonitor $var $var";
+        if [[ "$default" == "false" || "$default" == "true" ]]; then
+          echo "$curr.AddPushButton \"Toggle $var\" \"var.toggle $var\"";
+        else
+          max=$(echo "if($default*10 < 1) 1 else $default*10" | bc);
+          echo "$curr.AddSlider $var 0 $max";
+        fi
+      fi
+    done
+    echo "$curr.AddPushButton \"Close\" $curr.Destroy";
+  fi
+done
