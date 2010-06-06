@@ -30,7 +30,7 @@ for file in $@; do
       fi
     done
 
-    echo ". $curr.AddPushButton \"Close\" $curr.Destroy";
+    echo ". $curr.AddPushButton \"Close\" \"$curr.Destroy\"";
     echo "endfunction";
   fi
 done
