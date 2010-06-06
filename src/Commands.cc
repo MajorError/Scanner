@@ -470,27 +470,53 @@ namespace plane4 {
             return;
         set<PolyFace*> planeTemplate;
         environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), planeTemplate );
-        
+
+        // Now record the first point in each edge loop
         map< Point*, vector<Point*> > pointProjection;
-        set<Point*> visited;
+        set<Point*> templatePoints;
         for( set<PolyFace*>::iterator fc = planeTemplate.begin(); fc != planeTemplate.end(); fc++ ) {
-            if ( visited.count( (*fc)->getP1() ) == 0 ) {
+            if ( templatePoints.count( (*fc)->getP1() ) == 0 ) {
                 pointProjection[(*fc)->getP1()].push_back( (*fc)->getP1() );
-                visited.insert( (*fc)->getP1() );
+                templatePoints.insert( (*fc)->getP1() );
             }
-            if ( visited.count( (*fc)->getP2() ) == 0 ) {
+            if ( templatePoints.count( (*fc)->getP2() ) == 0 ) {
                 pointProjection[(*fc)->getP2()].push_back( (*fc)->getP2() );
-                visited.insert( (*fc)->getP2() );
+                templatePoints.insert( (*fc)->getP2() );
             }
-            if ( visited.count( (*fc)->getP3() ) == 0 ) {
+            if ( templatePoints.count( (*fc)->getP3() ) == 0 ) {
                 pointProjection[(*fc)->getP3()].push_back( (*fc)->getP3() );
-                visited.insert( (*fc)->getP3() );
+                templatePoints.insert( (*fc)->getP3() );
+            }
+        }
+
+        set< pair<Point*,Point*> > internalEdges;
+        // Before we go any further, record any internal edges on this plane
+        for( set<Point*>::iterator pt = templatePoints.begin(); pt != templatePoints.end(); pt++ ) {
+            for( std::list<Edge*>::iterator e = (*pt)->getEdges().begin(); e != (*pt)->getEdges().end(); e++ ) {
+                Point* p2 = (*e)->getStart() == *pt ? (*e)->getEnd() : (*e)->getStart();
+                int numFaces = 0;
+                for( set<PolyFace*>::iterator f = environment->getFaces().begin() ; f != environment->getFaces().end(); f++ ) {
+                    if ( ((*f)->getP1() == (*pt) && (*f)->getP2() == p2) ||
+                            ((*f)->getP1() == (*pt) && (*f)->getP3() == p2) ||
+                            ((*f)->getP2() == (*pt) && (*f)->getP3() == p2) ||
+                            ((*f)->getP2() == (*pt) && (*f)->getP1() == p2) ||
+                            ((*f)->getP3() == (*pt) && (*f)->getP1() == p2) ||
+                            ((*f)->getP3() == (*pt) && (*f)->getP2() == p2) )
+                        numFaces++;
+                    if ( numFaces > 1 )
+                        break;
+                }
+                if ( numFaces > 1 ) {
+                    internalEdges.insert( pair<Point*,Point*>( *pt, p2 ) );
+                    internalEdges.insert( pair<Point*,Point*>( p2, *pt ) );
+                }
             }
         }
 
         double numFaces = GV3::get<double>( "revolveFaces", 10 );
         double freq = (PI * 2) / numFaces;
 
+        // Revolve faces about axis
         SO3<> rotToAxis( axis, makeVector( 1, 0, 0 ) );
         SO3<> rotBack = rotToAxis.inverse();
         for ( double i = 1; i <= numFaces; i++ ) {
@@ -517,9 +543,11 @@ namespace plane4 {
                     pointMap[(*fc)->getP1()] = p1;
                     environment->addPoint( p1 );
                     pointProjection[(*fc)->getP1()].push_back( p1 );
-                    if ( (*fc)->getP2() == axisEdge->getStart() || (*fc)->getP2() == axisEdge->getEnd() )
+                    if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP1(), (*fc)->getP2() ) ) == 0 &&
+                        ((*fc)->getP2() == axisEdge->getStart() || (*fc)->getP2() == axisEdge->getEnd()) )
                         environment->addEdge( p1, (*fc)->getP2() );
-                    if ( (*fc)->getP3() == axisEdge->getStart() || (*fc)->getP3() == axisEdge->getEnd() )
+                    if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP1(), (*fc)->getP3() ) ) == 0 &&
+                        ((*fc)->getP3() == axisEdge->getStart() || (*fc)->getP3() == axisEdge->getEnd()) )
                         environment->addEdge( p1, (*fc)->getP3() );
                 }
                 Point* p2 = NULL;
@@ -530,9 +558,11 @@ namespace plane4 {
                     pointMap[(*fc)->getP2()] = p2;
                     environment->addPoint( p2 );
                     pointProjection[(*fc)->getP2()].push_back( p2 );
-                    if ( (*fc)->getP1() == axisEdge->getStart() || (*fc)->getP1() == axisEdge->getEnd() )
+                    if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP2(), (*fc)->getP1() ) ) == 0 &&
+                        ((*fc)->getP1() == axisEdge->getStart() || (*fc)->getP1() == axisEdge->getEnd()) )
                         environment->addEdge( p2, (*fc)->getP1() );
-                    if ( (*fc)->getP3() == axisEdge->getStart() || (*fc)->getP3() == axisEdge->getEnd() )
+                    if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP2(), (*fc)->getP3() ) ) == 0 &&
+                        ((*fc)->getP3() == axisEdge->getStart() || (*fc)->getP3() == axisEdge->getEnd()) )
                         environment->addEdge( p2, (*fc)->getP3() );
                 }
                 Point* p3 = NULL;
@@ -543,17 +573,26 @@ namespace plane4 {
                     pointMap[(*fc)->getP3()] = p3;
                     environment->addPoint( p3 );
                     pointProjection[(*fc)->getP3()].push_back( p3 );
-                    if ( (*fc)->getP1() == axisEdge->getStart() || (*fc)->getP1() == axisEdge->getEnd() )
+                    if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP3(), (*fc)->getP1() ) ) == 0 &&
+                        ((*fc)->getP1() == axisEdge->getStart() || (*fc)->getP1() == axisEdge->getEnd()) )
                         environment->addEdge( p3, (*fc)->getP1() );
-                    if ( (*fc)->getP2() == axisEdge->getStart() || (*fc)->getP2() == axisEdge->getEnd() )
+                    if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP3(), (*fc)->getP2() ) ) == 0 &&
+                        ((*fc)->getP2() == axisEdge->getStart() || (*fc)->getP2() == axisEdge->getEnd()) )
                         environment->addEdge( p3, (*fc)->getP2() );
                 }
-                environment->addEdge( pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()] : (*fc)->getP1(),
-                        pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2() );
-                environment->addEdge( pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()] : (*fc)->getP1(),
-                        pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2() );
-                environment->addEdge( pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2(),
-                        pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()] : (*fc)->getP3() );
+                
+                Point* from = pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()] : (*fc)->getP1();
+                Point* to = pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2();
+                if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP1(), (*fc)->getP2() ) ) == 0 )
+                    environment->addEdge( from, to );
+                from = pointMap.count( (*fc)->getP1() ) > 0 ? pointMap[(*fc)->getP1()] : (*fc)->getP1();
+                to = pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()] : (*fc)->getP3();
+                if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP1(), (*fc)->getP3() ) ) == 0 )
+                    environment->addEdge( from, to );
+                from = pointMap.count( (*fc)->getP2() ) > 0 ? pointMap[(*fc)->getP2()] : (*fc)->getP2();
+                to = pointMap.count( (*fc)->getP3() ) > 0 ? pointMap[(*fc)->getP3()] : (*fc)->getP3();
+                if ( internalEdges.count( pair<Point*,Point*>( (*fc)->getP2(), (*fc)->getP3() ) ) == 0 )
+                    environment->addEdge( from, to );
             }
         }
 
@@ -579,7 +618,7 @@ namespace plane4 {
                 pair != edgeTodo.end(); pair++ ) {
             environment->addEdge( pair->first, pair->second );
         }
-    }
+    };
 }
 
 namespace plane5 {
