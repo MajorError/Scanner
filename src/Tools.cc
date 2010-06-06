@@ -118,6 +118,11 @@ void plane_split::click() {
     init = !init;
 };
 
+MK_TOOL_PLUGIN( plane_flatten, "Space",);
+void plane_flatten::click() {
+    commandList::exec( "plane.flatten" );
+};
+
 MK_TOOL_PLUGIN( edge_bisect, "Space",);
 void edge_bisect::click() {
     if ( !init )

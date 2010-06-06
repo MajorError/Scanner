@@ -471,7 +471,7 @@ namespace plane4 {
         set<PolyFace*> planeTemplate;
         environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), planeTemplate );
         
-        double numFaces = GV3::get<double>( "revolveFaces", 25 );
+        double numFaces = GV3::get<double>( "revolveFaces", 10 );
         double freq = (PI * 2) / numFaces;
         Matrix<3,3> transToOrigin;
         transToOrigin[0] = makeVector( 1, 0, 0 );
@@ -584,6 +584,36 @@ namespace plane4 {
         for( multimap<Point*,Point*>::iterator pair = edgeTodo.begin();
                 pair != edgeTodo.end(); pair++ ) {
             environment->addEdge( pair->first, pair->second );
+        }
+    }
+}
+
+namespace plane5 {
+    MK_GUI_COMMAND(plane, flatten,)
+    void plane::flatten( string params ) {
+        Vector<3> p( makeVector( 0, 0, 0 ) );
+        PolyFace* targetFace = environment->findClosestFace( p );
+        set<PolyFace*> faces;
+        environment->findPlanarFaces( targetFace, GV3::get<double>( "planeTolerance", 0.1 ), faces );
+
+        Vector<3> pointOnFace( makeVector( 0, 0, 0 ) );
+        Vector<3> faceNormal( makeVector( 0, 0, 0 ) );
+        set<Point*> facePoints;
+        for( set<PolyFace*>::iterator curr = faces.begin(); curr != faces.end(); curr++ ) {
+            pointOnFace += (*curr)->getFaceCentre();
+            faceNormal += (*curr)->getFaceNormal();
+            facePoints.insert( (*curr)->getP1() );
+            facePoints.insert( (*curr)->getP2() );
+            facePoints.insert( (*curr)->getP3() );
+        }
+        pointOnFace /= faces.size();
+        faceNormal /= (faceNormal*faceNormal);
+
+
+        for( set<Point*>::iterator curr = facePoints.begin(); curr != facePoints.end(); curr++ ) {
+            // Distance from point to face
+            double d = (pointOnFace - (*curr)->getPosition()) * faceNormal;
+            (*curr)->setPosition( (*curr)->getPosition() + d * faceNormal );
         }
     }
 }

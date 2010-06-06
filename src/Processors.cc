@@ -140,7 +140,7 @@ void textureCleaner::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sce
         frameNo = 0;
         init = true;
     }
-    if ( frameNo++ % GV3::get<int>( "texCleanFreq", 10000 ) ) {
+    if ( frameNo++ % max( 1, GV3::get<int>( "texCleanFreq", 1000 ) ) ) {
         GUI.ParseLine( "texture.clean" );
     }
 };
