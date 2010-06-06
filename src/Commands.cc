@@ -1882,3 +1882,10 @@ void errormap::save( string params ) {
 
     img_save( accuracy::instance->rendered, fname.str() );
 }
+
+namespace config {
+    MK_GUI_COMMAND( config, launch, )
+    void config::launch( string params ) {
+        configUI::instance->init = false;
+    }
+}

@@ -14,6 +14,16 @@ using namespace GVars3;
 using namespace TooN;
 using namespace std;
 
+MK_VISION_PLUGIN( configUI,  );
+void configUI::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
+    if ( !init ) {
+        init = true;
+        cerr << "Launching configuration GUI" << endl;
+        GUI.LoadFile( "configGUI.cfg" );
+    }
+    GUI_Widgets.process_in_crnt_thread();
+};
+
 MK_VISION_PLUGIN( cam, VideoSource videoSource; );
 void cam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
     PROFILE_BEGIN( cam );
