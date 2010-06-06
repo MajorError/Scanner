@@ -6,22 +6,31 @@ for file in $@; do
     echo;
     curr=$(basename $file | sed 's/\.[^\.]*$//g');
     echo "// $curr:";
-    echo "$curr.Destroy";
-    echo "GUI.AddWindow $curr \"Configure $curr\" 500";
+    echo "config.AddPushButton \"Configure $curr\" $curr.launchConfig";
+    echo "function $curr.launchConfig";
+    echo ". $curr.Destroy";
+    echo ". GUI.AddWindow $curr \"Configure $curr\" 500";
     echo;
     for v in $vars; do
       var=$(echo $v | sed 's/=.*//g');
+      if [[ $(eval echo "$`echo $var | sed 's/\./_/g'`_done") == 1 ]]; then
+        continue;
+      fi
+      eval "export `echo $var | sed 's/\./_/g'`_done=1";
+      
       default=$(echo $v | sed 's/.*=//g');
       if [[ "$default" =~ ^[^a-zA-Z]+$ || "$default" == "false" || "$default" == "true" ]]; then
-        echo "$curr.AddMonitor $var $var";
+        echo ". $curr.AddMonitor $var $var";
         if [[ "$default" == "false" || "$default" == "true" ]]; then
-          echo "$curr.AddPushButton \"Toggle $var\" \"var.toggle $var\"";
+          echo ". $curr.AddPushButton \"Toggle $var\" \"var.toggle $var\"";
         else
           max=$(echo "if($default*10 < 1) 1 else $default*10" | bc);
-          echo "$curr.AddSlider $var 0 $max";
+          echo ". $curr.AddSlider $var 0 $max";
         fi
       fi
     done
-    echo "$curr.AddPushButton \"Close\" $curr.Destroy";
+
+    echo ". $curr.AddPushButton \"Close\" $curr.Destroy";
+    echo "endfunction";
   fi
 done
