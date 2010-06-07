@@ -535,7 +535,18 @@ $$\displaystyle \left[
   \end{array}\right]$$
 }
 
-\item{\textbf{vertex.moveOnAxis}: TODO}
+\item{\textbf{vertex.moveOnAxis}: In order to move a point in more than one axis using the above, the user must either attempt to place it in free space (quite challenging), or move it only one axis at a time - a potentially time consuming exercise. For this reason, a version of vertex movement that locks the motion to a single vector of motion. To do this, the user simply aims the camera down the vector they wish to constrain motion to - for example, by lining up the target point with the location they wish to move it to. When invoked, the tool spawns a new \texttt{p\_thread} which continually updates the position of the target point by taking the closest point of approach of the vector when the tool was invoked, and the camera's current look-vector, thus:
+\begin{eqnarray*}
+  a &=& axis \cdot axis \\
+  b &=& axis \cdot lookVector \\
+  c &=& lookVector \cdot lookVector \\
+  d &=& axis \cdot (camera_{start} - camera_{current}) \\
+  e &=& lookVector \cdot (camera_{start} - camera_{current}) \\
+\end{eqnarray*}  Resulting in an updated target point position of:
+\begin{eqnarray*}
+  TargetPoint &=& camera_{start} + axis \times \frac{a \times e - b \times d}{a \times c - b \times b}
+\end{eqnarray*}
+}
 
 \item{\textbf{edge.connect}: This simple command is used to identify two vertices, and joins them together automatically with an \texttt{Edge} - automatically avoiding duplication and inserting \texttt{PolyFace}s as edge loops are completed.}
 
