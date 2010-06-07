@@ -17,7 +17,9 @@
 \usepackage{wrapfig}
 
 \usepackage{tikz}
-\usetikzlibrary{calc,mindmap,backgrounds,arrows,shapes.multipart,fit}
+\usetikzlibrary{calc,mindmap,backgrounds,arrows,shapes.multipart,fit,trees,%
+positioning,arrows,chains,shapes.geometric,decorations.pathreplacing,%
+decorations.pathmorphing,shapes,matrix,shapes.symbols}
 \usepackage{pgf-umlcd}
 \usepackage{scalefnt}
 
@@ -857,7 +859,36 @@ Any texture data which is loaded from disk for this geometry is stored in a sing
 \end{itemize}
 
 \subsection{Configuration}
-TODO
+Throughout the implementation, it has been noted that GVars3 variables are used to expose user-configurable parameters. A full list of these can be seen in Appendix~\ref{configparams}. However, for a user to modify them they really need to know what they're looking for; they could type \texttt{gvarlist} in the tool's terminal, but this will list all variables in both PTAM and this system, many of which a user need not concern themselves with. Furthermore, there is no structure to these values, or indication as to how they should be set. Finally, a user may make mistakes when typing a variable, and not realise their mistake until it is too late.
+
+\tikzset{
+>=stealth',
+  chainel/.style={
+    rectangle, 
+    rounded corners, 
+    draw=black, very thick,
+    text width=6em, 
+    minimum height=3em, 
+    text centered, 
+    on chain},
+  every join/.style={->, thick,shorten >=1pt},
+}
+\begin{figure}[h]
+  \begin{center}
+    \begin{tikzpicture}
+      [node distance=.8cm,
+       start chain=going right,]
+      \node[chainel, join] (sess) {Session};
+      \node[chainel, join] (file) {Settings File};
+      \node[chainel, join] (code) {Default in Code};
+      \node[chainel, join] (code) {C++ Empty Constructor};
+  \end{tikzpicture}
+  \end{center}
+  \caption{Precedence of Configuration Variable Value Sources}
+  \label{configprecedence}
+\end{figure}
+
+There are two further ways for a user to configure the system; in \texttt{settings.cfg} and through a graphical user interface. There is a well-defined order of precedence to these variables; illustrated in Figure~\ref{configprecedence}. The settings file is pre-populated prior to distribution with all of the default values in the system, and is loaded with the system to set any default values, as if they were typed in on the system's command interface. This means that any plugins can be disabled in the configuration file, also (such as the \texttt{profiler} discussed previously).
 
 \section{Platform Showcase}
 \subsection{The Game}
@@ -1119,5 +1150,12 @@ With this in mind, a second random mesh generator was written. Instead of focuss
 \renewcommand*{\refname}{\section{References}}
 \bibliography{Report}
 \bibliographystyle{dcu}
+
+\clearpage
+\appendix
+\section{User-Configurable Parameters}
+\label{configparams}
+TODO
+
 
 \end{document}          
