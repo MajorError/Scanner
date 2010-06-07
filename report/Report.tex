@@ -843,7 +843,17 @@ g scanner_model  # Polygon group name
 \end{figure}
 
 With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information. An example of this is shown in Figure~\ref{blender}.}
-\item{\textbf{obj.load}: TODO}
+\item{\textbf{obj.load}: Loading of OBJ files is a slightly more complex problem; due to the vast array of options and formats for storing OBJ, MTL, and TGA data the \texttt{obj.load} command will only work with a subset of files. The assumptions it makes are:
+\begin{itemize}
+\item{Meshes are triangulated (i.e. contain no faces of order \textgreater~3)}
+\item{Only one material database has been linked}
+\item{Only one material from this database is applied to all faces}
+\item{The \textit{ambient} colour component (\texttt{map\_Ka}) from this material may be applied if no texture data is present}
+\item{TARGA images are stored uncompressed, in 24-bit or 32-bit colour (alpha channel ignored)}
+\end{itemize}
+
+Any texture data which is loaded from disk for this geometry is stored in a single \texttt{Image\textless Rgb\textless byte\textgreater \textgreater}, which is assigned to a special subclass of \texttt{PolyFace}: \texttt{FixedPolyFace}. This subclass considers its texture to be immutable; the geometry of the loaded model may be changed, but the texture may not under any circumstances. At no point does a \texttt{FixedPolyFace} recalculate its texture UV co-ordinates.
+}
 \end{itemize}
 
 \subsection{Configuration}
@@ -963,6 +973,8 @@ Subdivision and smooth deformation are something of a ``mixed bag"; it is import
 \item{\textbf{Saving \& Loading}: There are two formats supported for saving and loading; ``code" and ``obj". The former was originally written as a debugging solution, showing how the GVars3-based command system can be used to quickly serialise a model, and even more easily load it back from disk. However, ``code" has a major limitation; it has no support for saving or loading any texture data on disk. However, the format is verbose and easy to understand and edit, since it takes the same format as the commands in the original system.
 
 Wavefront's OBJ format, on the other hand, is far more versatile, supporting a wide variety of material styles; both flat-colour and texture. However, due to the limited use-case of this modelling software, the export will always create the same type of material; a single textured mesh. Whilst the OBJ format can specify any number of materials to apply to a given set of faces (with each face receiving at most one material), the \texttt{obj.load} command will only support one; the last specified material and material database (MTL file) in the imported OBJ file. This limitation makes it suitable for importing geometry with a single colour or texture - however if the system were to be expanded into a ``commercial grade" product rather than an academic research prototype, this is the sort of limitation on its functionality that should be enhanced.
+
+TODO: Loading non-triangle-meshes
  }
 \end{itemize}
 
