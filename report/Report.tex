@@ -943,13 +943,12 @@ Scaling a mesh is again likely only to be useful when loading from hard disk. Th
 Subdivision and smooth deformation are something of a ``mixed bag"; it is important that the user has experience using them, to know when it is suitable to use them. Subdivision can be very useful on a very smooth mesh, essentially performing the same work as \texttt{edge.bisect} but in an automated fashion on the entire model at once. The smooth deformation mode does not work so well; for small deformations there is (we find in real-world testing) little need to ``pull" all of the points simultaneously, and large deformations are quite unlikely. Future work, however, could investigate using a similar approach to do so-called ``voxel sculpting" to start from a primitive shape (cube, cylinder, etc) and work towards a smooth mesh by ``pulling" voxels as if the mesh were modelling clay. This approach is taken by the GPGPU accelerated modelling tool, 3D-Coat (\url{http://www.3d-coat.com/}).
 }
 
-\item{\textbf{Texture Application \& Repair}:
-\textbf{texture.clear}:
-\textbf{texture.clean}: }
+\item{\textbf{Texture Application \& Repair}: As the texture application in the system is completely automated, the user should rarely need to concern themselves with how it works. In general, the distortion of textures for display works fairly well; even frames captured at quite oblique angles are mapped quite accurately. However, as discussed earlier and seen in Figure~\ref{camblur}, occasionally captured frames are blurred - in these cases, it is easy for the user to identify these and have the texture replaced. As the ``interaction primitive" for this is the same as interacting with planes, as evaluated above, using this tool should not require any extra practice or training for a user, keeping the entire texture system as low-impact as possible. To this end, experiments were also run with running the \texttt{texture.clean} command at regular intervals, to help repair texture discontinuities (as in Figure~\ref{texclean}), as a \texttt{VisionProcessor}. This worked very well for simple models, but can significantly reduce the framerate when the model becomes too complex. Future work on the efficiency of this method, by introducing further memoisation may well alleviate the problem.
+}
 
 \item{\textbf{Saving \& Loading}:
-\textbf{code.save}, \textbf{code.load}:
-\textbf{obj.save}, \textbf{obj.load}: }
+
+ }
 \end{itemize}
 
 \subsection{Accuracy}
