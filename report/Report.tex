@@ -1164,8 +1164,11 @@ With this in mind, a second random mesh generator was written. Instead of focuss
 \end{center}
 
 \section{Conclusion}
+As was highlighted at the very beginning of this project, there are a plethora of reasons for a user to want to generate a 3D model, from user-generated content in games, through to complex high-precision CAD. There is no way that any tool can claim to please all of the people, all of time, but it seems clear from the evaluation above that there is a definite niche for the system described in this document. Its performance has been found to be highly satisfactory, with rare drops in frame-rate, attributable to infeasibly complex models. Should it be made into a more commercial product, further development on the rendering subsystem to utilise more advanced OpenGL constructs should alleviate almost all of these difficulties. The true success has been in prototyping a variety of natural user interactions with the system. Informal user studies have shown that the average user can start modelling within just a few minutes of having the system demonstrated to them, with more advanced use cases becoming comfortable for them after a brief period of practice.
 
-\textbf{TODO: Final summation of results, suitability, etc.}
+The experiments in this novel UI have largely been a success; some more experimental tools have been omitted from this document, since they have not in some cases come to fruition - but most of the interaction primitives discussed are useful in at least a subset of cases. Furthermore, it has become clear that the system is, in fact, capable of \textit{more} than it was originally designed for. The motivation for it was originally to construct a manual modelling tool that was not subject to the foibles of automated vision-based scanning systems. In so doing, it has become quite possible to model entirely novel objects with this interactive, hand-held tool - not just those in the scene in front of the user. Since the system has to be able to cope with adjustments to scenes in areas where there are no discernable features to track, it is capable of modelling parts of, or even entire, objects that are not actually present in the scene before the camera - the only limits are the proficiency and imagination of the user.
+
+When it is clear, as it seems to be here, that a novel approach such as this can \textit{help} rather than \textit{hinder} an artist's creativity, it becomes easy to argue that it is an approach worthy of refinement, along with further study.
 
 \section{Further Work}
 
