@@ -1197,7 +1197,7 @@ namespace mesh3 {
                 }
             }
             todo = newTodos;
-        }        
+        }
         
         while( p->init ) {
             camera = p->environment->getCameraPose();
@@ -1261,9 +1261,20 @@ namespace mesh4 {
         projection[2] /= rot[2][2];
 
         map< Point*, Vector<3> > targetPoints;
-         for( std::list<Point*>::iterator curr = p->environment->getPoints().begin();
-                    curr != p->environment->getPoints().end(); curr++ ) {
-            targetPoints[*curr] = (*curr)->getPosition();
+        set<Point*> todo;
+        todo.insert( target );
+        // Traverse the edges in the mesh, ensuring we only scale connected points
+        while( todo.size() > 0 ) {
+            set<Point*> newTodos;
+            for( set<Point*>::iterator curr = todo.begin(); curr != todo.end(); curr++ ) {
+                targetPoints[*curr] = (*curr)->getPosition();
+                for( std::list<Edge*>::iterator e = (*curr)->getEdges().begin(); e != (*curr)->getEdges().end(); e++ ) {
+                    Point* p = (*e)->getStart() == *curr ? (*e)->getEnd() : (*e)->getStart();
+                    if ( targetPoints.count( p ) == 0 )
+                        newTodos.insert( p );
+                }
+            }
+            todo = newTodos;
         }
         
         while( p->init ) {
@@ -1276,7 +1287,7 @@ namespace mesh4 {
             tmp[2] = (camera.get_translation()[2] + rot[2][2] * projection[2]);
 
             // Now calculate the scale vector to apply to all points
-            double scaleFactor = (tmp - targetStart) * (tmp - targetStart);
+            double scaleFactor = (tmp[0] / targetStart[0] + tmp[1] / targetStart[1] + tmp[2] / targetStart[2]) / 3;
 
             p->environment->lock();
             for( map< Point*, Vector<3> >::iterator curr = targetPoints.begin();
