@@ -1807,15 +1807,16 @@ namespace obj2 {
                         mtl >> skipws >> c;
                         if ( c == 'K' ) {
                             mtl >> c;
-                            if ( c == 'a' ) {
-                                // Fill the texture with the ambient colour
+                            if ( c == 'd' ) {
+                                // Fill the texture with the diffuse colour
                                 Rgb<byte> colour;
                                 double r, g, b;
                                 mtl >> r >> g >> b;
                                 colour.red = r * 255;
                                 colour.green = g * 255;
                                 colour.blue = b * 255;
-                                cerr << ">> Filling texture with ambient colour " << colour << endl;
+                                cerr << ">> Filling texture with diffuse colour " 
+                                        << colour << " as fallback" << endl;
                                 texture->fill( colour );
                             }
                         } else if ( c == 'm' ) {
