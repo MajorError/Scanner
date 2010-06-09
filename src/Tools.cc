@@ -181,12 +181,12 @@ void smooth_deform::click() {
     commandList::exec( "mesh.smoothDeform" );
 };
 
-MK_TOOL_PLUGIN( scale, "Space", "", );
+MK_TOOL_PLUGIN( scale, "Space", "Point", );
 void scale::click() {
     commandList::exec( "mesh.scale" );
 };
 
-MK_TOOL_PLUGIN( mesh_move, "Space", "", );
+MK_TOOL_PLUGIN( mesh_move, "Space", "Point", );
 void mesh_move::click() {
     commandList::exec( "mesh.move" );
 };

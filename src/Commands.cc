@@ -1183,10 +1183,21 @@ namespace mesh3 {
         projection[2] /= rot[2][2];
 
         map< Point*, Vector<3> > targetPoints;
-         for( std::list<Point*>::iterator curr = p->environment->getPoints().begin();
-                    curr != p->environment->getPoints().end(); curr++ ) {
-            targetPoints[*curr] = (*curr)->getPosition();
-        }
+        set<Point*> todo;
+        todo.insert( target );
+        // Traverse the edges in the mesh, ensuring we only move connected points
+        while( todo.size() > 0 ) {
+            set<Point*> newTodos;
+            for( set<Point*>::iterator curr = todo.begin(); curr != todo.end(); curr++ ) {
+                targetPoints[*curr] = (*curr)->getPosition();
+                for( std::list<Edge*>::iterator e = (*curr)->getEdges().begin(); e != (*curr)->getEdges().end(); e++ ) {
+                    Point* p = (*e)->getStart() == *curr ? (*e)->getEnd() : (*e)->getStart();
+                    if ( targetPoints.count( p ) == 0 )
+                        newTodos.insert( p );
+                }
+            }
+            todo = newTodos;
+        }        
         
         while( p->init ) {
             camera = p->environment->getCameraPose();
