@@ -235,7 +235,7 @@ PolyFace* Environment::findClosestFace( Vector<3> &pointOnFace ) {
 
 void Environment::findPlanarFaces( PolyFace* target, double tol, set<PolyFace*>& planarFaces ) {
     // Base case: we've already visited this face
-    if ( planarFaces.count( target ) > 0 )
+    if ( target == NULL || planarFaces.count( target ) > 0 )
         return;
     // Test if this face has 0-area; two points will be at the same position
     if ( target->getP1()->getPosition() == target->getP2()->getPosition() ||

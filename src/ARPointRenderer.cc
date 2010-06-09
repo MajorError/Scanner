@@ -110,8 +110,8 @@ void ARPointRenderer::DrawTarget( SE3<> camera ) {
     glLoadIdentity();
     glColor4d(0.2, 0.9, 0.2, 1.0);
     Matrix<> rot = camera.get_rotation().get_matrix();
-    glTranslate<3>( camera.get_translation() + makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
-    glScaled( ds/2, ds/2, ds/2 );
+    glTranslate<3>( camera.get_translation() + 0.1 * makeVector( rot[0][2], rot[1][2], rot[2][2] ) );
+    glScaled( ds/15, ds/15, ds/15 );
     DrawSphere();
 };
 
