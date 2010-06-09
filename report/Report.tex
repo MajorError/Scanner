@@ -1185,5 +1185,23 @@ When it is clear, as it seems to be here, that a novel approach such as this can
 \label{configparams}
 TODO
 
+\section{MEL Script to Invoke Tool for Viewing}
+\begin{verbatim}
+string $toDelete[];
+for( $obj in `ls -l -type "mesh"` ) {
+    string $tri[] = `polyTriangulate -ch 1 $obj`;
+    $toDelete[size( $toDelete )] = $tri[0];
+}
+
+file -op "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1;" 
+        -typ "OBJexport" -pr -ea "/path/to/tool/tmp.obj";
+
+for( $del in $toDelete ) {
+    if ( objExists( $del ) )
+        delete $del;
+}
+
+// TODO: Invoke tool with file as param
+\end{verbatim}
 
 \end{document}          
