@@ -61,6 +61,9 @@ void ptam::doProcessing( Image<byte>& sceneBW, Image< Rgb<byte> >& sceneRGB ) {
         environment->setCamera( mpCamera );
     }
 
+    /*if ( mpMap->IsGood() )
+        GV3::set_var( "drawPoints", "1" );*/
+
     mpTracker->TrackFrame( sceneBW, false/*!mpMap->IsGood()*/ );
     environment->setCameraPose( mpTracker->GetCurrentPose().inverse() );
     if( !mpMap->IsGood() )

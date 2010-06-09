@@ -47,14 +47,15 @@ void ARPointRenderer::DrawStuff(SE3<> camera) {
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
 
     glMatrixMode(GL_MODELVIEW);
-
-    DrawPoints( camera );
-    if ( GV3::get<bool>( "drawFeatures", true ) )
+    
+    if ( GV3::get<bool>( "drawPoints", true ) && env->getPoints().size() > 0 )
+        DrawPoints( camera );
+    if ( GV3::get<bool>( "drawFeatures", true ) && env->getFeatures().size() > 0 )
         DrawFeatures( camera );
+    if ( GV3::get<bool>( "drawModel", true ) && env->getEdges().size() > 0 )
+        DrawPolys();
     if ( GV3::get<bool>( "drawTarget", true ) )
         DrawTarget( camera );
-    if ( GV3::get<bool>( "drawModel", true ) )
-        DrawPolys();
     
 
     glDisable(GL_LIGHTING);
@@ -65,25 +66,21 @@ void ARPointRenderer::DrawPoints( SE3<> camera ) {
     PROFILE_FUNC();
     double ds = GV3::get<double>( "ptSize", 0.05 );
     env->lock();
+    glColor4d(0.92, 0.9, 0.85,1);
+    for ( list<Point*>::iterator curr = env->getPoints().begin();
+            curr != env->getPoints().end(); curr++ ) {
+        glLoadIdentity();
+        glTranslate<3>( (*curr)->getPosition() );
+        glScaled( ds, ds, ds );
+        DrawSphere();
+    }
     if ( GV3::get<bool>( "drawClosestPoint", true ) ) {
         glColor4d(1.0, 0.4, 0.0, 1.0);
         env->sortPoints( camera );
-        if ( !GV3::get<bool>( "drawPoints", true ) ) {
-            glLoadIdentity();
-            glTranslate<3>( env->getPoints().front()->getPosition() );
-            glScaled( ds, ds, ds );
-            DrawSphere();
-        }
-        if ( GV3::get<bool>( "drawPoints", true ) ) {
-            for ( list<Point*>::iterator curr = env->getPoints().begin();
-                    curr != env->getPoints().end(); curr++ ) {
-                glLoadIdentity();
-                glTranslate<3>( (*curr)->getPosition() );
-                glScaled( ds, ds, ds );
-                DrawSphere();
-                glColor4d(0.92, 0.9, 0.85,1);
-            }
-        }
+        glLoadIdentity();
+        glTranslate<3>( env->getPoints().front()->getPosition() );
+        glScaled( ds, ds, ds );
+        DrawSphere();
     }
     env->unlock();
 };
@@ -235,6 +232,24 @@ void ARPointRenderer::DrawPolys() {
                 glVertex( best->getP2()->getPosition() );
                 glVertex( best->getP1()->getPosition() );
                 glVertex( best->getP3()->getPosition() );
+                glEnd();
+            }
+        }
+        if ( GV3::get<bool>( "drawClosestPlane", false ) ) {
+            glColor4d(1.0, 0.4, 0.0, 0.6);
+            Vector<3> pt;
+            PolyFace* aimed = env->findClosestFace( pt );
+            set<PolyFace*> plane;
+            env->findPlanarFaces( aimed, GV3::get<double>( "planeTolerance", 0.1 ), plane );
+            for( set<PolyFace*>::iterator curr = plane.begin(); curr != plane.end(); curr++ ) {
+                glBegin( GL_TRIANGLES );
+                glVertex( (*curr)->getP1()->getPosition() );
+                glVertex( (*curr)->getP2()->getPosition() );
+                glVertex( (*curr)->getP3()->getPosition() );
+
+                glVertex( (*curr)->getP2()->getPosition() );
+                glVertex( (*curr)->getP1()->getPosition() );
+                glVertex( (*curr)->getP3()->getPosition() );
                 glEnd();
             }
         }

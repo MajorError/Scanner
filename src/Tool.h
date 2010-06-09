@@ -11,6 +11,9 @@
 #include "Plugin.h"
 #include <cvd/image.h>
 #include <cvd/rgb.h>
+#include <gvars3/GUI.h>
+
+using namespace GVars3;
 
 class Tool : public Plugin {
 
@@ -25,6 +28,7 @@ public:
             for( unsigned int i = 0; i < Tool::list.size(); i++ )
                 Tool::list[i]->enabled = false;
             static_cast<Tool*>( obj )->enabled = true;
+            static_cast<Tool*>( obj )->setupHighlighting();
         } else {
             static_cast<Tool*>( obj )->processClick();
         }
@@ -44,8 +48,20 @@ public:
     };
     virtual std::string getShortName() { return "TNULL"; };
     virtual std::string getHotKey() { return "TNULL"; };
+    virtual std::string getHighlightTarget() { return ""; };
     bool isEnabled() {
         return enabled;
+    };
+    void setupHighlighting() {
+        GV3::set_var( "drawFeatures", "0" );
+        GV3::set_var( "drawClosestPoint", "0" );
+        GV3::set_var( "drawClosestEdge", "0" );
+        GV3::set_var( "drawClosestFace", "0" );
+        GV3::set_var( "drawClosestPlane", "0" );
+        if ( getHighlightTarget() == "Features" )
+            GV3::set_var( "drawFeatures", "1" );
+        else
+            GV3::set_var( "drawClosest"+getHighlightTarget(), "1" );
     };
     /**
      * A static list of all plugins currently loaded into the system, generated
@@ -65,9 +81,10 @@ protected:
 
 std::vector<Tool*> Tool::list;
 
-#define MK_TOOL_PLUGIN(TYPE,HOTKEY,VARS) MK_SUPER_PLUGIN(TYPE,TYPE,Tool,    \
+#define MK_TOOL_PLUGIN(TYPE,HOTKEY,TARGET,VARS) MK_SUPER_PLUGIN(TYPE,TYPE,Tool,\
     virtual void click();                                                   \
     virtual std::string getHotKey(){ return HOTKEY; };                      \
+    virtual std::string getHighlightTarget() { return TARGET; };            \
     virtual void setupCommands()                                            \
     {                                                                       \
         Plugin::setupCommands();                                            \

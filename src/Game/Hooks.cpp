@@ -115,7 +115,7 @@ void tick::callback( btDynamicsWorld *world, btScalar timeStep ) {
 };
 
 
-MK_TOOL_PLUGIN( game_init, "i", );
+MK_TOOL_PLUGIN( game_init, "i", "", );
 void game_init::click() {
     commandList::exec( "game.init" );
 };
@@ -161,7 +161,7 @@ namespace game {
 }
 
 namespace ai1 {
-    MK_TOOL_PLUGIN( projectile_spawn, "z", );
+    MK_TOOL_PLUGIN( projectile_spawn, "z", "", );
     void projectile_spawn::click() {
         commandList::exec( "projectile.create" );
     };
@@ -176,7 +176,7 @@ namespace ai1 {
 }
 
 namespace ai1 {
-    MK_TOOL_PLUGIN( ai_spawn, "a", );
+    MK_TOOL_PLUGIN( ai_spawn, "a", "", );
     void ai_spawn::click() {
         commandList::exec( "ai.create" );
     };
@@ -189,7 +189,7 @@ namespace ai1 {
 }
 
 namespace ai2 {
-    MK_TOOL_PLUGIN( ai_move, "w", );
+    MK_TOOL_PLUGIN( ai_move, "w", "", );
     void ai_move::click() {
         cerr << "ai.move " << (tick::director->getUnits().size() - 1);
         Vector<3> target = environment->getCameraPose().get_translation();
