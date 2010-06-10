@@ -1184,11 +1184,26 @@ As was highlighted at the very beginning of this project, there are a plethora o
 
 The experiments in this novel UI have largely been a success; some more experimental tools have been omitted from this document, since they have not in some cases come to fruition - but most of the interaction primitives discussed are useful in at least a subset of cases. Furthermore, it has become clear that the system is, in fact, capable of \textit{more} than it was originally designed for. The motivation for it was originally to construct a manual modelling tool that was not subject to the foibles of automated vision-based scanning systems. In so doing, it has become quite possible to model entirely novel objects with this interactive, hand-held tool - not just those in the scene in front of the user. Since the system has to be able to cope with adjustments to scenes in areas where there are no discernable features to track, it is capable of modelling parts of, or even entire, objects that are not actually present in the scene before the camera - the only limits are the proficiency and imagination of the user.
 
-When it is clear, as it seems to be here, that a novel approach such as this can \textit{help} rather than \textit{hinder} an artist's creativity, it becomes easy to argue that it is an approach worthy of refinement, along with further study.
+Overall, while this research has provided some interesting results and analysis of a new style of user interaction, it has not proved suitable for creating high-resolution, high-accuracy models. Nevertheless; when it is clear (as it seems to be here) that a novel approach can \textit{help} rather than \textit{hinder} an artist's creativity, it becomes easy to argue that it is an approach worthy of refinement, and even further study.
 
 \section{Further Work}
+As we have argued, the work described herein could well provide an interesting foundation for further research and development. Some of the most promising work today utilises many more techniques from computer vision; from recent developments in fully automated dense reconstruction \cite{denserecon}, through to more interaction-based approaches, such as in the Jiim interface to VideoTrace \cite{jiim}. These both strive for fully interactive performance, though with very differenct approaches to user interaction. It would be interesting to investigate a hybrid approach; perhaps using simple constraints defined through the interaction model described here as a more semantically aware base mesh for a dense reconstruction.
 
-\textbf{TODO: Future directions - more visiony things? Edgelet refinement, etc? Dense reconstruction based on user-applied constraints? Undo etc, more usability stuff? Mouse interaction better? Multiple meshes? Object recognition?}
+Another type of improvement that should significantly enhance the system is also vision-based; awareness of a greater number of features in the scene. This could be just for the interaction (for example, using the edglet-enhanced version of PTAM discussed in the Evaluation), or to do a more VideoTrace-style automatic enhancement and fitting of edges to features in the scene (especially edgelets).
+
+The Jiim interface mentioned above uses PTAM to create an augmented reality ``viewer" for objects, but maintains the mouse-based tracing interface described in the previous VideoTrace work. This is also a potentially interesting avenue to pursue - as a mock-up of this, Appendix~\ref{melar} describes a MEL (\textit{Maya Embedded Language}) script that can be added to a button on Autodesk's Maya software for loading a mesh from Maya into this tool for viewing or adjusting in an AR view. This would allow any Maya user to model creatively in their existing tool, and then explore their model in AR; this could be an even more compelling experience if support were added for 3D VR goggles, perhaps attaching the camera to these so that the visualisation becomes completely natural.
+
+The final area that could have significant value in further development is exploring usability enhancements. As a research prototype, there's no doubt that there are features a user may like access to, for example;
+\begin{itemize}
+\item{Undo \& Redo stack}
+\item{File Open / Save dialogs (for browsing)}
+\item{Friendlier configuration GUI}
+\item{Option to switch between a fully-automated mode}
+\item{Automatic object translation / rotation detection and mesh realignment (making it easier to model all sides of an object)}
+\end{itemize}
+
+In short, there are a huge variety of directions this work could be taken in, almost all of which would be sure to expand on its utility and enhance its usability. That the approach taken here may serve as a foundation for such future work (both in spirit and even architecturally, from an engineering standpoint) is a rewarding conclusion to draw indeed.
+
 
 \clearpage
 \renewcommand*{\refname}{\section{References}}
@@ -1287,22 +1302,45 @@ projectileMass =  0.4
 \clearpage
 
 \section{MEL Script to Invoke Tool for Viewing}
+\label{melar}
 \begin{verbatim}
-string $toDelete[];
-for( $obj in `ls -l -type "mesh"` ) {
-    string $tri[] = `polyTriangulate -ch 1 $obj`;
-    $toDelete[size( $toDelete )] = $tri[0];
+
+global proc launchViewer() {
+    $file = "/tmp/curr.obj";
+    
+    string $toDelete[];
+    for( $obj in `ls -l -type "mesh"` ) {
+        string $tri[] = `polyTriangulate -ch 1 $obj`;
+        $toDelete[size( $toDelete )] = $tri[0];
+    }
+    
+    file -op "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1;" 
+            -typ "OBJexport" -pr -ea $file;
+    
+    for( $del in $toDelete ) {
+        if ( objExists( $del ) )
+            delete $del;
+    }
+    
+    // Invoke tool to load file
+    $pipe = popen( "/path/to/Modeller", "w" );
+    if ( $pipe != 0 ) {
+        fprint( $pipe, "obj.load "+$file );
+        fclose( $pipe );
+    }
 }
 
-file -op "groups=1;ptgroups=1;materials=1;smoothing=1;normals=1;" 
-        -typ "OBJexport" -pr -ea "/path/to/tool/tmp.obj";
-
-for( $del in $toDelete ) {
-    if ( objExists( $del ) )
-        delete $del;
+global proc loadFromViewer() {
+    $file = "/path/to/Modeller/scanner_model.obj";
+    
+    for( $del in `ls -l -type "mesh"` ) {
+        if ( objExists( $del ) )
+            delete $del;
+    }  
+    
+    file -import -type "OBJ" -ra true -namespace "object"  -pr 
+            -loadReferenceDepth "all" $file;
 }
-
-// TODO: Invoke tool with file as param
 \end{verbatim}
 
 \end{document}          

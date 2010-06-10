@@ -1,3 +1,45 @@
-This is BibTeX, Version 0.99cThe top-level auxiliary file: Report.aux
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: Report.aux
 The style file: dcu.bst
 Database file #1: Report.bib
+You've used 38 entries,
+            2921 wiz_defined-function locations,
+            857 strings with 11385 characters,
+and the built_in function-call counts, 157969 in all, are:
+= -- 25850
+> -- 2009
+< -- 0
++ -- 12225
+- -- 609
+* -- 13377
+:= -- 31789
+add.period$ -- 80
+call.type$ -- 38
+change.case$ -- 528
+chr.to.int$ -- 38
+cite$ -- 38
+duplicate$ -- 591
+empty$ -- 1218
+format.name$ -- 744
+if$ -- 28487
+int.to.chr$ -- 5
+int.to.str$ -- 0
+missing$ -- 25
+newline$ -- 164
+num.names$ -- 391
+pop$ -- 208
+preamble$ -- 1
+purify$ -- 570
+quote$ -- 0
+skip$ -- 530
+stack$ -- 0
+substring$ -- 36251
+swap$ -- 110
+text.length$ -- 532
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 152
+warning$ -- 0
+while$ -- 837
+width$ -- 0
+write$ -- 572
