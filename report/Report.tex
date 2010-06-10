@@ -447,7 +447,16 @@ For the purposes of usability, vertices are rendered with an exaggerated size, t
 
 Broadly speaking, each \texttt{Plugin} object is a singleton instance of some subclass of the root \texttt{Plugin} type. This core type offers some basic structure as to what makes a ``plugin" in code. All plugins must have a ``short name", which is used to refer to it in configuration. Plugins are also given object-oriented style methods in GVars3, such that a plugin named \textit{``foo"} will automatically have functions registered with GVars3 such as  \texttt{\textit{foo}.enable},  \texttt{\textit{foo}.disable}, or others based on their sub-type. 
 
-As seen in Figure~\ref{pluginclasses}, there are three sub-types in use in the system. \texttt{Tool}s, for example, are used to process the clicks in the user interface (from any hotkey on the keyboard), invoking \texttt{GUICommand}s to perform some action on the \texttt{Environment}. Finally, \texttt{VisionProcessor}s are invoked in a constant processing loop to perform vision tasks, and provide the ``main loop" of the system.
+As seen in Figure~\ref{pluginclasses}, there are three sub-types in use in the system. \texttt{Tool}s, for example, are used to process the clicks in the user interface (from any hotkey on the keyboard), invoking \texttt{GUICommand}s to perform some action on the \texttt{Environment}. Each \texttt{Tool} specifies which feature type of the image it is concerned with, for user-interface purposes. This may be one of the following;
+\begin{itemize}
+\item{\textbf{Features} (PTAM's extracted features, closest to the camera's view axis)}
+\item{\textbf{Point}}
+\item{\textbf{Edge}}
+\item\textbf{{Face}}
+\item{\textbf{Plane} (A full set of planar faces)}
+\end{itemize}
+
+Finally, \texttt{VisionProcessor}s are invoked in a constant processing loop to perform vision tasks, and provide the ``main loop" of the system.
 
 As a coding standard, it is desirable that plugins are as easy to develop as possible. In order to encourage lots of small plugins, rather than monolithic chunks of code, much of the C++ syntactic overhead is removed through the use of preprocessor macros. For example, to declare a \texttt{VisionProcessor} all that is required is an indicator of the type, and optionally any \texttt{protected} variables it should require, thus:
 
@@ -634,9 +643,16 @@ Next, the command's mover thread pre-computes the set of target points to move, 
 \end{eqnarray*}
 The number of ``steps" to use in this revolve is determined by a configurable GVars3 variable; more steps will increase the quality of the finished geometry, but with it the complexity of the model.}
 
-\item{\textbf{mesh.move}: Commands based on \texttt{mesh.\textit{foo}} manipulate the entire mesh as a whole. This command works in exactly the same manner as the \texttt{vertex.move} command, but applies the vector of movement to \textit{all} vertices of the mesh, instead of just that which is targetted. This command, and \texttt{mesh.scale} (below) are of particular use if larger meshes are to be inserted into the scene - whether through a file import, or by generating primitive shapes.}
+\item{\textbf{mesh.move}: Commands based on \texttt{mesh.\textit{foo}} manipulate the entire mesh as a whole. This command works in exactly the same manner as the \texttt{vertex.move} command, but applies the vector of movement to \textit{all} vertices of the mesh, instead of just that which is targetted. This command, and \texttt{mesh.scale} (below) are of particular use if larger meshes are to be inserted into the scene - whether through a file import, or by generating primitive shapes. This command will start with the currently targetted point, and pre-compute the closure of all points connected to the target point. In this way, if there are multiple logical meshes in the \texttt{Environment}, only the one which is targetted will be moved.}
 
-\item{\textbf{mesh.scale}: Along with being able to move an entire mesh, it makes sense to use the camera to scale it also; the scale of the axes in world-space are not fixed relative to any given objects, and thus it is unpredictable what size should be used for insertion of an object. This scale command works by scaling the points in the mesh according to the distance of the camera from its original pose. The scale is uniform in all axes.}
+\item{\textbf{mesh.scale}: Along with being able to move an entire mesh, it makes sense to use the camera to scale it also; the scale of the axes in world-space are not fixed relative to any given objects, and thus it is unpredictable what size should be used for insertion of an object. This scale command works by scaling the points in the mesh according to the average motion of the target point from its original pose:
+\begin{eqnarray*}
+  Let p ~=~ Target~start~position \\
+  Let q ~=~ Target~projected~position \\
+  scaleFactor ~=~ {p_x / q_x + p_y / q_y + p_z / q_z \over 3}  
+\end{eqnarray*}
+
+The projection here (to calculate $q$ is done in an identical fashion to \texttt{vertex.move}. Once the $scaleFactor$ has been calculated, it is simply multiplied by the original position of each of the points to scale the mesh - the scale is uniform in all axes. It is valuable to note, also, that the scale tool works only on connected points, in the same fashion as the \texttt{mesh.move} command already discussed.}
 
 \begin{figure}
   \begin{center}
@@ -859,7 +875,7 @@ With all three of these files serialised and linked, most standard modelling too
 \item{Meshes are triangulated (i.e. contain no faces of order \textgreater~3)}
 \item{Only one material database has been linked}
 \item{Only one material from this database is applied to all faces}
-\item{The \textit{ambient} colour component (\texttt{map\_Ka}) from this material may be applied if no texture data is present}
+\item{The \textit{diffuse} colour component (\texttt{map\_Kd}) from this material may be applied if no texture data is present}
 \item{TARGA images are stored uncompressed, in 24-bit or 32-bit colour (alpha channel ignored)}
 \end{itemize}
 
@@ -1020,7 +1036,7 @@ The final plane manipulation tool to discuss is that for revolving about an axis
 
 \item{\textbf{Whole-Mesh Editing}: Moving an entire mesh will be a rare occurence in general usage; perhaps when loading it from disk, or if the object being modelled were to move (although here it would be easier to move the object than the model!). Nevertheless, the feature is available, and it works as expected - with the same rotation invariance as the plane movement.
 
-Scaling a mesh is again likely only to be useful when loading from hard disk. The user interaction for this primitive is perhaps less obvious than it could be; by scaling the mesh based on the camera's distance from its starting pose there is no obvious ``centre point" to return to - the user must simply adjust the mesh until it ``looks right". In another situation this might be a problem, but with the continuous visual feedback from the augmented-reality view, it is in practice quite easy to get the scale right - just not necessarily to undo it!
+Scaling a mesh is again likely only to be useful when loading from hard disk. The user interaction for this primitive is very obvious to a user; as they drag the camera from the original pose, it ``feels" just like moving a single point, except the entire mesh is scaled with it. It is valuable to note that this tool will not allow a user to scale a mesh by a different factor in each axis. If it were to do so, it would be far harder to use, and it is not immediately clear with the current tool set when this functionality would be necessary.
 
 Subdivision and smooth deformation are something of a ``mixed bag"; it is important that the user has experience using them, to know when it is suitable to use them. Subdivision can be very useful on a very smooth mesh, essentially performing the same work as \texttt{edge.bisect} but in an automated fashion on the entire model at once. The smooth deformation mode does not work so well; for small deformations there is (we find in real-world testing) little need to ``pull" all of the points simultaneously, and large deformations are quite unlikely. Future work, however, could investigate using a similar approach to do so-called ``voxel sculpting" to start from a primitive shape (cube, cylinder, etc) and work towards a smooth mesh by ``pulling" voxels as if the mesh were modelling clay. This approach is taken by the GPGPU accelerated modelling tool, 3D-Coat (\url{http://www.3d-coat.com/}).
 }
