@@ -98,8 +98,7 @@ As mentioned above, there are a variety of approaches to this well-studied probl
   \vspace{-10pt}
 \end{wrapfigure}
 
-One common system used in the visual effects industry is LIDAR capture \cite**{lidar}, in which a scanning laser is used to trace the distance between it and the target object.
-The object (or the scanner) is typically rotated during this process in order to generate a dense, 360$^\circ$ point-cloud representation of the scanned object. This technique, while expensive, is applicable in a variety of scenarios; from high-resolution facial capture through to large scale airborne ground topology scanning. This process requires little user intervention, and generates a large amount of data relatively quickly. However, much post-processing of this data is typically required; as it is a slightly noisy point-cloud, it must be cleaned up before it can be used in any real application. Furthermore, this cloud of points is not, by itself, geometry; it is more a set of candidate vertices for geometry, many of which will be discarded as they lie on surfaces. As a result, steps must be taken to generate surfaces in 3D which will fit these points.
+One common system used in the visual effects industry is LIDAR capture \cite**{lidar}, in which a scanning laser is used to trace the distance between it and the target object. The object (or the scanner) is typically rotated during this process in order to generate a dense, 360$^\circ$ point-cloud representation of the scanned object. This technique, while expensive, is applicable in a variety of scenarios; from high-resolution facial capture through to large scale airborne ground topology scanning. This process requires little user intervention, and generates a large amount of data relatively quickly. However, much post-processing of this data is typically required; as it is a slightly noisy point-cloud, it must be cleaned up before it can be used in any real application. Furthermore, this cloud of points is not, by itself, geometry; it is more a set of candidate vertices for geometry, many of which will be discarded as they lie on surfaces. As a result, steps must be taken to generate surfaces in 3D which will fit these points.
 
 \subsection{Automated Vision-Based Reconstruction}
 
@@ -297,7 +296,7 @@ In order to realise the above goals, a carefully planned and executed architectu
   \label{archmindmap}
 \end{figure}
 
-These plugin areas, in blue, are the extension points for the system. In this way, the dependency on PTAM is isolated to the Vision Processors - responsible for any non-interactive ongoing computer vision tasks. ``Commands" in this vision are the direct means of manipulating this model; whether creating new geometry or editing existing polygons. ``Tools", by way of contrast, are the interface between the user's graphical frontend and the rest of the system's internals, interacting with these commands.
+The plugin areas, in blue, are the extension points for the system. In this way, the dependency on PTAM is isolated to the Vision Processors - responsible for any non-interactive ongoing computer vision tasks. ``Commands" in this vision are the direct means of manipulating this model; whether creating new geometry or editing existing polygons. ``Tools", by way of contrast, are the interface between the user's graphical frontend and the rest of the system's internals, interacting with these commands.
 
 The following sections will detail the implementation details of each of these sections in turn, including more formal diagrams as well as details and justification of the design decisions taken along the way. The organisation of these sections reflects the traditional delineation of \textit{Model, View, Controller} exhibited in well architected systems.
 
@@ -307,7 +306,7 @@ The following sections will detail the implementation details of each of these s
   \begin{center}
 	\scalefont{0.7}
 	\begin{tikzpicture}[scale=0.75]
-	  \begin{class}[text width=150px]{Environment}{0,1.7}
+	  \begin{class}[text width=150px]{Environment}{0,1.45}
             \attribute{camera : ATANCamera}
 	    \attribute{cameraPose : TooN::SE3}
 	    \attribute{sceneSize : CVD::ImageRef}
@@ -349,9 +348,9 @@ The following sections will detail the implementation details of each of these s
   \label{modelclasses}
 \end{figure}
 
-The aforementioned notion of an \textit{Environment} is carried through from vision to implementation more-or-less verbatim. As seen in Figure~\ref{modelclasses}, there are four classes of note. The main \texttt{Environment} is a single object that is passed to almost all objects in the Scanner system; it contains lists of the \texttt{PolyFace}s, \texttt{Edge}s, and \texttt{Point}s in the system. The classes of \texttt{Edge} and \texttt{Point} are little more than data containers, identifying the lowest level of geometry. Early on it was decided that the core form of geometry in the system should be a triangular polygon; it is the most flexible primitive, and readily maps to the geometry used in 3D modelling packages. Thus, the notion of a \texttt{PolyFace} encodes a triangular polygon as a function of three vertices (\texttt{Point}s from the \texttt{Environment}), with associated texture data. This texture is stored as a full frame from the camera, for later processing. A given \texttt{PolyFace} is capable of deciding whether a given texture frame is better than the currently recorded one, as well as for mapping from the given camera frame to a UV co-ordinate for texture rendering. Finally, the \texttt{PolyFace} may also compute useful quantities, such as the face centre and normal vector, for use in other calculations.
+The aforementioned notion of an \textit{Environment} is carried through from vision to implementation more-or-less verbatim. As seen in Figure~\ref{modelclasses}, there are four main classes of note in the model. The main \texttt{Environment} is a single object that is passed to almost all objects in the system; it contains lists of the \texttt{PolyFace}s, \texttt{Edge}s, and \texttt{Point}s in the system. The classes of \texttt{Edge} and \texttt{Point} are little more than data containers, identifying the lowest level of geometry. Early on it was decided that the core form of geometry in the system should be a triangular polygon; it is the most flexible primitive, and readily maps to the geometry used in 3D modelling packages. Thus, the notion of a \texttt{PolyFace} encodes a triangular polygon as a function of three vertices (\texttt{Point}s from the \texttt{Environment}), with associated texture and face normal data. This texture is stored as a full frame from the camera, for later processing. A given \texttt{PolyFace} is capable of deciding whether a given texture frame is better than the currently recorded one, as well as for mapping from the given camera frame to a UV co-ordinate for texture rendering. Finally, the \texttt{PolyFace} may also compute useful quantities, such as the face centre and normal vector, for use in other calculations. The direction of face normals is fixed based upon the direction the camera was facing when the best texture frame for a given \texttt{PolyFace} was captured.
 
-The \texttt{Environment} class is more than just pointers to data, however; it contains a variety of common methods useful for interacting with the model at its lower levels. For example, it contains a list of ``features" extracted by vision algorithms (the details of which are discussed later), along with methods to extract a sorted list of these features based on the current camera position and orientation. Likewise, it can identify which \texttt{PolyFace} or \texttt{Edge} the camera is aimed at, and where on that target the camera is pointed. Other more obvious methods provide interfaces for adding to the model; a method \texttt{addEdge(Point*,Point*)} for example will ensure that the edge is not a duplicate, and automatically construct any new \texttt{PolyFace}s created by this new \texttt{Edge}.
+The \texttt{Environment} class is more than just pointers to data, however; it contains a variety of common methods useful for interacting with the model at its lower levels. For example, it contains a list of ``features" extracted by vision algorithms (the details of which are discussed later), along with methods to extract a sorted list of these features based on the current camera position and orientation. Likewise, it can identify which \texttt{PolyFace} or \texttt{Edge} the camera is aimed at, and where on that target the camera is pointed. Other more obvious methods provide interfaces for adding to the model; the method \texttt{addEdge(Point*,Point*)} for example will ensure that the edge is not a duplicate, and automatically construct any new \texttt{PolyFace}s created by this new \texttt{Edge}.
 
 \subsection{Augmented Reality Rendering \& User Experience}
 
@@ -365,7 +364,7 @@ The approach taken for rendering the scene in augmented reality is built on top 
   \label{pies}
 \end{figure}
 
-For the purposes of usability, vertices are rendered with an exaggerated size, to facilitate using the camera to ``grab" them. All aspects of rendering are configured using variables in the GVar3 system. For example, a single keypress can be used to toggle rendering of various elements (edges, faces, vertices, camera plane, etc). Further settings include scale settings for things like vertices, or the sensitivity and accuracy of the camera ``pointer" system. Most interaction is done using the camera as a pointer, as described above, seeking feature points around the camera's look-vector; this setting simply adjusts how tolerant this should be of deviation from the precise vector. As seen in Figure~\ref{pies}, the UI is kept to an absolute minimum of clutter (even in early tests such as this). Other usability enhancements present in the system include highlighting of currently targetted objects; these present themselves as orange shading. When creating points it is useful to be able to see the feature points extracted by PTAM's analysis, so the renderer displays the nearest few points, scaled according to their distance from the look-vector of the camera (see Figure~\ref{targets} for an example of this). Usability tweaks like these permit the user to fully predict the behaviour of the system; which face is selected will never be a surprise, and points will always go where the user expects. As this is an interactive modelling system, rather than a fully automated solution, transparency of operation is of the utmost importance.
+For the purposes of usability, vertices are rendered with an exaggerated size, to facilitate using the camera to ``grab" them. All aspects of rendering are configured using variables in the GVar3 system. For example, a single keypress can be used to toggle rendering of various elements (edges, faces, vertices, camera plane, etc). Further settings include scale settings for things like vertices, or the sensitivity and accuracy of the camera ``pointer" system. Most interaction is done using the camera as a pointer, as described above, seeking feature points around the camera's look-vector; this setting simply adjusts how tolerant this should be of deviation from the precise vector. As seen in Figure~\ref{pies}, the UI is kept to an absolute minimum of clutter (even in early tests such as this). Other usability enhancements present in the system include highlighting of currently targetted objects; these present themselves as orange shading. When creating points it is useful to be able to see the feature points extracted by PTAM's analysis, so the renderer displays the nearest few points, scaled according to their distance from the look-vector of the camera (see Figure~\ref{targets} for an example of this). Usability tweaks like these permit the user to fully predict the behaviour of the system; which face is selected will never be a surprise, and points will always be inserted where the user expects. As this is an interactive modelling system, rather than a fully automated solution, transparency of operation is of the utmost importance.
 
 \begin{figure}
   \begin{center}
@@ -395,7 +394,7 @@ For the purposes of usability, vertices are rendered with an exaggerated size, t
             \operation{doProcessing}
           \end{class}
 
-          \begin{class}[text width=40px]{PTAM}{0.3,-10}
+          \begin{class}[text width=40px]{PTAM}{0.25,-10}
             \inherit{VisionProcessor}
           \end{class}
 
@@ -478,14 +477,43 @@ Finally, \texttt{VisionProcessor}s are invoked in a constant processing loop to 
 
 As a coding standard, it is desirable that plugins are as easy to develop as possible. In order to encourage lots of small plugins, rather than monolithic chunks of code, much of the C++ syntactic overhead is removed through the use of preprocessor macros. For example, to declare a \texttt{VisionProcessor} all that is required is an indicator of the type, and optionally any \texttt{protected} variables it should require, thus:
 
-\begin{verbatim}
-MK_VISION_PLUGIN( MyVisionAlgorithm, pthread_t workerThread; );
 
-void MyVisionAlgorithm::doProcessing( CVD::Image<CVD::byte>& bw, 
-        CVD::Image< CVD::Rgb<CVD::byte> >& rgb ) {
-    // My code goes in here
-}
-\end{verbatim}
+\noindent
+\ttfamily
+\hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore VISION\textunderscore PLUGIN}\hlstd{}\hlopt{(\ }\hlstd{MyVisionAlgorithm}\hlopt{,\ }\hlstd{pthread\textunderscore t\ worker}\hlopt{;\ );}\\
+\hllin{\ 2\ }\hlstd{}\hlkwb{void\ }\hlstd{MyVisionAlgorithm}\hlopt{::}\hlstd{}\hlkwd{doProcessing}\hlstd{}\hlopt{(\ }\hlstd{CVD}\hlopt{::}\hlstd{Image}\hlopt{\usebox{\hlboxlessthan}}\hlstd{CVD}\hlopt{::}\hlstd{byte}\hlopt{\usebox{\hlboxgreaterthan}\&\ }\hlstd{bw}\hlopt{,\ }
+\hlstd{\ \ \ \ }\hlstd{\ \ \ \ }\hlstd{\ \ \ \ }\hlstd{CVD}\hlopt{::}\hlstd{Image}\hlopt{\usebox{\hlboxlessthan}\ }\hlstd{CVD}\hlopt{::}\hlstd{Rgb}\hlopt{\usebox{\hlboxlessthan}}\hlstd{CVD}\hlopt{::}\hlstd{byte}\hlopt{\usebox{\hlboxgreaterthan}\ \usebox{\hlboxgreaterthan}\&\ }\hlstd{rgb\ }\hlopt{)\ \usebox{\hlboxopenbrace}}\\
+\hllin{\ 3\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ My\ code\ goes\ in\ here}\\
+\hllin{\ 4\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{}\\
+\mbox{}
+\normalfont
+\normalsize
+
+
+Or, alternatively, for a \texttt{Tool} (invoked by "Space", and used to operate on planar faces):
+
+\noindent
+\ttfamily
+\hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore TOOL\textunderscore PLUGIN}\hlstd{}\hlopt{(\ }\hlstd{my\textunderscore tool}\hlopt{,\ }\hlstd{}\hlstr{"Space"}\hlstd{}\hlopt{,\ }\hlstd{}\hlstr{"Plane"}\hlstd{}\hlopt{,\ );}\\
+\hllin{\ 2\ }\hlstd{}\hlkwb{void\ }\hlstd{my\textunderscore tool}\hlopt{::}\hlstd{}\hlkwd{click}\hlstd{}\hlopt{()\ \usebox{\hlboxopenbrace}}\\
+\hllin{\ 3\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{commandList}\hlopt{::}\hlstd{}\hlkwd{exec}\hlstd{}\hlopt{(\ }\hlstd{}\hlcom{/{*}\ Some\ GV3\ command\ here\ {*}/}\hlstd{\ }\hlopt{);}\\
+\hllin{\ 4\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{}\\
+\mbox{}
+\normalfont
+\normalsize
+
+Finally, a \texttt{GUICommand}:
+
+\noindent
+\ttfamily
+\hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore GUI\textunderscore COMMAND}\hlstd{}\hlopt{(\ }\hlstd{myCommand}\hlopt{,\ }\hlstd{invokeThisMethod}\hlopt{,\ );}\\
+\hllin{\ 2\ }\hlstd{}\hlkwb{void\ }\hlstd{myCommand}\hlopt{::}\hlstd{}\hlkwd{invokeThisMethod}\hlstd{}\hlopt{(\ }\hlstd{string\ params\ }\hlopt{)\ \usebox{\hlboxopenbrace}}\\
+\hllin{\ 3\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ My\ code\ goes\ in\ here}\\
+\hllin{\ 4\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{}\\
+\mbox{}
+\normalfont
+\normalsize
+
 
 \subsubsection{Vision Processors}
 \begin{enumerate}
