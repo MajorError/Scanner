@@ -1298,90 +1298,95 @@ In short, there are a huge variety of directions this work could be taken in, al
 \appendix
 \section{User-Configurable Parameters}
 \label{configparams}
-\begin{verbatim}
-//
-// Modelling Settings
-//
-
-// ARDriver:
-drawBackground = true 
-drawGrid = true 
-
-// ARPointRenderer:
-drawPoints = true 
-drawFeatures = true 
-drawModel = true 
-drawTarget = true 
-ptSize = 0.05 
-drawClosestPoint = true 
-ftSize = 0.01 
-ftRadius = 1.0
-drawEdges = true 
-drawClosestEdge = true 
-drawFaces = true 
-drawNormals = false 
-drawClosestFace = true 
-drawClosestPlane = true 
-
-// Commands:
-ftRadius = 1.0 
-edgeTolerance = 0.5 
-edgeTolerance = 0.5 
-planeTolerance = 0.1 
-revolveFaces = 10 
-planeTolerance = 0.1
-texTolerance1 = 1.0 
-texTolerance2 = 3.0 
-catmullSmooth = 0.2 
-smoothDeformAttraction = 0.8 
-smoothDeformInertia = 0.5 
-edgeProb = 0.5 
-
-// Processors:
-echo =  false 
-texCleanFreq = 1000 
-blurAccuracy = true 
-\end{verbatim}
+\noindent
+\ttfamily
+\hlstd{}\hlslc{//}\hspace*{\fill}\\
+\hlstd{}\hlslc{//\ Modelling\ Settings}\hspace*{\fill}\\
+\hlstd{}\hlslc{//}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ ARDriver:}\hspace*{\fill}\\
+\hlstd{drawBackground\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawGrid\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ ARPointRenderer:}\hspace*{\fill}\\
+\hlstd{drawPoints\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawFeatures\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawModel\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawTarget\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{ptSize\ }\hlopt{=\ }\hlstd{}\hlnum{0.05\ }\hspace*{\fill}\\
+\hlstd{drawClosestPoint\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{ftSize\ }\hlopt{=\ }\hlstd{}\hlnum{0.01\ }\hspace*{\fill}\\
+\hlstd{ftRadius\ }\hlopt{=\ }\hlstd{}\hlnum{1.0}\hspace*{\fill}\\
+\hlstd{drawEdges\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawClosestEdge\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawFaces\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawNormals\ }\hlopt{=\ }\hlstd{}\hlkwa{false\ }\hspace*{\fill}\\
+\hlstd{drawClosestFace\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawClosestPlane\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ Commands:}\hspace*{\fill}\\
+\hlstd{ftRadius\ }\hlopt{=\ }\hlstd{}\hlnum{1.0\ }\hspace*{\fill}\\
+\hlstd{edgeTolerance\ }\hlopt{=\ }\hlstd{}\hlnum{0.5\ }\hspace*{\fill}\\
+\hlstd{edgeTolerance\ }\hlopt{=\ }\hlstd{}\hlnum{0.5\ }\hspace*{\fill}\\
+\hlstd{planeTolerance\ }\hlopt{=\ }\hlstd{}\hlnum{0.1\ }\hspace*{\fill}\\
+\hlstd{revolveFaces\ }\hlopt{=\ }\hlstd{}\hlnum{10\ }\hspace*{\fill}\\
+\hlstd{planeTolerance\ }\hlopt{=\ }\hlstd{}\hlnum{0.1}\hspace*{\fill}\\
+\hlstd{texTolerance1\ }\hlopt{=\ }\hlstd{}\hlnum{1.0\ }\hspace*{\fill}\\
+\hlstd{texTolerance2\ }\hlopt{=\ }\hlstd{}\hlnum{3.0\ }\hspace*{\fill}\\
+\hlstd{catmullSmooth\ }\hlopt{=\ }\hlstd{}\hlnum{0.2\ }\hspace*{\fill}\\
+\hlstd{smoothDeformAttraction\ }\hlopt{=\ }\hlstd{}\hlnum{0.8\ }\hspace*{\fill}\\
+\hlstd{smoothDeformInertia\ }\hlopt{=\ }\hlstd{}\hlnum{0.5\ }\hspace*{\fill}\\
+\hlstd{edgeProb\ }\hlopt{=\ }\hlstd{}\hlnum{0.5\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ Processors:}\hspace*{\fill}\\
+\hlstd{echo\ }\hlopt{=}\hlstd{\ \ }\hlopt{}\hlstd{}\hlkwa{false\ }\hspace*{\fill}\\
+\hlstd{texCleanFreq\ }\hlopt{=\ }\hlstd{}\hlnum{1000\ }\hspace*{\fill}\\
+\hlstd{blurAccuracy\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hspace*{\fill}\\
 
 \clearpage
 
-\begin{verbatim}
-//
-// Game Settings
-//
+\noindent
+\hlslc{//}\hspace*{\fill}\\
+\hlstd{}\hlslc{//\ Game\ Settings}\hspace*{\fill}\\
+\hlstd{}\hlslc{//}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ AIUnit:}\hspace*{\fill}\\
+\hlstd{aiMass\ }\hlopt{=\ }\hlstd{}\hlnum{5\ }\hspace*{\fill}\\
+\hlstd{aiPatience\ }\hlopt{=\ }\hlstd{}\hlnum{100000\ }\hspace*{\fill}\\
+\hlstd{aiSpeed\ }\hlopt{=\ }\hlstd{}\hlnum{20\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ Director:}\hspace*{\fill}\\
+\hlstd{game}\hlopt{.}\hlstd{impactScore\ }\hlopt{=\ }\hlstd{}\hlnum{0\ }\hspace*{\fill}\\
+\hlstd{game}\hlopt{.}\hlstd{deathScore\ }\hlopt{=\ }\hlstd{}\hlnum{100\ }\hspace*{\fill}\\
+\hlstd{game}\hlopt{.}\hlstd{goalScore\ }\hlopt{=\ {-}}\hlstd{}\hlnum{300\ }\hspace*{\fill}\\
+\hlstd{spawnTolerance\ }\hlopt{=\ }\hlstd{}\hlnum{0.3\ }\hspace*{\fill}\\
+\hlstd{spawnFreq\ }\hlopt{=\ }\hlstd{}\hlnum{3000\ }\hspace*{\fill}\\
+\hlstd{spawnProb\ }\hlopt{=\ }\hlstd{}\hlnum{0.0001\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ GameFactory:}\hspace*{\fill}\\
+\hlstd{maxGradient\ }\hlopt{=\ }\hlstd{}\hlnum{1.0\ }\hspace*{\fill}\\
+\hlstd{physicsScale\ }\hlopt{=\ }\hlstd{}\hlnum{1000\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ GameRenderer:}\hspace*{\fill}\\
+\hlstd{drawModel\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawWaypoints\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawProjectiles\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{drawUnits\ }\hlopt{=\ }\hlstd{}\hlkwa{true\ }\hspace*{\fill}\\
+\hlstd{waypointSize\ }\hlopt{=\ }\hlstd{}\hlnum{0.02\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ Hooks:}\hspace*{\fill}\\
+\hlstd{physicsStep\ }\hlopt{=\ }\hlstd{}\hlnum{1}\hlstd{/}\hlnum{60}\hspace*{\fill}\\
+\hlstd{gravity\ }\hlopt{=\ {-}}\hlstd{}\hlnum{15\ }\hspace*{\fill}\\
+\hlstd{pushScale\ }\hlopt{=\ }\hlstd{}\hlnum{80\ }\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{//\ Projectile:}\hspace*{\fill}\\
+\hlstd{projectileMass\ }\hlopt{=}\hlstd{\ \ }\hlopt{}\hlstd{}\hlnum{0.4\ }\hlstd{}\hspace*{\fill}\\
+\mbox{}
+\normalfont
+\normalsize
 
-// AIUnit:
-aiMass = 5 
-aiPatience = 100000 
-aiSpeed = 20 
-
-// Director:
-game.impactScore = 0 
-game.deathScore = 100 
-game.goalScore = -300 
-spawnTolerance = 0.3 
-spawnFreq = 3000 
-spawnProb = 0.0001 
-
-// GameFactory:
-maxGradient = 1.0 
-physicsScale = 1000 
-
-// GameRenderer:
-drawModel = true 
-drawWaypoints = true 
-drawProjectiles = true 
-drawUnits = true 
-waypointSize = 0.02 
-
-// Hooks:
-physicsStep = 1.f/60.f 
-gravity = -15 
-pushScale = 80 
-
-// Projectile:
-projectileMass =  0.4 
-\end{verbatim}
 
 \clearpage
 
