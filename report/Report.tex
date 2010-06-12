@@ -502,12 +502,12 @@ Or, alternatively, for a \texttt{Tool} (invoked by "Space", and used to operate 
 \normalfont
 \normalsize
 
-Finally, a \texttt{GUICommand}:
+Finally, a \texttt{GUICommand} which can be invoked from GVars3 (either in configuration or on the command line) using \texttt{myCommand.invokeMyMethod}:
 
 \noindent
 \ttfamily
-\hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore GUI\textunderscore COMMAND}\hlstd{}\hlopt{(\ }\hlstd{myCommand}\hlopt{,\ }\hlstd{invokeThisMethod}\hlopt{,\ );}\\
-\hllin{\ 2\ }\hlstd{}\hlkwb{void\ }\hlstd{myCommand}\hlopt{::}\hlstd{}\hlkwd{invokeThisMethod}\hlstd{}\hlopt{(\ }\hlstd{string\ params\ }\hlopt{)\ \usebox{\hlboxopenbrace}}\\
+\hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore GUI\textunderscore COMMAND}\hlstd{}\hlopt{(\ }\hlstd{myCommand}\hlopt{,\ }\hlstd{invokeMyMethod}\hlopt{,\ );}\\
+\hllin{\ 2\ }\hlstd{}\hlkwb{void\ }\hlstd{myCommand}\hlopt{::}\hlstd{}\hlkwd{invokeMyMethod}\hlstd{}\hlopt{(\ }\hlstd{string\ params\ }\hlopt{)\ \usebox{\hlboxopenbrace}}\\
 \hllin{\ 3\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ My\ code\ goes\ in\ here}\\
 \hllin{\ 4\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{}\\
 \mbox{}
@@ -518,28 +518,33 @@ Finally, a \texttt{GUICommand}:
 \subsubsection{Vision Processors}
 \begin{enumerate}
 \item{\textbf{cam}: Extracts camera frames from the compiled-in \texttt{VideoSource}, which converts them to their RGB and Black \& White variants for passing on to other vision processors.}
-\item{\textbf{ptam}: Invokes the PTAM camera tracking system to track the current video frame. Once tracking is complete, this plugin also records the camera pose into the current \texttt{Environment}, as well as updating the list of features that PTAM is tracking. These features are used by many of the Commands, outlined below.}
-\item{\textbf{guiDispatch}: Dispatches any GUI events, and renders the current view. This extends the double-buffered \texttt{GLWindow2} and \texttt{ARDriver} classes from PTAM; in this way, they may reuse the camera calibration for AR projection, as discussed previously, while using our custom \texttt{ARPointRenderer} for actual object rendering.}
+\item{\textbf{ptam}: Invokes the PTAM camera tracking system to track the current video frame. Once tracking is complete, this plugin also records the camera pose into the current \texttt{Environment}, as well as updating the list of features (based on those that PTAM is tracking). These features are used by many of the Commands, outlined below.}
+\item{\textbf{guiDispatch}: Dispatches any GUI events, and renders the current view. This extends the double-buffered \texttt{GLWindow2} and \texttt{ARDriver} classes from PTAM; in this way, they may reuse the camera calibration for AR projection, as discussed previously, while using our custom \texttt{ARPointRenderer} for the actual rendering of the model.}
 \item{\textbf{commandList}: Synchronised plugin to execute commands in the main thread. This uses \texttt{pthread\_mutex} locks to present a thread-safe way of invoking commands from any thread in the system, and ensuring they are executed sequentially, without any interleaving. It offers a static method, \texttt{commandList::exec( string )}, to quickly add a command to the execution list, and then clears this entire list on each call to \texttt{doProcessing}.}
 \item{\textbf{textureExtractor}: Test the current texture frame against each polygon in the image to see if it is a better match for texturing than the viewpoint it previously had. Most of the program logic for this is encapsulated within the \texttt{PolyFace} class.}
 \item{\textbf{profiler}: Prints out hierarchical profiling timing information to the console. The run-time profiler used throughout the codebase is Shiny \cite{shiny}, a fast and low-overhead C++ profiler. Profiling points can be defined arbitrarily; either as an entire method, or for sub-components, to allow more specific behaviours to be timed. An example of the profiler's output can be seen below:
-\begin{verbatim}
-call tree               hits       self time      total time
-<root>                   1.0      8 us    0%     54 ms  100%
-  cam                    1.0     29 ms   53%     29 ms   53%
-  ptam                   1.0     13 ms   24%     13 ms   24%
-  gui                    1.0      5 ms    9%     13 ms   23%
-    DrawStuff            1.0     15 us    0%      8 ms   14%
-      DrawPoints         1.0      7 ms   12%      7 ms   12%
-      DrawFeatures       1.0     20 us    0%     20 us    0%
-      DrawTarget         1.0    842 us    2%    842 us    2%
-      DrawPolys          1.0     65 us    0%    200 us    0%
-        textureTidyup    9.0     19 us    0%     19 us    0%
-        retrieveTexture  9.0     12 us    0%     12 us    0%
-        drawTriangles    9.0    104 us    0%    104 us    0%
-  commands               1.0     19 us    0%     19 us    0%
-  textures               1.0     34 us    0%     34 us    0%
-\end{verbatim}
+
+\noindent
+\ttfamily
+\hlstd{}\hlkwc{call\ tree}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{hits}\hlstd{\ \ \ \ \ \ \ }\hlkwc{self\ time}\hlstd{\ \ \ \ \ \ }\hlkwc{total\ time}\hspace*{\fill}\\
+\hlstd{\usebox{\hlboxlessthan}}\hlkwc{root}\hlstd{\usebox{\hlboxgreaterthan}}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ \ }\hlnum{8\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{54\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ }\hlkwc{}\hlstd{}\hlnum{100}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ }\hlstd{}\hlkwc{cam}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{29\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{53}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{29\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{53}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ }\hlstd{}\hlkwc{ptam}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{13\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{24}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{13\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{24}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ }\hlstd{}\hlkwc{gui}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ \ }\hlnum{5\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{9}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{13\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{23}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwc{DrawStuff}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{15\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ \ }\hlstd{}\hlnum{8\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{14}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ }\hlstd{}\hlkwc{DrawPoints}\hlstd{\ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ \ }\hlnum{7\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{12}\hlstd{\%}\hlstd{\ \ \ \ \ \ }\hlstd{}\hlnum{7\ }\hlstd{}\hlkwc{ms}\hlstd{\ \ \ }\hlkwc{}\hlstd{}\hlnum{12}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ }\hlstd{}\hlkwc{DrawFeatures}\hlstd{\ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{20\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{20\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ }\hlstd{}\hlkwc{DrawTarget}\hlstd{\ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ }\hlnum{842\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{2}\hlstd{\%}\hlstd{\ \ \ \ }\hlstd{}\hlnum{842\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{2}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ }\hlstd{}\hlkwc{DrawPolys}\hlstd{\ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{65\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ }\hlstd{}\hlnum{200\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwc{textureTidyup}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{9.0}\hlstd{\ \ \ \ \ }\hlnum{19\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{19\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwc{retrieveTexture}\hlstd{\ \ }\hlkwc{}\hlstd{}\hlnum{9.0}\hlstd{\ \ \ \ \ }\hlnum{12\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{12\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwc{drawTriangles}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{9.0}\hlstd{\ \ \ \ }\hlnum{104\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ }\hlstd{}\hlnum{104\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ }\hlstd{}\hlkwc{commands}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{19\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{19\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%\hspace*{\fill}\\
+}\hlstd{\ \ }\hlstd{}\hlkwc{textures}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlkwc{}\hlstd{}\hlnum{1.0}\hlstd{\ \ \ \ \ }\hlnum{34\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hlstd{\ \ \ \ \ }\hlstd{}\hlnum{34\ }\hlstd{}\hlkwc{us}\hlstd{\ \ \ \ }\hlkwc{}\hlstd{}\hlnum{0}\hlstd{\%}\hspace*{\fill}\\
+\mbox{}
+\normalfont
+\normalsize
+
 }
 \end{enumerate}
 
@@ -548,7 +553,7 @@ call tree               hits       self time      total time
 \begin{itemize}
 \item{\textbf{key.handle}: This is a keypress handler, invoked via GVars3 from the GUI key Dispatch method. It searches the list of tools for any tools which have a matching hotkey to the passed in key, and invokes them; any which are enabled will receive a ``click".}
 \item{\textbf{edgelist.dump}, \textbf{pointlist.dump}, \textbf{polylist.dump}: These three debugging commands can be used to dump a list of \texttt{Edge}s, \texttt{Point}s, or \texttt{PolyFace}s to the console, respectively.}
-\item{\textbf{text.draw}: This command is designed to be invoked by other commands; it will cause text to be drawn as a ``status update" to the user using OpenGL. This ensures that consistent styling is used, and makes it easy to execute the drawing in the correct thread.}
+\item{\textbf{text.draw}: This command is designed to be invoked by other commands; it will cause text to be drawn as a ``status update" to the user using OpenGL. This ensures that consistent styling is used, and makes it easy to execute the drawing in the same thread as the rest of the OpenGL rendering (a requirement of the OpenGL API).}
 \item{\textbf{vertex.create}: Creates a \texttt{Point} on the feature closest to the look-vector from the camera. If invoked with parameters, it can create a \texttt{Point} at an arbitrary position (defined by the 3D co-ordinates given in the parameters). The closest point is found by sorting the vector of features with the \texttt{closerVec} function, which works between two vectors thus: 
 \\
 
@@ -830,65 +835,73 @@ In the second pass, the code examines adjacent pieces ot texture; if the frames 
 
 The reduced set of texture frames are then stored, as a series of consecutive images in a single 24-bit RGB TARGA\cite{targa} file (see Figure~\ref{tgaformat}). The material data is stored in a \texttt{.mtl} file, which is essentially a plain text format defining the ambient, diffuse, and specular components of the named material (fixed at $1$, $1$, and $0$ respectively). It also permits selection of alpha transparency, and the illumination model to be used, along with naming the TGA file to use for texturing. This file is more-or-less the same regardless of the model. For example,
 
-\begin{verbatim}
-# Material database for scanner_model.obj
-#  Declares a new material called `TextureMapped'
-#    containing the link to the TGA texture file,
-#    and details of the material properties
+\noindent
+\ttfamily
+\hlstd{}\hlslc{\#\ Material\ database\ for\ scanner\textunderscore model.obj}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ }\hlslc{Declares\ a\ new\ material\ called\ `TextureMapped'}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ \ \ }\hlslc{containing\ the\ link\ to\ the\ TGA\ texture\ file,}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ \ \ }\hlslc{and\ details\ of\ the\ material\ properties}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+newmtl\ TextureMapped\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{Ka\ }\hlnum{1.000\ 1.000\ 1.000}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#\ Ambient\ reflection}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Kd\ }\hlnum{1.000\ 1.000\ 1.000}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#\ Diffuse\ reflection}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Ks\ }\hlnum{0.000\ 0.000\ 0.000}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#\ Specular\ reflection}\hspace*{\fill}\\
+\hlstd{\ \hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{d\ }\hlnum{1.0}\hlstd{\ \ \ \ }\hlnum{}\hlstd{}\hlslc{\#\ Alpha\ Transparency}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Tr\ }\hlnum{1.0}\hlstd{\ \ \ }\hlnum{}\hlstd{}\hlslc{\#}\hlstd{\ \ }\hlslc{(some\ implementations\ use\ d,\ others\ Tr)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{illum\ }\hlnum{2}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#\ Illumination\ model\ {-}\ Diffuse\ and\ Specular}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{map\textunderscore Ka\ scanner\textunderscore model.tga}\hlstd{\ \ }\hlstd{}\hlslc{\#\ Ambient\ map}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{map\textunderscore Kd\ scanner\textunderscore model.tga}\hlstd{\ \ }\hlstd{}\hlslc{\#\ Diffuse\ map}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ }\hlstd{}\hlslc{\#\ Currently\ does\ not\ use:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ }\hlstd{}\hlslc{\#\ map\textunderscore Ks}\hlstd{\ \ \ }\hlslc{{-}}\hlstd{\ \ }\hlslc{Specular\ map}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ }\hlstd{}\hlslc{\#\ map\textunderscore d}\hlstd{\ \ \ \ }\hlslc{{-}}\hlstd{\ \ }\hlslc{Alpha\ transparency\ map}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ }\hlstd{}\hlslc{\#\ map\textunderscore bump\ {-}}\hlstd{\ \ }\hlslc{Bump\ map}\hlstd{}\hspace*{\fill}\\
+\mbox{}
+\normalfont
+\normalsize
 
-newmtl TextureMapped
-    Ka 1.000 1.000 1.000  # Ambient reflection
-    Kd 1.000 1.000 1.000  # Diffuse reflection
-    Ks 0.000 0.000 0.000  # Specular reflection
- 
-    d 1.0    # Alpha Transparency
-    Tr 1.0   #  (some implementations use d, others Tr)
-    illum 2  # Illumination model - Diffuse and Specular
-    map_Ka scanner_model.tga  # Ambient map
-    map_Kd scanner_model.tga  # Diffuse map
-     # Currently does not use:
-     # map_Ks   -  Specular map
-     # map_d    -  Alpha transparency map
-     # map_bump -  Bump map
-\end{verbatim}
 
 Finally, the \texttt{.obj} file encodes the details of the model's geometry; the set of vertices, their texture co-ordinates, and the vertex normals. The last section of this file links the OBJ geometry to the material file, and applies the texture to the set of face definitions which follow. These definitions are made in such a way as to ensure that the points are connected in an order which will preserve their surface normals - implicit in the OBJ definition. The OBJ file structure is as follows:
 
-\begin{verbatim}
-#
-# Header indicating how many vertices and faces are encoded
-#   in the file, for human interest
-#
+\noindent
+\ttfamily
+\hlstd{}\hlslc{\#}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ Header\ indicating\ how\ many\ vertices\ and\ faces\ are\ encoded}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ \ }\hlslc{in\ the\ file,\ for\ human\ interest}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ Material\ library\ links:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{mtllib\ scanner\textunderscore model.mtl}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlslc{\#\ Vertices:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{v\ }\hlnum{0.112184\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.549372\ 0.636787}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{v\ }\hlnum{0.130041\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.377297\ 0.638883}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{v\ }\hlnum{0.246977\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.535198\ 0.444692}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ }\hlslc{etc...}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ Texture\ Co{-}Ordinates:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{vt\ }\hlnum{0.424639\ 0.217299}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{vt\ }\hlnum{0.273666\ 0.0712889}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{vt\ }\hlnum{0.33988\ 0.0545356}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ }\hlslc{etc...}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ Normals\ (currently\ one\ per\ face):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{vn\ }\hlnum{0.0824474\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.892047\ 0.444359}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{vn\ }\hlnum{0.200107\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.88881\ 0.41228}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{vn\ }\hlnum{0.971032\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.025272\ }\hlstd{}\hlopt{{-}}\hlstd{}\hlnum{0.237608}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ }\hlslc{etc...}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+g\ scanner\textunderscore model}\hlstd{\ \ }\hlstd{}\hlslc{\#\ Polygon\ group\ name}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ Faces:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{usemtl\ TextureMapped}\hlstd{\ \ \ }\hlstd{}\hlslc{\#\ Load\ this\ material\ from\ MTL\ file}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{f\ }\hlnum{9}\hlstd{}\hlopt{/}\hlstd{}\hlnum{1}\hlstd{}\hlopt{/}\hlstd{}\hlnum{1\ 35}\hlstd{}\hlopt{/}\hlstd{}\hlnum{2}\hlstd{}\hlopt{/}\hlstd{}\hlnum{1\ 33}\hlstd{}\hlopt{/}\hlstd{}\hlnum{3}\hlstd{}\hlopt{/}\hlstd{}\hlnum{1}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#\ One\ triple\ per\ vertex\ in\ the\ face}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{f\ }\hlnum{9}\hlstd{}\hlopt{/}\hlstd{}\hlnum{4}\hlstd{}\hlopt{/}\hlstd{}\hlnum{2\ 39}\hlstd{}\hlopt{/}\hlstd{}\hlnum{6}\hlstd{}\hlopt{/}\hlstd{}\hlnum{2\ 35}\hlstd{}\hlopt{/}\hlstd{}\hlnum{5}\hlstd{}\hlopt{/}\hlstd{}\hlnum{2}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#\ Each\ triple\ indicates\ vertex\ id,}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{f\ }\hlnum{9}\hlstd{}\hlopt{/}\hlstd{}\hlnum{7}\hlstd{}\hlopt{/}\hlstd{}\hlnum{3\ 19}\hlstd{}\hlopt{/}\hlstd{}\hlnum{9}\hlstd{}\hlopt{/}\hlstd{}\hlnum{3\ 35}\hlstd{}\hlopt{/}\hlstd{}\hlnum{8}\hlstd{}\hlopt{/}\hlstd{}\hlnum{3}\hlstd{\ \ }\hlnum{}\hlstd{}\hlslc{\#}\hlstd{\ \ \ }\hlslc{texture\ coord\ id,\ and\ normal\ id}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hlstd{\ \ }\hlslc{etc...}\hlstd{}\hspace*{\fill}\\
+\mbox{}
+\normalfont
+\normalsize
 
-# Material library links:
-  mtllib scanner_model.mtl
-
-# Vertices:
-  v 0.112184 -0.549372 0.636787
-  v 0.130041 -0.377297 0.638883
-  v 0.246977 -0.535198 0.444692
-#  etc...
-
-# Texture Co-Ordinates:
-  vt 0.424639 0.217299
-  vt 0.273666 0.0712889
-  vt 0.33988 0.0545356
-#  etc...
-
-# Normals (currently one per face):
-  vn 0.0824474 -0.892047 0.444359
-  vn 0.200107 -0.88881 0.41228
-  vn 0.971032 -0.025272 -0.237608
-#  etc...
-
-g scanner_model  # Polygon group name
-# Faces:
-  usemtl TextureMapped   # Load this material from MTL file
-  f 9/1/1 35/2/1 33/3/1  # One triple per vertex in the face
-  f 9/4/2 39/6/2 35/5/2  # Each triple indicates vertex id,
-  f 9/7/3 19/9/3 35/8/3  #   texture coord id, and normal id
-#  etc...
-\end{verbatim}
 
 \begin{figure}
   \begin{center}
