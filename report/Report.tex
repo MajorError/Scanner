@@ -1013,17 +1013,18 @@ One increasingly popular application of AR is in entertainment, where it has bee
 
 As mobile phones become more powerful, it is possible for them to perform accurate camera tracking while displaying real-time 3D graphics. This allows more complex game interactions, such as Fanta's Virtual Tennis\cite{fantatennis} advertising game in which players print a marked paper tennis court and play tennis in real-time using two mobile phones as rackets. The Augmented Environments Lab at Georgia Tech has also experimented with several AR games, involving several different methods of interaction.
 
-\begin{wrapfigure}{r}{130pt}
-  \vspace{-20pt}
+However, many of these AR experiences are based on techniques popularised by University of Washington ARToolkit \cite{artk}, which was itself based on earlier work \cite{artkpaper} in collaboration between the University of Washington and Hiroshima City University. 
+
+\begin{wrapfigure}{l}{130pt}
   \begin{center}
     \includegraphics[width=120px]{marker-axis1}
   \end{center}
   \vspace{-10pt}
   \caption{A visual marker used to extract axes}
+  \vspace{-20pt}
   \label{markerar}
-\end{wrapfigure} 
-
-However, many of these AR experiences are based on techniques popularised by University of Washington ARToolkit \cite{artk}, which was itself based on earlier work \cite{artkpaper} in collaboration between the University of Washington and Hiroshima City University. This so-called \textit{marker based AR} requires tokens (Figure~\ref{markerar}) to extract co-ordinate axes and orient the augmented reality world. These are subject to a number of failure modes, including occlusion or a reduction in image quality due to, for example, motion blur (Figure~\ref{markerfail}). As PTAM tracks the scene based on a much larger number of feature points, if just one collection of points is obscured or untrackable it does not cause the entire track to fail.
+\end{wrapfigure}
+ This so-called \textit{marker based AR} requires tokens (Figure~\ref{markerar}) to extract co-ordinate axes and orient the augmented reality world. These are subject to a number of failure modes, including occlusion or a reduction in image quality due to, for example, motion blur (Figure~\ref{markerfail}). As PTAM tracks the scene based on a much larger number of feature points, if just one collection of points is obscured or untrackable it does not cause the entire track to fail.
 
 \begin{figure}[t]
     \vspace{10pt}
@@ -1114,6 +1115,16 @@ Subdivision and smooth deformation are something of a ``mixed bag"; it is import
 }
 
 \item{\textbf{Saving \& Loading}: There are two formats supported for saving and loading; ``code" and ``obj". The former was originally written as a debugging solution, showing how the GVars3-based command system can be used to quickly serialise a model, and even more easily load it back from disk. However, ``code" has a major limitation; it has no support for saving or loading any texture data on disk. However, the format is verbose and easy to understand and edit, since it takes the same format as the commands in the original system.
+
+\begin{figure}[t]
+    \subfigure[Desired Geometry]{\includegraphics[width=165px]{TriEmpty}}
+    \quad
+    \subfigure[Incorrectly added \texttt{PolyFace}]{\includegraphics[width=165px]{TriFilled}}
+    \caption{Example of ambiguous geometry}
+    \label{geoambig}
+\end{figure}
+
+A further limitation of ``code", stemming from its roots as a debugging aid, is that in certain cases it will not create a completely identical set of geometry, based on the order in which points are connected in the serialised file. This is only an issue for ambiguous geometry; an example of this ambiguity is portrayed in Figure~\ref{geoambig}.
 
 Wavefront's OBJ format, on the other hand, is far more versatile, supporting a wide variety of material styles; both flat-colour and texture. However, due to the limited use-case of this modelling software, the export will always create the same type of material; a single textured mesh. Whilst the OBJ format can specify any number of materials to apply to a given set of faces (with each face receiving at most one material), the \texttt{obj.load} command will only support one; the last specified material and material database (MTL file) in the imported OBJ file. This limitation makes it suitable for importing geometry with a single colour or texture - however if the system were to be expanded into a ``commercial grade" product rather than an academic research prototype, this is the sort of limitation on its functionality that should be enhanced. Other such limitations might include support for the full gamut of TARGA images, as well as for non-triangulated meshes (presumably these would be parsed, and then each face converted to triangles before being added to the \texttt{Environment}).
  }
