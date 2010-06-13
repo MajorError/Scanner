@@ -191,7 +191,45 @@ One obvious pitfall to a VideoTrace-style approach is that one must have enough 
 
 The final key aspect of these approaches we have not studied in detail is the problem of extracting texture from the input video, and mapping that onto the output geometry. There are a number of elements to this; selection of video frames for texture, compensation for lens distortion and projection of the texture into 2D space, and mapping of this texture onto the generated model such that it forms a contiguous view. A popular technique is to use texture from multiple camera views \cite**{texmultiview} in order to minimise distortions at the boundaries. The approach outlined by Niem and Broszio requires calibration of the camera \cite**{camcalib} in order to remove distortion and reduce aberrations in the input image due to lens shape. It assigns triangles on the surface of the mesh a camera image (selected according to best resolution). Groups of triangles which are textured by the same image (within some tolerance) are then considered to be \textit{surface regions}. These regions are refined so as to group them together as much as possible, reducing the number of region boundaries. Finally, it filters textures at the boundaries by linearly interpolating the texture from one view to the other across the boundary edge. The result is a smoothly varying texture over the surface of the shape; however, it does necessitate choosing sub-optimal video frames for some polygons in the texture-map. The end result of this is a texture map which requires less space to store, and varies smoothly, and thus the trade-off is probably acceptable. Niem and Broszio also describe a technique for synthesising texture for polygons which lack information, by reflecting texture from adjacent regions and blending the results.
 
+\begin{figure}
+  \begin{center}
+  \vspace{-30px}
+  \subfigure[Key Frame]
+  {
+    \includegraphics[width=165px]{Debevec1}
+  }
+  \hspace{-10px}
+  \subfigure[Offset Image]
+  {
+    \includegraphics[width=165px]{Debevec3}
+  }
+  \subfigure[Warped Offset Image]
+  {
+    \includegraphics[width=165px]{Debevec2}
+  }
+  \hspace{-10px}
+  \subfigure[Map of Image Disparity]
+  {
+    \includegraphics[width=165px]{Debevec4}
+  }
+  \subfigure[Novel View 1]
+  {
+    \includegraphics[width=165px]{Debevec5}
+  }
+  \hspace{-10px}
+  \subfigure[Novel View 2]
+  {
+    \includegraphics[width=165px]{Debevec7}
+  }
+  \caption{Stages of Debevec's approach to View-Dependent Texture Mapping \protect \cite{architecture}}
+  \label{debevecviews}
+  \end{center}
+\end{figure}
+
 The approach taken by Debevec et al. (1996, discussed earlier) sidesteps the issues around perspective quite neatly; the interactive output of their system dynamically selected the texture frame to use based on the current position of the camera. Their approach uses a similar blend technique at polygon boundaries, to reduce rendering artefacts. What is not made immediately clear is how this technique handles a smoothly changing camera; whether it sticks with what is potentially a later non-ideal texture, blends between two target textures smoothly (the problem of knowing which texture to blend \textit{to} seems non-trivial, as it involves predicting the user's interactions), or simply ``jumps" from one texture frame to another at some point in the interaction is not made clear.
+
+\clearpage
+
 
 \begin{figure}
   \begin{center}
@@ -200,9 +238,6 @@ The approach taken by Debevec et al. (1996, discussed earlier) sidesteps the iss
   \caption[An example of Maya's complex user interface]{An example of Maya's complex user interface (autodesk.com, 2009)}
   \label{maya}
 \end{figure}
-
-\clearpage
-
 \section{Approach}
 \subsection{Overview}
 
@@ -222,9 +257,9 @@ The goal of the system is to permit the user to move the webcam in space around 
 \subsection{Ego-Motion Recovery}
 The first problem to be considered in relation to this solution is that of working out where in space the camera is located, and directed, at any given time. Some augmented reality systems, such as Layar, do this by using positioning sensors like GPS in tandem with a magnetometer for orientation. This is a relatively simple way of performing approximate localisation, however the problem of scale rapidly arises; if you desire a resolution of greater than approximately one meter, GPS will quickly fail you. Thus, whilst well suited to (for example) modelling the layout of a whole city, it is less suitable for a user wishing to record a detailed scan of an object on their desk. 3rd party \textit{local} positioning systems operate on a similar principle to GPS, and can provide much greater resolution over small areas. However, they are expensive and seem an unnecessary extra burden for the user to own and maintain. Ideally, the ego-motion recovery problem should be solved without the application of further hardware.
 
-Systems like VideoTrace \cite**{videotrace} are able to make use of processor-intensive offline tracking applications  to perform camera motion recovery - in the case of VideoTrace, the Voodoo Camera Tracker \cite**{voodoo}. These are commonly used in the visual effects industry as well, and thus much effort has gone into research and development on these. They tend to produce excellent and smooth results, even to the extent of being able to automatically fix operator-induced visual defects such as camera shake. However, their processing is designed for batch runs on high-performance machines; they are wholly insuitable to a real-time processing application.
+Systems like VideoTrace \cite{videotrace} are able to make use of processor-intensive offline tracking applications  to perform camera motion recovery - in the case of VideoTrace, the Voodoo Camera Tracker \cite{voodoo}. These are commonly used in the visual effects industry as well, and thus much effort has gone into research and development on these. They tend to produce excellent and smooth results, even to the extent of being able to automatically fix operator-induced visual defects such as camera shake. However, their processing is designed for batch runs on high-performance machines; they are wholly insuitable to a real-time processing application.
 
-To this end, a number of computer vision researchers have worked on solving the problem of real-time \textit{monocular SLAM}; \textit{S}imultaneous \textit{L}ocalisation \textit{A}nd \textit{M}apping using a single camera lens, with high enough throughput to be used as part of a larger real-time system \cite**{slam}. In essence, a SLAM system works by estimating the movement of the camera between frames based on the motion of the intersection-set of detected feature points in each frame. This approach can produce very accurate results, assuming non-degenerate camera motion. There are instances in which a SLAM-based system can get ``confused", however; it is important that the localiser can detect these cases and re-localise based on the presented frame
+To this end, a number of computer vision researchers have worked on solving the problem of real-time \textit{monocular SLAM}; \textit{S}imultaneous \textit{L}ocalisation \textit{A}nd \textit{M}apping using a single camera lens, with high enough throughput to be used as part of a larger real-time system \cite{slam}. In essence, a SLAM system works by estimating the movement of the camera between frames based on the motion of the intersection-set of detected feature points in each frame. This approach can produce very accurate results, assuming non-degenerate camera motion. There are instances in which a SLAM-based system can get ``confused", however; it is important that the localiser can detect these cases and re-localise based on the presented frame
 
 \begin{figure}
   \begin{center}
@@ -234,9 +269,9 @@ To this end, a number of computer vision researchers have worked on solving the 
   \label{lookvec}
 \end{figure}
 
-A recent development on existing SLAM approaches is PTAM; \textit{P}arallel \textit{T}racking \textit{A}nd \textit{M}apping \cite**{ptam}. PTAM improves the robustness of SLAM by using a faster approach to motion estimation, thus allowing it to consider far more points in a given iteration of recognition. It can maintain its 3D point-map in a separate thread to the actual motion processing, further reducing the overhead in the tracking thread - making excellent use of common multi-core processing systems available in desktop and laptop computers today. PTAM requires a stereo initialisation at the start, but once this has been processed it will provide a reliable transformation to describe the translation and orientation of the camera in 3D space, relative to an arbitrary zero-point, on an arbitrary scale (both of which are constructed relative to the position and motion of the camera during stereo initialisation). As an added benefit, PTAM maintains a map of the features it recognises in 3D-space. It is highly challenging, given only the position and orientation of the camera, to determine precisely what point in space the user is attempting to point to; there are insufficient bounds on the problem, rendering the system with an infinite vector of possible points. This PTAM point-map can be used to augment such decisions, by deciding which point in the map is closest to the camera's look-vector (see Figure~\ref{lookvec}).
+A recent development on existing SLAM approaches is PTAM; \textit{P}arallel \textit{T}racking \textit{A}nd \textit{M}apping \cite{ptam}. PTAM improves the robustness of SLAM by using a faster approach to motion estimation, thus allowing it to consider far more points in a given iteration of recognition. It can maintain its 3D point-map in a separate thread to the actual motion processing, further reducing the overhead in the tracking thread - making excellent use of common multi-core processing systems available in desktop and laptop computers today. PTAM requires a stereo initialisation at the start, but once this has been processed it will provide a reliable transformation to describe the translation and orientation of the camera in 3D space, relative to an arbitrary zero-point, on an arbitrary scale (both of which are constructed relative to the position and motion of the camera during stereo initialisation). As an added benefit, PTAM maintains a map of the features it recognises in 3D-space. It is highly challenging, given only the position and orientation of the camera, to determine precisely what point in space the user is attempting to point to; there are insufficient bounds on the problem, rendering the system with an infinite vector of possible points. This PTAM point-map can be used to augment such decisions, by deciding which point in the map is closest to the camera's look-vector (see Figure~\ref{lookvec}).
 
-PTAM (as with many SLAM systems) works best with camera lenses exhibiting a wide field-of-view; in this way, it can gather even more points with which to localise. However, this does mean that the images provided to the processing system are distorted by the wide angle lens. In order to account for this, PTAM requires a one-time camera calibration process, which feeds the parameters on its ATAN-Camera model \cite**{atancam}. It is therefore important that, when considering the user interface, this distortion is also considered.
+PTAM (as with many SLAM systems) works best with camera lenses exhibiting a wide field-of-view; in this way, it can gather even more points with which to localise. However, this does mean that the images provided to the processing system are distorted by the wide angle lens. In order to account for this, PTAM requires a one-time camera calibration process, which feeds the parameters on its ATAN-Camera model \cite{atancam}. It is therefore important that, when considering the user interface, this distortion is also considered.
 
 \subsection{User Interface}
 As already discussed, the primary user input is to be a simple webcam. This device is to be augmented with a maximum of two other digital inputs (i.e. buttons). These inputs could be positioned on the camera itself - indeed, some cameras already have these. However, in the interests of the most generally usable solution possible, these inputs will be assumed to be on the keyboard.
