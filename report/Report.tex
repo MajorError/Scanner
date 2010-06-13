@@ -221,12 +221,12 @@ The final key aspect of these approaches we have not studied in detail is the pr
   {
     \includegraphics[width=165px]{Debevec7}
   }
-  \caption{Stages of Debevec's approach to View-Dependent Texture Mapping \protect \cite{architecture}}
+  \caption[Stages of Debevec's approach to View-Dependent Texture Mapping]{Stages of Debevec's approach to View-Dependent Texture Mapping \protect \cite{architecture}}
   \label{debevecviews}
   \end{center}
 \end{figure}
 
-The approach taken by Debevec et al. (1996, discussed earlier) sidesteps the issues around perspective quite neatly; the interactive output of their system dynamically selected the texture frame to use based on the current position of the camera. Their approach uses a similar blend technique at polygon boundaries, to reduce rendering artefacts. What is not made immediately clear is how this technique handles a smoothly changing camera; whether it sticks with what is potentially a later non-ideal texture, blends between two target textures smoothly (the problem of knowing which texture to blend \textit{to} seems non-trivial, as it involves predicting the user's interactions), or simply ``jumps" from one texture frame to another at some point in the interaction is not made clear.
+The approach taken by Debevec et al. (1996, discussed earlier and depicted in Figure~\ref{debevecviews}) sidesteps the issues around perspective quite neatly; the interactive output of their system dynamically selected the texture frame to use based on the current position of the camera. Their approach uses a similar blend technique at polygon boundaries, to reduce rendering artefacts. What is not made immediately clear is how this technique handles a smoothly changing camera; whether it sticks with what is potentially a later non-ideal texture, blends between two target textures smoothly (the problem of knowing which texture to blend \textit{to} seems non-trivial, as it involves predicting the user's interactions), or simply ``jumps" from one texture frame to another at some point in the interaction is not made clear.
 
 \clearpage
 
