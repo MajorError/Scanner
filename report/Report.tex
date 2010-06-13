@@ -42,13 +42,46 @@ decorations.pathmorphing,shapes,matrix,shapes.symbols}
 \pagenumbering{roman}
 \maketitle
 
-\vspace{50pt}
+\vspace{40pt}
 
 \begin{abstract}
 A long-standing problem in Computer Vision has been recovery of scene geometry; in both controlled and (in many cases) arbitrary environments. With applications ranging from robot navigation to augmented reality in film and television, the process of taking a real-world object and representing it in 3D has enormous inherent value. Nevertheless, existing techniques all leave something to be desired; be it their cost, the limited range of their applicability, or their accuracy.
 
 The theoretical approach outlined in this document aims to alleviate many of the aforementioned pitfalls of traditional methods, by utilising cheap commodity hardware for recognition, by creating a system that is robust in completely un-controlled environmental conditions, and by making use of both \textit{human} and \textit{machine} intelligence in the manners best suited to them.
 \end{abstract}
+
+\vspace{30pt}
+
+\makeatletter
+\newcommand\ackname{Acknowledgements}
+\if@titlepage
+  \newenvironment{acknowledgements}{%
+      \titlepage
+      \null\vfil
+      \@beginparpenalty\@lowpenalty
+      \begin{center}%
+        \bfseries \ackname
+        \@endparpenalty\@M
+      \end{center}}%
+     {\par\vfil\null\endtitlepage}
+\else
+  \newenvironment{acknowledgements}{%
+      \if@twocolumn
+        \section*{\abstractname}%
+      \else
+        \small
+        \begin{center}%
+          {\bfseries \ackname\vspace{-.5em}\vspace{\z@}}%
+        \end{center}%
+        \quotation
+      \fi}
+      {\if@twocolumn\else\endquotation\fi}
+\fi
+\makeatother
+
+\begin{acknowledgements}
+With particular thanks to Dr.\ Andrew Davison for his continued inspiration and support throughout this project. To Richard Newcombe, and Steven Lovegrove, my gratitude for taking an interest and providing invaluable advice and experience. My thanks go out to all those who have suffered through my brainstorms, and offered themselves up for testing, in the name of science. Finally, though though by no means least, my family; for making all of this possible.
+\end{acknowledgements}
 
 \pagebreak
 \tableofcontents
