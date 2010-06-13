@@ -191,6 +191,11 @@ void mesh_move::click() {
     commandList::exec( "mesh.move" );
 };
 
+MK_TOOL_PLUGIN( mesh_rotate, "Space", "Point", );
+void mesh_rotate::click() {
+    commandList::exec( "mesh.rotate" );
+};
+
 void* displayTimeout( void* ptr ) {
     string* text = static_cast<string*>( ptr );
     time_t start = time( NULL );

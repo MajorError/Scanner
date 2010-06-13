@@ -1300,6 +1300,72 @@ namespace mesh4 {
     }
 }
 
+namespace mesh5 {
+    MK_GUI_COMMAND(mesh, rotate, pthread_t mover; static void* moveProcessor( void* ptr );)
+    void mesh::rotate( string params ) {
+        if ( environment->getPoints().size() == 0 )
+            return;
+        if ( !init ) {
+            init = true;
+            pthread_create( &mover, NULL, mesh::moveProcessor, (void*)this );
+        } else {
+            init = false;
+            pthread_join( mover, NULL );
+        }
+    }
+
+    void* mesh::moveProcessor( void* ptr ) {
+        mesh *p = static_cast<mesh*>( ptr );
+        Vector<3> projection;
+        SE3<> camera( p->environment->getCameraPose() );
+        Point* target = p->environment->sortPoints( camera ).front();
+        Vector<3> targetStart = target->getPosition();
+        // start point on list ~ camera + view*t
+        Matrix<> rot = camera.get_rotation().get_matrix();
+        projection = target->getPosition();
+        projection -= camera.get_translation();
+        projection[0] /= rot[0][2];
+        projection[1] /= rot[1][2];
+        projection[2] /= rot[2][2];
+
+        map< Point*, Vector<3> > targetPoints;
+        set<Point*> todo;
+        todo.insert( target );
+        // Traverse the edges in the mesh, ensuring we only move connected points
+        while( todo.size() > 0 ) {
+            set<Point*> newTodos;
+            for( set<Point*>::iterator curr = todo.begin(); curr != todo.end(); curr++ ) {
+                targetPoints[*curr] = (*curr)->getPosition();
+                for( std::list<Edge*>::iterator e = (*curr)->getEdges().begin(); e != (*curr)->getEdges().end(); e++ ) {
+                    Point* p = (*e)->getStart() == *curr ? (*e)->getEnd() : (*e)->getStart();
+                    if ( targetPoints.count( p ) == 0 )
+                        newTodos.insert( p );
+                }
+            }
+            todo = newTodos;
+        }
+
+        while( p->init ) {
+            camera = p->environment->getCameraPose();
+            rot = camera.get_rotation().get_matrix();
+            // Work out position of target point, as in vertex.move
+            Vector<3> tmp;
+            tmp[0] = (camera.get_translation()[0] + rot[0][2] * projection[0]);
+            tmp[1] = (camera.get_translation()[1] + rot[1][2] * projection[1]);
+            tmp[2] = (camera.get_translation()[2] + rot[2][2] * projection[2]);
+            // Now apply the same rotation to all points
+            SO3<> rot( tmp, targetStart );
+            p->environment->lock();
+            for( map< Point*, Vector<3> >::iterator curr = targetPoints.begin();
+                    curr != targetPoints.end(); curr++ ) {
+                curr->first->setPosition( curr->second * rot );
+            }
+            p->environment->unlock();
+        }
+        return NULL;
+    }
+}
+
 namespace code1 {
     MK_GUI_COMMAND(code, save,)
     void code::save( string filename ) {
