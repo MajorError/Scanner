@@ -2,6 +2,7 @@
 #include <fstream>
 #include <bits/stl_vector.h>
 #include <cvd/image_io.h>
+#include<libgen.h> 
 
 #include "Point.h"
 #include "Environment.h"
@@ -1229,7 +1230,7 @@ namespace mesh4 {
             istringstream str( params );
             double factor = 1.0;
             str >> factor;
-            cerr << "Scaling mesh by a factor of " << factor << endl;
+            cerr << "Scaling scene by a factor of " << factor << endl;
             for( std::list<Point*>::iterator curr = environment->getPoints().begin();
                     curr != environment->getPoints().end(); curr++ ) {
                 (*curr)->setPosition( (*curr)->getPosition() * factor );
@@ -1652,16 +1653,23 @@ namespace obj2 {
         if ( filename.length() < 1 )
             filename = "scanner_model.obj";
 
-        string mtlLib = "UNKNOWN";
-        string mtlName = "DEFAULT";
-        string texImg = "UNKNOWN";
+        char fileChar[filename.length()];
+        strcpy( (char*)fileChar, filename.c_str() );
+        string dir( dirname( (char*)fileChar ) );
+        dir += '/';
+
+        string mtlLib = "";
+        string mtlName = "";
+        string texImg = "";
         Image< Rgb<byte> >* texture = new Image< Rgb<byte> >(
                 ImageRef( 1, 1 ), Rgb<byte>( 0, 255, 0 ) );
 
         environment->lock();
         loadOBJ( filename, mtlLib, mtlName, texture );
-        loadMTL( mtlLib, mtlName, texture, texImg );
-        loadTGA( texImg, texture );
+        if ( mtlLib.length() > 0 && mtlName.length() > 0 )
+            loadMTL( mtlLib[0] == '/' ? mtlLib : dir+mtlLib, mtlName, texture, texImg );
+        if ( texImg.length() > 0 )
+            loadTGA( texImg[0] == '/' ? texImg : dir+texImg, texture );
         environment->unlock();
 
         cerr << "OBJ loaded from " << filename << endl;
