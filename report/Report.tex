@@ -770,12 +770,12 @@ The number of ``steps" to use in this revolve is determined by a configurable GV
 
 \item{\textbf{mesh.scale}: Along with being able to move an entire mesh, it makes sense to use the camera to scale it also; the scale of the axes in world-space are not fixed relative to any given objects, and thus it is unpredictable what size should be used for insertion of an object. This scale command works by scaling the points in the mesh according to the average motion of the target point from its original pose:
 \begin{eqnarray*}
-  Let p ~=~ Target~start~position \\
-  Let q ~=~ Target~projected~position \\
+  Let~ p ~=~ Target~start~position \\
+  Let~ q ~=~ Target~projected~position \\
   scaleFactor ~=~ {p_x / q_x + p_y / q_y + p_z / q_z \over 3}  
 \end{eqnarray*}
 
-The projection here (to calculate $q$ is done in an identical fashion to \texttt{vertex.move}. Once the $scaleFactor$ has been calculated, it is simply multiplied by the original position of each of the points to scale the mesh - the scale is uniform in all axes. It is valuable to note, also, that the scale tool works only on connected points, in the same fashion as the \texttt{mesh.move} command already discussed.}
+The projection here (to calculate $q$) is done in an identical fashion to \texttt{vertex.move}. Once the $scaleFactor$ has been calculated, it is simply multiplied by the original position of each of the points to scale the mesh - the scale is uniform in all axes. It is valuable to note, also, that the scale tool works only on connected points, in the same fashion as the \texttt{mesh.move} command already discussed.}
 
 \begin{figure}
   \begin{center}
