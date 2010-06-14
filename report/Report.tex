@@ -290,7 +290,7 @@ Broadly speaking, the approach described herein is to carefully delineate respon
 The goal of the system is to permit the user to move the webcam in space around the object they wish to ``scan", and identify key features to the scanner. Throughout this process, the model created will be updated and continually shown as an augmented reality overlay, so that the user may easily tweak the result and examine its accuracy; this continual feedback loop is required to make the most of the interactivity of the system.
 
 \subsection{Ego-Motion Recovery}
-The first problem to be considered in relation to this solution is that of working out where in space the camera is located, and directed, at any given time. Some augmented reality systems, such as Layar, do this by using positioning sensors like GPS in tandem with a magnetometer for orientation. This is a relatively simple way of performing approximate localisation, however the problem of scale rapidly arises; if you desire a resolution of greater than approximately one meter, GPS will quickly fail you. Thus, whilst well suited to (for example) modelling the layout of a whole city, it is less suitable for a user wishing to record a detailed scan of an object on their desk. 3rd party \textit{local} positioning systems operate on a similar principle to GPS, and can provide much greater resolution over small areas. However, they are expensive and seem an unnecessary extra burden for the user to own and maintain. Ideally, the ego-motion recovery problem should be solved without the application of further hardware.
+The first problem to be considered in relation to this solution is that of working out where in space the camera is located, and directed, at any given time. Some augmented reality systems, such as Layar, do this by using positioning sensors like GPS in tandem with a magnetometer for orientation. This is a relatively simple way of performing approximate localisation, however the problem of scale rapidly arises; if you desire a resolution of greater than approximately one meter, GPS will quickly fail you. Thus, whilst well suited to (for example) modelling the layout of a whole city, it is less suitable for a user wishing to record a detailed scan of an object on their desk. Third party \textit{local} positioning systems operate on a similar principle to GPS, and can provide much greater resolution over small areas. However, they are expensive and seem an unnecessary extra burden for the user to own and maintain. Ideally, the ego-motion recovery problem should be solved without the application of further hardware.
 
 Systems like VideoTrace \cite**{videotrace} are able to make use of processor-intensive offline tracking applications  to perform camera motion recovery - in the case of VideoTrace, the Voodoo Camera Tracker \cite**{voodoo}. These are commonly used in the visual effects industry as well, and thus much effort has gone into research and development on these. They tend to produce excellent and smooth results, even to the extent of being able to automatically fix operator-induced visual defects such as camera shake. However, their processing is designed for batch runs on high-performance machines; they are wholly insuitable to a real-time processing application.
 
@@ -304,7 +304,7 @@ To this end, a number of computer vision researchers have worked on solving the 
   \label{lookvec}
 \end{figure}
 
-A recent development on existing SLAM approaches is PTAM; \textit{P}arallel \textit{T}racking \textit{A}nd \textit{M}apping \cite**{ptam}. PTAM improves the robustness of SLAM by using a faster approach to motion estimation, thus allowing it to consider far more points in a given iteration of recognition. It can maintain its 3D point-map in a separate thread to the actual motion processing, further reducing the overhead in the tracking thread - making excellent use of common multi-core processing systems available in desktop and laptop computers today. PTAM requires a stereo initialisation at the start, but once this has been processed it will provide a reliable transformation to describe the translation and orientation of the camera in 3D space, relative to an arbitrary zero-point, on an arbitrary scale (both of which are constructed relative to the position and motion of the camera during stereo initialisation). As an added benefit, PTAM maintains a map of the features it recognises in 3D-space. It is highly challenging, given only the position and orientation of the camera, to determine precisely what point in space the user is attempting to point to; there are insufficient bounds on the problem, rendering the system with an infinite vector of possible points. This PTAM point-map can be used to augment such decisions, by deciding which point in the map is closest to the camera's look-vector (see Figure~\ref{lookvec}).
+A recent development on existing SLAM approaches is PTAM; \textit{P}arallel \textit{T}racking \textit{A}nd \textit{M}apping \cite**{ptam}. PTAM improves the robustness of SLAM by using a faster approach to motion estimation, thus allowing it to consider far more points in a given iteration of recognition. It can maintain its 3D point-map in a separate thread to the actual motion processing, further reducing the overhead in the tracking thread - making excellent use of  multi-core processing systems which are increasingly available in desktop and laptop computers today. PTAM requires a stereo initialisation at the start, but once this has been processed it will provide a reliable transformation to describe the translation and orientation of the camera in 3D space, relative to an arbitrary zero-point, on an arbitrary scale (both of which are constructed relative to the position and motion of the camera during stereo initialisation). As an added benefit, PTAM maintains a map of the features it recognises in 3D-space. It is highly challenging, given only the position and orientation of the camera, to determine precisely what point in space the user is attempting to point to; there are insufficient bounds on the problem, rendering the system with an infinite vector of possible points. This PTAM point-map can be used to augment such decisions, by deciding which point in the map is closest to the camera's look-vector (see Figure~\ref{lookvec}).
 
 PTAM (as with many SLAM systems) works best with camera lenses exhibiting a wide field-of-view; in this way, it can gather even more points with which to localise. However, this does mean that the images provided to the processing system are distorted by the wide angle lens. In order to account for this, PTAM requires a one-time camera calibration process, which feeds the parameters on its ATAN-Camera model \cite**{atancam}. It is therefore important that, when considering the user interface, this distortion is also considered.
 
@@ -319,7 +319,7 @@ Feedback is to be provided to the user on a continuous basis. Using the tracking
 \label{approachmodel}
 The modelling process itself should be as general as possible; models should consist of triangular polygons assembled into a valid 3D model. As far as possible, problems such as degenerate faces, co-occurrent points, isolated vertices, etc should be avoided. It is not \textit{necessary} that the produced model be a closed hull; but it should be \textit{possible} to create such a model with this system. The precise details of the modelling process are open to experiments in user-interface design, however it is expected to be a gradual process. The user should work in one of two ways; either they identify vertices in space, and connect them to make the faces of their model, or they may place ``primitives" in the scene (such as planes, cubes, and the like) and manipulate them to best fit the model. Furthermore, there may be cases where a hybrid approach is needed - the user may construct an initial shape that approximates their model, and then refine it over time to improve its accuracy.
 
-It should be possible for the system to use some of the vision techniques above to improve its results - for example, texture extraction may be fully automated. It is important that any vision techniques that are used do not interfere with the will of the user; it must be possible to override their results. A likely example is that of vertex positioning - augmenting the user's input with information about features in the scene can make the task of placing points in 3D space much easier. However, the user \textit{must} have the option of placing points at features that are not detected by vision algorithms. Another useful example of where vision techniques may enhance the modelling process is in edge-fitting; if the user joins two vertices, and the edge is found to run along an edge in the image, the edge that is created in the model may, perhaps, insert extra points in order to better follow the contours of the image. The precise vision techniques that may be applied should be investigated and evaluated for their validity and utility in their particular use cases.
+It should be possible for the system to use some of the vision techniques above to improve its results - for example, texture extraction may be fully automated. It is important that any vision techniques that are used do not interfere with the will of the user; it must be possible for the user to maintain control and override their results. A likely example is that of vertex positioning - augmenting the user's input with information about features in the scene can make the task of placing points in 3D space much easier. However, the user \textit{must} have the option of placing points at features that are not detected by vision algorithms. Another useful example of where vision techniques may enhance the modelling process is in edge-fitting; if the user joins two vertices, and the edge is found to run along an edge in the image, the edge that is created in the model may, perhaps, insert extra points in order to better follow the contours of the image. The precise vision techniques that may be applied should be investigated and evaluated for their validity and utility in their particular use cases.
 
 \clearpage
 
@@ -334,27 +334,27 @@ In order to realise the above goals, a carefully planned and executed architectu
   	  \path[mindmap,concept color=green!50!black,text=black]
 	    node[concept] {Environment}
 	    [clockwise from=180]
-	    child[concept color=blue] {
+	    child[concept color=blue,text=white] {
 	      node[concept] (proc) {Vision Processors} 
 	      [clockwise from=-45]  
-	      child[concept color=red] {
+	      child[concept color=red,text=black] {
 	        node [concept] {PTAM}
 	        [clockwise from=-45]
-	        child[concept color=orange] {
+	        child[concept color=orange,text=black] {
 	          node[concept] (gvar) {GVars3} 
 	        }
-	        child[concept color=orange,sibling angle=90] { 
+	        child[concept color=orange,text=black,sibling angle=90] { 
 	          node[concept] (cvd) {libCVD} 
 	        }
 	      }
 	    }  
-	    child[concept color=blue] {
+	    child[concept color=blue,text=white] {
 	      node[concept] (ren) {AR Rendering}
 	    }
-	    child[concept color=blue] {
+	    child[concept color=blue,text=white] {
 	      node[concept] (tool) {Tools}
 	    }
-	    child[concept color=blue] {
+	    child[concept color=blue,text=white] {
 	      node[concept] (cmd) {Commands}
 	    };
 	  \path (cmd) to[circle connection bar switch color=from (blue) to (orange)] (gvar);
