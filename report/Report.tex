@@ -1,5 +1,5 @@
-%For printing? \documentclass[a4paper,10pt,twoside]{article}
-\documentclass[a4paper,10pt]{article}
+%\documentclass[a4paper,10pt,twoside,openright]{report}
+\documentclass[a4paper,10pt]{report}
 
 \usepackage{ucs}
 \usepackage{caption}
@@ -33,51 +33,41 @@ decorations.pathmorphing,shapes,matrix,shapes.symbols}
 \renewcommand{\floatpagefraction}{0.75}
 
 \title{Real-Time Interactive 3D Modelling with Commodity Hardware
-\vspace{30pt}}
+\vspace{70pt}}
 \author{Peter Coetzee\\Supervisor: Andrew Davison
-\vspace{30pt}}
+\vspace{70pt}}
 \date{June 2010}
 
 \begin{document}
 \pagenumbering{roman}
 \maketitle
 
-\vspace{40pt}
-
-\begin{abstract}
-A long-standing problem in Computer Vision has been recovery of scene geometry; in both controlled and (in many cases) arbitrary environments. With applications ranging from robot navigation to augmented reality in film and television, the process of taking a real-world object and representing it in 3D has enormous inherent value. Nevertheless, existing techniques all leave something to be desired; be it their cost, the limited range of their applicability, or their accuracy.
-
-The theoretical approach outlined in this document aims to alleviate many of the aforementioned pitfalls of traditional methods, by utilising cheap commodity hardware for recognition, by creating a system that is robust in completely un-controlled environmental conditions, and by unifying the use of both \textit{human} and \textit{machine} intelligence in the manners best suited to them.
-\end{abstract}
-
-\vspace{30pt}
+\makeatletter
+\newcommand\absname{Abstract}
+  \newenvironment{myabstract}{%
+      \vspace{50px}%
+      \titlepage
+      \begin{center}%
+        \bfseries \absname
+        \@endparpenalty\@M
+      \end{center}}
+\makeatother
 
 \makeatletter
 \newcommand\ackname{Acknowledgements}
-\if@titlepage
   \newenvironment{acknowledgements}{%
-      \titlepage
-      \null\vfil
-      \@beginparpenalty\@lowpenalty
+      \vspace{70px}%
       \begin{center}%
         \bfseries \ackname
         \@endparpenalty\@M
-      \end{center}}%
-     {\par\vfil\null\endtitlepage}
-\else
-  \newenvironment{acknowledgements}{%
-      \if@twocolumn
-        \section*{\abstractname}%
-      \else
-        \small
-        \begin{center}%
-          {\bfseries \ackname\vspace{-.5em}\vspace{\z@}}%
-        \end{center}%
-        \quotation
-      \fi}
-      {\if@twocolumn\else\endquotation\fi}
-\fi
+      \end{center}}
 \makeatother
+
+\begin{myabstract}
+A long-standing problem in Computer Vision has been recovery of scene geometry; in both controlled and (in many cases) arbitrary environments. With applications ranging from robot navigation to augmented reality in film and television, the process of taking a real-world object and representing it in 3D has enormous inherent value. Nevertheless, existing techniques all leave something to be desired; be it their cost, the limited range of their applicability, or their accuracy.
+
+The theoretical approach outlined in this document aims to alleviate many of the aforementioned pitfalls of traditional methods, by utilising cheap commodity hardware for recognition, by creating a system that is robust in completely un-controlled environmental conditions, and by unifying the use of both \textit{human} and \textit{machine} intelligence in the manners best suited to them.
+\end{myabstract}
 
 \begin{acknowledgements}
 With particular thanks to Dr.\ Andrew Davison for his continued inspiration and support throughout this project. To Richard Newcombe, and Steven Lovegrove, my gratitude for taking an interest and providing invaluable advice and experience. My thanks go out to all those who have suffered through my brainstorms, and offered themselves up for testing, in the name of science.
@@ -86,6 +76,7 @@ With particular thanks to Dr.\ Andrew Davison for his continued inspiration and 
 \end{acknowledgements}
 
 \pagebreak
+\setlength{\cftbeforechapskip}{5px}
 \tableofcontents
 \pagebreak
 
@@ -98,14 +89,13 @@ With particular thanks to Dr.\ Andrew Davison for his continued inspiration and 
 \newpage
 \pagenumbering{arabic}
 
-\section{Motivation}
+\chapter{Motivation}
 There are a deceptively large number of industries with an interest in producing accurate 3D models of objects in the real world. Engineers, for example, working on a CAD model of a product upgrade may want to scan the old product as a base template. The visual effects industry invests thousands of pounds in laser scans for every production they work on; it is critically important that ``digital doubles" (digital replications of human beings) are identical to the people they are based on, both for immersion and often for technical reasons too. It is not unusual for a VFX studio to take a live action scene and replace the actor with their digital double, so that (for example) shadows are cast correctly, or some particularly gruesome mutilation can occur (such as for Harvey Dent's character in the recent Dark Knight movie, seen in Figure~\ref{twoface}).
 
 \begin{figure}[h]
   \begin{center}
     \includegraphics[width=340px]{twoface}
   \end{center}
-  \vspace{-10pt}
   \caption[CGI Compositing: Digital Makeup for Harvey `Two-Face' Dent in The Dark Knight]{CGI Compositing: Digital Makeup for Harvey `Two-Face' Dent in The Dark Knight, \protect \copyright 2007 Warner Bros. Pictures}
   \label{twoface}
 \end{figure}
@@ -116,12 +106,12 @@ Furthermore, an increasing number of desktop applications are being produced to 
 
 \clearpage
 
-\section{Background}
+\chapter{Background}
 
 As mentioned above, there are a variety of approaches to this well-studied problem available today. These solutions are typically selected to fit the particular use-case for the 3D model; their various strengths and weaknesses tend to recommend one over the other in any given situation.
 
 
-\subsection{LIDAR}
+\section{LIDAR}
 
 \begin{wrapfigure}{r}{80pt}
   \vspace{-30pt}
@@ -135,7 +125,7 @@ As mentioned above, there are a variety of approaches to this well-studied probl
 
 One common system used in the visual effects industry is LIDAR capture \cite**{lidar}, in which a scanning laser is used to trace the distance between it and the target object. The object (or the scanner) is typically rotated during this process in order to generate a dense, 360$^\circ$ point-cloud representation of the scanned object. This technique, while expensive, is applicable in a variety of scenarios; from high-resolution facial capture through to large scale airborne ground topology scanning. This process requires little user intervention, and generates a large amount of data relatively quickly. However, much post-processing of this data is typically required; as it is a slightly noisy point-cloud, it must be cleaned up before it can be used in any real application. Furthermore, this cloud of points is not, by itself, geometry; it is more a set of candidate vertices for geometry. If the consumer is not performing volumetric rendering, they must triangulate this data in 3D, which could potentially result in discarding many of the points because they lie on the surfaces of these triangles.
 
-\subsection{Automated Vision-Based Reconstruction}
+\section{Automated Vision-Based Reconstruction}
 
 One set of potentially valuable solutions which have received a lot of research attention recently are those around computer vision based systems. These show promise, in that they are based on much simpler hardware than LIDAR systems, instead focussing their complexity in intelligent software to analyse full colour imagery and extract the geometry from it. They are often based on using either a stereo camera, and thus using the fixed separation of the lenses to recover depth data, or augmenting a single lens with a laser rangefinder (a sort of vision-augmented LIDAR system). The details of implementation of such systems varies wildly. On one end of the scale, Photosynth \cite**{photosynth} employs heavy vision processing on still photographs of a given scene (potentially taken with different cameras, lenses, and in varying lighting conditions) and constructs a 3D montage of these images in order to give the effect of a textured 3D model. As part of this process, it actually constructs a coloured point cloud (as seen in Figure~\ref{photosynthcloud}), in much the same fashion as a LIDAR scan, and matches these points probabilistically to features in the set of input images. Work has been done \cite**{multistereo} on a similar approach with the goal of constructing arbitrary 3D surfaces, rather than just interpolation of the views presented by a finite set of images.
 
@@ -158,15 +148,15 @@ One set of potentially valuable solutions which have received a lot of research 
 
 Alternative approaches go to the other extreme: complete on-line processing of visual data, aiming for an interactive experience \cite**{proforma}. In ProFORMA, the application guides the user as to which areas of the target object it requires further data on, and shows the model in augmented reality as the scanning takes place. The approach taken by Pan is to perform structure-from-motion analysis on the rotating object in order to inform the application as to the angle at which it is viewing the object. From this, it generates and maintains a 3D point-map of the target object. This point map is used as input to a Delaunay Tetrahedralisation \cite**{dtet} process, which is then probabilistically carved to produce a complete mesh. Finally, texture is extracted from the video stream to suit the polygons of this mesh (see Figure~\ref{proformaeg} for an example). However, as we can clearly see in this example (of Qi Pan's own production!), the carving is imperfect; the modelled shape clearly does not quite match the input object, and extra polygons can be seen protruding from the surface of the bell-tower. Should a user wish to clean this up, they would first have to import the data into a 3D modelling package, and then attempt to understand the automated mesh that was generated, in order to alter the polygon geometry and remove these spurious constructions. Furthermore, they would have to manually modify the texture map, since ProFORMA has extracted texture for regions which do not exist in the source shape. 
 
-Debevec et al. \cite**{architecture} produced an interesting, and similar, approach based on a series of static images and minimal user input, tailored primarily for architectural modelling. This required altogether less user input - simply marking edges on the images - but on its relatively limited test domain produced some strong results.
-
-\begin{figure}
+\begin{figure}[t]
   \begin{center}
     \includegraphics[width=300px]{lightproj}
   \end{center}
   \caption[An example of point projection from the human face using structured light]{An example of point projection from the human face using structured light \protect \cite**{lightface}}
   \label{faciallightpoint}
 \end{figure}
+
+Debevec et al. \cite**{architecture} produced an interesting, and similar, approach based on a series of static images and minimal user input, tailored primarily for architectural modelling. This required altogether less user input - simply marking edges on the images - but on its relatively limited test domain produced some strong results.
 
 Another approach that has received recent attention is Structured Light \cite**{structlight}. This entails controlling the lighting of the target object in such a way as to extract 3D data; it requires more equipment and a controlled environment, but can produce interactive performance. Typically, a known pattern of light (potentially changing over time) is projected onto the image, from a fixed source. A single lens may then pick up the way the pattern has fallen on the image, and use this to infer its 3D shape. The suitability of such a process for high-resolution complex modelling has already been shown with 3D facial scanning \cite**{lightface}, as in Figure~\ref{faciallightpoint}. 
 
@@ -180,7 +170,7 @@ Another approach that has received recent attention is Structured Light \cite**{
 
 This approach is favoured by Microsoft, in their new ``Project Natal" motion camera (recently re-branded Kinect\texttrademark), which exemplifies structured light's suitability for real-time processing. The Natal system gets around problems inherent in controlling the light in an environment by utilising an infra-red spectrum projection and camera - thereby also preventing visible projected light from dazzling the user. However, such an approach offers insufficient resolution for full 3D reconstruction; Natal extracts a depth map from the scene, and is primarily focused on using this for skeletal mapping and recognition (see Figure~\ref{natal}). Other structured light solutions may be more suitable for the problem described here, however the extra hardware and controlled environment required preclude it as an approach, based on the goals laid out for this system.
 
-\subsection{Surface Reconstruction}
+\section{Surface Reconstruction}
 
 A common aspect of many of these systems is the need to construct a polygon mesh from a point cloud in an automated fashion. This problem is orthogonal to that of extracting the point cloud in the first place; many of these systems could use the same approaches, and differ only in the state-of-the-art at the time of their development. We have already mentioned Delaunay Tetrahedralisation, in the context of ProFORMA. However, this is not the only approach available.
 
@@ -196,7 +186,7 @@ The notion of 3-dimensional $\alpha$-shapes \cite**{alpha} were introduced as an
 
 An alternate approach is that of implicit surface reconstruction \cite**{unorgsurf,surface}, in which the surface is estimated as a \textit{simplicial surface} (a linear surface with triangular faces) based on the signed distance between it and the points that comprise its cloud. At each point, a tangent plane is defined as a linear approximation to the surface at that point - how to define the orientation of the planes is characterised by the author as one of the most challenging aspects of this approach. This is done by fitting the least-squares best fitting plane to those points in the ``neighbourhood" of the current point, and subsequently flipping planes to ensure that normals for sufficiently geometrically close points are pointing in similar directions. With these tangent planes constructed, the signed distance function can be estimated based on projecting points onto their nearest tangent plane. Finally, Hoppe uses a marching cubes algorithm \cite**{cubes} to trace contours and perform his final surface construction.
 
-\subsection{User-Driven Vision-Augmented Reconstruction}
+\section{User-Driven Vision-Based Reconstruction}
 
 \begin{figure}
   \begin{center}
@@ -214,7 +204,7 @@ VideoTrace uses the vision data already calculated to augment the user's ``traci
 
 One obvious pitfall to a VideoTrace-style approach is that one must have enough recorded footage of the object to be modelled a priori; if the available footage doesn't quite show a part of the model, or the texture is occluded or in shadow, new video must be recorded - and this can't be known until one attempts the modelling process. By contrast, interactive systems using live video can overcome this issue by showing the user in real time what information is lacking, and how they should perhaps tweak their environment to obtain better results.
 
-\subsection{Texture Extraction}
+\section{Texture Extraction}
 
 \begin{figure}
   \begin{center}
@@ -223,8 +213,6 @@ One obvious pitfall to a VideoTrace-style approach is that one must have enough 
   \caption[A comparison of the various stages of multi-view texture extraction]{A comparison of the various stages of multi-view texture extraction \protect \cite**{texmultiview}}
   \label{texture}
 \end{figure}
-
-The final key aspect of these approaches we have not studied in detail is the problem of extracting texture from the input video, and mapping that onto the output geometry. There are a number of elements to this; selection of video frames for texture, compensation for lens distortion and projection of the texture into 2D space, and mapping of this texture onto the generated model such that it forms a contiguous view. A popular technique is to use texture from multiple camera views \cite**{texmultiview} in order to minimise distortions at the boundaries; see Figure~\ref{texture} for an illustration of this. The approach outlined by Niem and Broszio requires calibration of the camera \cite**{camcalib} in order to remove distortion and reduce aberrations in the input image due to lens shape. It assigns triangles on the surface of the mesh a camera image (selected according to best resolution). Groups of triangles which are textured by the same image (within some tolerance) are then considered to be \textit{surface regions}. These regions are refined so as to group them together as much as possible, reducing the number of region boundaries. Finally, it filters textures at the boundaries by linearly interpolating the texture from one view to the other across the boundary edge. The result is a smoothly varying texture over the surface of the shape; however, it does necessitate choosing sub-optimal video frames for some polygons in the texture-map. The end result of this is a texture map which requires less space to store, and varies smoothly, and thus the trade-off is probably acceptable. Niem and Broszio also describe a technique for synthesising texture for polygons which lack information, by reflecting texture from adjacent regions and blending the results.
 
 \begin{figure}
   \begin{center}
@@ -261,11 +249,15 @@ The final key aspect of these approaches we have not studied in detail is the pr
   \end{center}
 \end{figure}
 
+The final key aspect of these approaches we have not studied in detail is the problem of extracting texture from the input video, and mapping that onto the output geometry. There are a number of elements to this; selection of video frames for texture, compensation for lens distortion and projection of the texture into 2D space, and mapping of this texture onto the generated model such that it forms a contiguous view. A popular technique is to use texture from multiple camera views \cite**{texmultiview} in order to minimise distortions at the boundaries; see Figure~\ref{texture} for an illustration of this. The approach outlined by Niem and Broszio requires calibration of the camera \cite**{camcalib} in order to remove distortion and reduce aberrations in the input image due to lens shape. It assigns triangles on the surface of the mesh a camera image (selected according to best resolution). Groups of triangles which are textured by the same image (within some tolerance) are then considered to be \textit{surface regions}. These regions are refined so as to group them together as much as possible, reducing the number of region boundaries. Finally, it filters textures at the boundaries by linearly interpolating the texture from one view to the other across the boundary edge. The result is a smoothly varying texture over the surface of the shape; however, it does necessitate choosing sub-optimal video frames for some polygons in the texture-map. The end result of this is a texture map which requires less space to store, and varies smoothly, and thus the trade-off is probably acceptable. Niem and Broszio also describe a technique for synthesising texture for polygons which lack information, by reflecting texture from adjacent regions and blending the results.
+
 The approach taken by Debevec et al. (1996, discussed earlier and depicted in Figure~\ref{debevecviews}) sidesteps the issues around perspective quite neatly; the interactive output of their system dynamically selected the texture frame to use based on the current position of the camera. Their approach uses a similar blend technique at polygon boundaries, to reduce rendering artefacts. What is not immediately obvious is how this technique handles a smoothly changing camera. It may be that it sticks with what is potentially a later non-ideal texture, or it may blend between two target textures smoothly (the problem of knowing which texture to blend \textit{to} seems non-trivial, as it involves predicting the user's interactions). Finally, it might simply ``jump" from one texture frame to another at some point in the interaction. The precise behaviour is not made clear.
 
 \clearpage
 
 
+\chapter{Approach}
+\section{Overview}
 \begin{figure}
   \begin{center}
     \includegraphics[width=340px]{maya}
@@ -273,8 +265,6 @@ The approach taken by Debevec et al. (1996, discussed earlier and depicted in Fi
   \caption[An example of Maya's complex user interface]{An example of Maya's complex user interface (autodesk.com, 2009)}
   \label{maya}
 \end{figure}
-\section{Approach}
-\subsection{Overview}
 
 \begin{wrapfigure}{r}{80pt}
   \vspace{-20pt}
@@ -289,7 +279,7 @@ Broadly speaking, the approach described herein is to carefully delineate respon
 
 The goal of the system is to permit the user to move the webcam in space around the object they wish to ``scan", and identify key features to the scanner. Throughout this process, the model created will be updated and continually shown as an augmented reality overlay, so that the user may easily tweak the result and examine its accuracy; this continual feedback loop is required to make the most of the interactivity of the system.
 
-\subsection{Ego-Motion Recovery}
+\section{Ego-Motion Recovery}
 The first problem to be considered in relation to this solution is that of working out where in space the camera is located, and directed, at any given time. Some augmented reality systems, such as Layar, do this by using positioning sensors like GPS in tandem with a magnetometer for orientation. This is a relatively simple way of performing approximate localisation, however the problem of scale rapidly arises; if you desire a resolution of greater than approximately one meter, GPS will quickly fail you. Thus, whilst well suited to (for example) modelling the layout of a whole city, it is less suitable for a user wishing to record a detailed scan of an object on their desk. Third party \textit{local} positioning systems operate on a similar principle to GPS, and can provide much greater resolution over small areas. However, they are expensive and seem an unnecessary extra burden for the user to own and maintain. Ideally, the ego-motion recovery problem should be solved without the application of further hardware.
 
 Systems like VideoTrace \cite**{videotrace} are able to make use of processor-intensive offline tracking applications  to perform camera motion recovery - in the case of VideoTrace, the Voodoo Camera Tracker \cite**{voodoo}. These are commonly used in the visual effects industry as well, and thus much effort has gone into research and development on these. They tend to produce excellent and smooth results, even to the extent of being able to automatically fix operator-induced visual defects such as camera shake. However, their processing is designed for batch runs on high-performance machines; they are wholly insuitable to a real-time processing application.
@@ -308,14 +298,14 @@ A recent development on existing SLAM approaches is PTAM; \textit{P}arallel \tex
 
 PTAM (as with many SLAM systems) works best with camera lenses exhibiting a wide field-of-view; in this way, it can gather even more points with which to localise. However, this does mean that the images provided to the processing system are distorted by the wide angle lens. In order to account for this, PTAM requires a one-time camera calibration process, which feeds the parameters on its ATAN-Camera model \cite**{atancam}. It is therefore important that, when considering the user interface, this distortion is also considered.
 
-\subsection{User Interface}
+\section{User Interface}
 As already discussed, the primary user input is to be a simple webcam. This device is to be augmented with a maximum of two other digital inputs (i.e. buttons). These inputs could be positioned on the camera itself - indeed, some cameras already have these. However, in the interests of the most generally usable solution possible, these inputs will be assumed to be on the keyboard.
 
 It is envisaged that the user would interact with the model on the basis of ``tools"; different processors to operate on the scene. One of these input buttons should interact with the selected tool, whilst the second is used to select the tool the user wishes to make use of. Potential examples of tools might be to move points in space, to bisect an edge, or to delete a given vertex in the model.
 
 Feedback is to be provided to the user on a continuous basis. Using the tracking information from PTAM, as well as its camera calibration data, it is possible to project a 3D render of the current model on top of the current camera frame such that it provides a perspective-correct overlay of the current model on the actual object being modelled. To get this right, it will be best to render the model at each stage relative to the co-ordinate system set up by PTAM, then use OpenGL's projection matrix (which is responsible for transforming  co-ordinates in world space to co-ordinates in ``clip space", prior to their final transform into screen space) to project the model into camera-space. In this way, the projection may also be accelerated by graphics hardware available on the user's computer. However, the scene will need to be rendered twice; once onto an alpha-channel framebuffer in order to do the projection from world-space into screen-space, and once from that onto the camera frame to take into account camera lens distortion. In this manner, an accurate augmented reality scene will be projected atop the camera's image, permitting the user to visualise and improve their results throughout the modelling process.
 
-\subsection{Modelling}
+\section{Modelling}
 \label{approachmodel}
 The modelling process itself should be as general as possible; models should consist of triangular polygons assembled into a valid 3D model. As far as possible, problems such as degenerate faces, co-occurrent points, isolated vertices, etc should be avoided. It is not \textit{necessary} that the produced model be a closed hull; but it should be \textit{possible} to create such a model with this system. The precise details of the modelling process are open to experiments in user-interface design, however it is expected to be a gradual process. The user should work in one of two ways; either they identify vertices in space, and connect them to make the faces of their model, or they may place ``primitives" in the scene (such as planes, cubes, and the like) and manipulate them to best fit the model. Furthermore, there may be cases where a hybrid approach is needed - the user may construct an initial shape that approximates their model, and then refine it over time to improve its accuracy.
 
@@ -323,12 +313,13 @@ It should be possible for the system to use some of the vision techniques above 
 
 \clearpage
 
-\section{Implementation}
-\subsection{Architecture}
+\chapter{Implementation}
+\section{Architecture}
 In order to realise the above goals, a carefully planned and executed architecture is of prime importance. Broadly speaking, the system is realised as a collection of plugins in four primary areas, with a shared Model at its core. This vision is outlined in Figure~\ref{archmindmap}; here, the Model is represented as an Environment - lists of points in space, the edges connecting them, along with details of the current camera pose and the like.
 
 \begin{figure}[h]
   \begin{center}
+            \vspace{15px}
 	\scalefont{0.9}
 	\begin{tikzpicture}[scale=0.9]
   	  \path[mindmap,concept color=green!50!black,text=black]
@@ -370,7 +361,7 @@ The plugin areas, in blue, are the extension points for the system. In this way,
 
 The following sections will detail the implementation details of each of these sections in turn, including more formal diagrams as well as details and justification of the design decisions taken along the way. The organisation of these sections reflects the traditional delineation of \textit{Model, View, Controller} exhibited in well architected systems.
 
-\subsection{Model}
+\section{Model}
 
 \begin{figure}
   \begin{center}
@@ -418,13 +409,9 @@ The following sections will detail the implementation details of each of these s
   \label{modelclasses}
 \end{figure}
 
-The aforementioned notion of an \textit{Environment} is carried through from vision to implementation more-or-less verbatim. As seen in Figure~\ref{modelclasses}, there are four main classes of note in the model. The main \texttt{Environment} is a single object that is passed to almost all objects in the system; it contains lists of the \texttt{PolyFace}s, \texttt{Edge}s, and \texttt{Point}s in the system. The classes of \texttt{Edge} and \texttt{Point} are little more than data containers, identifying the lowest level of geometry. Early on it was decided that the core form of geometry in the system should be a triangular polygon; it is the most flexible primitive, and readily maps to the geometry used in 3D modelling packages. Thus, the notion of a \texttt{PolyFace} encodes a triangular polygon as a function of three vertices (\texttt{Point}s from the \texttt{Environment}), with associated texture and face normal data. This texture is stored as a full frame from the camera, for later processing. A given \texttt{PolyFace} is capable of deciding whether a given texture frame is better than the currently recorded one, as well as for mapping from the given camera frame to a UV co-ordinate for texture rendering. Finally, the \texttt{PolyFace} may also compute useful quantities, such as the face centre and normal vector, for use in other calculations. The direction of face normals is fixed based upon the direction the camera was facing when the best texture frame for a given \texttt{PolyFace} was captured.
+The aforementioned notion of an \textit{Environment} is carried through from vision to implementation more-or-less verbatim. As seen in Figure~\ref{modelclasses}, there are four main classes of note in the model. The main \texttt{Environment} is a single object that is passed to almost all objects in the system; it contains lists of the \texttt{PolyFace}s, \texttt{Edge}s, and \texttt{Point}s in the system. The classes of \texttt{Edge} and \texttt{Point} are little more than data containers, identifying the lowest level of geometry. Early on it was decided that the core form of geometry in the system should be a triangular polygon; it is the most flexible primitive, and readily maps to the geometry used in 3D modelling packages. Thus, the notion of a \texttt{PolyFace} encodes a triangular polygon as a function of three vertices (\texttt{Point}s from the \texttt{Environment}), with associated texture and face normal data. This texture is stored as a full frame from the camera, for later processing. A given \texttt{PolyFace} is capable of deciding whether a given texture frame is better than the currently recorded one (based on which frame will provide the highest-resolution texture), as well as for mapping from the given camera frame to a UV co-ordinate for texture rendering, using the calibrated camera's projection method. Finally, the \texttt{PolyFace} may also compute useful quantities, such as the face centre and normal vector, for use in other calculations. The direction of face normals is fixed based upon the direction the camera was facing when the best texture frame for a given \texttt{PolyFace} was captured.
 
 The \texttt{Environment} class is more than just pointers to data, however; it contains a variety of common methods useful for interacting with the model at its lower levels. For example, it contains a list of ``features" extracted by vision algorithms (the details of which are discussed later), along with methods to extract a sorted list of these features based on the current camera position and orientation. Likewise, it can identify which \texttt{PolyFace} or \texttt{Edge} the camera is aimed at, and where on that target the camera is pointed. Other more obvious methods provide interfaces for adding to the model; the method \texttt{addEdge(Point*,Point*)} for example will ensure that the edge is not a duplicate, and automatically construct any new \texttt{PolyFace}s created by this new \texttt{Edge}.
-
-\subsection{Augmented Reality Rendering \& User Experience}
-
-The approach taken for rendering the scene in augmented reality is built on top of that in PTAM's demonstration application. This uses two passes of OpenGL rendering; first, it renders the scene onto a regular framebuffer in memory, and then in a second pass uses the PTAM camera calibration data to distort and render that framebuffer onto the screen. In order to render an Augmented Reality view of the model atop this camera plane, the UFB Linear Frustum Matrix from PTAM is applied as an OpenGL Projection matrix, permitting points in \texttt{Environment}-space to be projected to image-space en masse.
 
 \begin{figure}
   \begin{center}
@@ -433,6 +420,10 @@ The approach taken for rendering the scene in augmented reality is built on top 
   \caption{An early modelling test, showing a textured AR box of mince pies overlaid on the camera plane}
   \label{pies}
 \end{figure}
+
+\section{Augmented Reality Rendering \& User Experience}
+
+The approach taken for rendering the scene in augmented reality is built on top of that in PTAM's demonstration application. This uses two passes of OpenGL rendering; first, it renders the scene onto a regular framebuffer in memory, and then in a second pass uses the PTAM camera calibration data to distort and render that framebuffer onto the screen. In order to render an Augmented Reality view of the model atop this camera plane, the UFB Linear Frustum Matrix from PTAM is applied as an OpenGL Projection matrix, permitting points in \texttt{Environment}-space to be projected to image-space en masse.
 
 For the purposes of usability, vertices are rendered with an exaggerated size, to facilitate using the camera to ``grab" them. All aspects of rendering are configured using variables in the GVar3 system. For example, a single keypress can be used to toggle rendering of various elements (edges, faces, vertices, camera plane, etc). Further settings include scale settings for things like vertices, or the sensitivity and accuracy of the camera ``pointer" system. Most interaction is done using the camera as a pointer, as described above, seeking feature points around the camera's look-vector; this setting simply adjusts how tolerant this should be of deviation from the precise vector. As seen in Figure~\ref{pies}, the UI is kept to an absolute minimum of clutter (even in early tests such as this). Other usability enhancements present in the system include highlighting of currently targetted objects; these present themselves as orange shading. When creating points it is useful to be able to see the feature points extracted by PTAM's analysis, so the renderer displays the nearest few points, scaled according to their distance from the look-vector of the camera (see Figure~\ref{targets} for an example of this). Usability tweaks like these permit the user to fully predict the behaviour of the system; which face is selected will never be a surprise, and points will always be inserted where the user expects. As this is an interactive modelling system, rather than a fully automated solution, transparency of operation is of the utmost importance.
 
@@ -444,7 +435,7 @@ For the purposes of usability, vertices are rendered with an exaggerated size, t
   \label{targets}
 \end{figure}
 
-\subsection{Plugins}
+\section{Plugins}
 \begin{figure}[h]
   \begin{center}
         \scalefont{0.6}
@@ -545,9 +536,10 @@ As seen in Figure~\ref{pluginclasses}, there are three sub-types in use in the s
 
 Finally, \texttt{VisionProcessor}s are invoked in a constant processing loop to perform vision tasks, and provide the ``main loop" of the system.
 
-As a coding standard, it is desirable that plugins are as easy to develop as possible. In order to encourage lots of small plugins, rather than monolithic chunks of code, much of the C++ syntactic overhead is removed through the use of preprocessor macros. For example, to declare a \texttt{VisionProcessor} all that is required is an indicator of the type, and optionally any \texttt{protected} variables it should require, thus:
+\subsubsection{Declaring Plugins}
+As a coding standard, it is desirable that plugins are as easy to develop as possible. In order to encourage lots of small plugins, rather than monolithic chunks of code, much of the C++ syntactic overhead is removed through the use of preprocessor macros. For example, to declare a \texttt{VisionProcessor} all that is required is an indicator of the type, and optionally any \texttt{protected} variables it should require, as seen overleaf.
 
-
+\vspace{10pt}
 \noindent
 \ttfamily
 \hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore VISION\textunderscore PLUGIN}\hlstd{}\hlopt{(\ }\hlstd{MyVisionAlgorithm}\hlopt{,\ }\hlstd{pthread\textunderscore t\ worker}\hlopt{;\ );}\\
@@ -562,6 +554,7 @@ As a coding standard, it is desirable that plugins are as easy to develop as pos
 
 Or, alternatively, for a \texttt{Tool} (invoked by "Space", and used to operate on planar faces):
 
+\vspace{10pt}
 \noindent
 \ttfamily
 \hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore TOOL\textunderscore PLUGIN}\hlstd{}\hlopt{(\ }\hlstd{my\textunderscore tool}\hlopt{,\ }\hlstd{}\hlstr{"Space"}\hlstd{}\hlopt{,\ }\hlstd{}\hlstr{"Plane"}\hlstd{}\hlopt{,\ );}\\
@@ -574,6 +567,7 @@ Or, alternatively, for a \texttt{Tool} (invoked by "Space", and used to operate 
 
 Finally, a \texttt{GUICommand} which can be invoked from GVars3 (either in configuration or on the command line) using \texttt{myCommand.invokeMyMethod}:
 
+\vspace{10pt}
 \noindent
 \ttfamily
 \hlstd{}\hllin{\ 1\ }\hlkwd{MK\textunderscore GUI\textunderscore COMMAND}\hlstd{}\hlopt{(\ }\hlstd{myCommand}\hlopt{,\ }\hlstd{invokeMyMethod}\hlopt{,\ );}\\
@@ -1014,7 +1008,7 @@ Any texture data which is loaded from disk for this geometry is stored in a sing
 }
 \end{itemize}
 
-\subsection{Configuration}
+\section{Configuration}
 Throughout the implementation, it has been noted that GVars3 variables are used to expose user-configurable parameters. A full list of these can be seen in Appendix~\ref{configparams}. However, for a user to modify them they really need to know what they're looking for; they could type \texttt{gvarlist} in the tool's terminal, but this will list all variables in both PTAM and this system, many of which a user need not concern themselves with. Furthermore, there is no structure to these values, or indication as to how they should be set. Finally, a user may make mistakes when typing a variable, and not realise their mistake until it is too late.
 
 \tikzset{
@@ -1070,8 +1064,8 @@ The contents of this file can largely be auto-generated by a Bash shell script, 
 
 \clearpage
 
-\section{Platform Showcase}
-\subsection{The Game}
+\chapter{Platform Showcase}
+\section{The Game}
 Throughout this project, there has been a conscious focus on the dual design goals of transparent \textit{modularity} and \textit{extensibility}. As architected, the system is capable of being extended in numerous directions, without the user ever having to be aware of the underlying complexity of systems of plugins or the various extension points in the system. In order to demonstrate the extent to which this extensibility can completely alter the behaviour of the system, this Platform Showcase was devised; an opportunity to prove that the system constructed is not only a modelling tool, but also a valid \textit{platform} for building Augmented Reality systems which may rely on models of the environment.
 
 \begin{figure}[t]
@@ -1111,10 +1105,10 @@ However, many of these AR experiences are based on techniques popularised by Uni
 
 With this background in mind, the goal is to set up a game engine within the tool's platform, to demonstrate how one can integrate physics, AI, and interactive game elements into a coheisve AR gaming environment.
 
-\subsection{Rendering}
+\section{Rendering}
 The existing Augmented Reality subsystem was built for extensibility; when the user activates the game mode, the game can safely replace the current instance of the renderer with one which is sensitive to the types of object in the game world. Each \texttt{GameObject} type has a different rendering method; for demonstrative purposes, \texttt{AIUnit}s are rendered as cubes, whilst \texttt{Projectile}s are spherical. As the renderer extends the existing behaviours, the full world model is rendered from the \texttt{Environment} as it is in the normal modelling use case - thus giving the output important results for immersion, such as occlusion or consistency of lighting, ``for free".
 
-\subsection{Real-Time Physics}
+\section{Real-Time Physics}
 In order to offer real-time physics simulation, the Bullet Physics library was selected \cite**{bullet}. This collision detection and rigid body physics library was first created by Erwin Coumans, from Sony Computer Entertainment, and has since become the most popular free/open source physics library in use today (rated 3\super{rd} according to \url{http://bulletphysics.org/wordpress/?p=88}, after the expensive closed-source solutions from nVidia and Havok). It has been used in a variety of commercial as well as free games, as well as powering award winning Visual Effects for Hollywood - notably the VES ``Outstanding Supporting Visual Effects in a Feature Motion Picture" for Framestore's work on Sherlock Holmes (\url{http://www.fxguide.com/article597.html} - fBounce is Framestore's custom Maya integration of Bullet). Evalulating the efficiency of this library prior to proceeding with it was vitally important; as PTAM already invokes a fair amount of computation-per-frame, the code for the game engine must be kept as lean as possible. Bullet was found to operate very efficiently, for the complexity of scene likely to be used - certainly well within the bounds of requirements.
 
 \begin{figure}
@@ -1131,22 +1125,22 @@ In order to initialise the physics world, it is necessary to transform the model
 
 When collisions occur, a custom substep callback that is registered with Bullet causes any suitable game events to be triggered - whether that be ``killing" an object, or racking up points, is a question of creative design. The types of objects can be extracted from the Bullet transforms by retrieving the appropriate \texttt{GameObject} pointer stored within it, using the provided \texttt{btCollisionObject:: getUserPointer()} method.
 
-\subsection{AI Navigation}
+\section{AI Navigation}
 In order to make a game environment more compelling, it is desirable that AI units can appear to navigate the world that has been created for them in an intelligent fashion, regardless of the complexity of the terrain facing them. In order to achieve this goal, the A* search algorithm \cite**{astar} was selected as an efficient means of path selection, with an option for sensible early termination if either no path can be found, or the computation takes too long. While A* is not guaranteed to find the shortest path, it \textit{is} provably guaranteed to terminate, and be complete. For complex paths, A* may use large amounts of memory - should this prove a problem at a later date, the pathfinding algorithm is encoded in a separate \texttt{AStarSearch} class, and it can be swapped for a much less memory-hungry Iterative Deepening form of A* \cite**{idastar}.
 
 In order to perform A* search, the geometry of the model must be simplified from its 3D geometry into a \textit{navigation mesh} - a weighted digraph representing the available edges to traverse in moving from one node to another. In order to generate this, the \texttt{GameFactory} examines the contents of the \texttt{Environment}. From these, it generates \texttt{WayPoint}s - each of which contains the $x$, $y$, $z$ co-ordinates in world-space, as well as lists of the \texttt{Waypoint}s that are traversable, and the distance to them. A \texttt{Waypoint} is added for each \texttt{Point}, and on the centre of each \texttt{PolyFace}. Finally, links are made between \texttt{Waypoint}s based on the gradient along the candidate edge; if it is too steep, then the edge cannot be traversed. In this way, the contours of the terrain are observed when trying to navigate from one position to another. Candidate links are generated from every \texttt{Edge} in the \texttt{Environment}, from the centre of each \texttt{PolyFace} to each of its vertices, and from each point on a face to each other face that is considered planar with it (as discussed previously, using \texttt{Environment::findPlanarFaces}).
 
 Finally, all of these \texttt{Waypoint}s are encoded in a \texttt{WorldMap}, which provides an interface for finding the nearest \texttt{Waypoint} to a given set of 3D co-ordinates. It can also ``tidy up" the \texttt{Waypoint} graph, by removing those points which cannot be reached by any traversal (i.e. a node in the digraph with zero edges).
 
-\subsection{Game Director \& Demo Gameplay}
+\section{Game Director \& Demo Gameplay}
 The final component of the game world is the \texttt{Director}: it controls the flow of the game, and maintains the state of the player's score. In this case, it is a fairly simple affair; over time, it randomly ``spawns" \texttt{AIUnit}s at a random point on one edge of the game world, and tells them to navigate to the far side - ideal for playing on a desk, in a similar fashion to popular Flash-based ``desktop tower defence" games. If an \texttt{AIUnit} reaches the far side, the player loses 300 points. The player can try and stop this by launching projectiles from their handheld camera - if one hits an \texttt{AIUnit} they gain 10 points, and if they knock one off the edge of the game world they earn 100 points. The mechanics are simple, but as a showcase of what a full-time games developer could do with the technology, it provides valuable evidence of the suitability of this sort of technology for recreational gameplay.
 
 \clearpage
 
-\section{Evaluation}
+\chapter{Evaluation}
 In order to ascertain the extent to which the finished product meets these criteria, carefully defined evaluation must be undertaken. It is not sufficient that the implementation detailed should accomplish the stated goals - there must be a methodology defined to ascertain how \textit{well} it accomplishes those goals. Therefore, two different types of evaluation will be undertaken; end-to-end acceptance testing, and numerical analysis of the accuracy of the result.
 
-\subsection{Acceptance Testing}
+\section{Acceptance Testing}
 The various tools described in Section~\ref{cmdTools} are each an experiment in user interaction. As this is an entirely novel user interface, it is valuable to consider each of the available styles of interacting with the model, with respect to their usability and utility to a modeller.
 
 \begin{itemize}
@@ -1202,7 +1196,7 @@ Wavefront's OBJ format, on the other hand, is far more versatile, supporting bot
  }
 \end{itemize}
 
-\subsection{Accuracy}
+\section{Accuracy}
 \begin{figure}
   \begin{center}
     \subfigure[Modelling example - Desk Surface]{\includegraphics[width=160px]{DeskTest}\label{desktest}}
@@ -1250,10 +1244,10 @@ While the percentage error is easy to digest, the error map gives much more deta
 
 %Another approach would be to perform feature detection on the source and AR camera frames, and estimate the motion of co-occurrent features between the two; any features that are not within the model would not have moved, but those which \textit{were} modelled, would be expected to exhibit some form of motion. 
 
-\subsection{Usability}
+\section{Usability}
 A third factor that remains unmeasured is the extent to which a new user can pick up the software and learn to use it; one aspect of this is documentation, the other a highly qualitative ``user friendliness". This can hypothetically also be tested, by giving the system to a small cross-section of different users and observing how readily they learn to use it. Worthy of note here is the relative difficulty with which most users learn 3D packages, such as Maya or 3D Studio Max - most 3D tools are highly complex, with many months of learning curve. If a user can pick this system up and start using it to model and texture objects inside of an hour then it should rate quite highly on the usability scale!
 
-\subsection{Performance}
+\section{Performance}
 A final key aspect for consideration is the performance of the system. Not only must it remain performant under usual modelling scenarios, but if it is to be used as a platform for other software it is important that its performance characteristics are well understood. The primary form of performance we will consider is the framerate of the software in use, measured in Frames Per Second (FPS). 
 
 \begin{figure}
@@ -1333,7 +1327,7 @@ With this in mind, a second random mesh generator was written. Instead of focuss
 
 \clearpage
 
-\section{Conclusion}
+\chapter{Conclusion}
 As was highlighted at the very beginning of this project, there are a plethora of reasons for a user to want to generate a 3D model, from user-generated content in games, through to complex high-precision CAD. There is no way that any tool can claim to please all of the people, all of time, but it seems clear from the evaluation above that there is a definite niche for the system described in this document. Its performance has been found to be highly satisfactory, with rare drops in frame-rate, attributable to infeasibly complex models. Should it be made into a more commercial product, further development on the rendering subsystem to utilise more advanced OpenGL constructs should alleviate almost all of these difficulties. The true success has been in prototyping a variety of natural user interactions with the system. Informal user studies have shown that the average user can start modelling within just a few minutes of having the system demonstrated to them, with more advanced use cases becoming comfortable for them after a brief period of practice.
 
 The experiments in this novel UI have largely been a success; some more experimental tools have been omitted from this document, since they have not in some cases come to fruition - but most of the interaction primitives discussed are useful in at least a subset of cases. Furthermore, it has become clear that the system is, in fact, capable of \textit{more} than it was originally designed for. The motivation for it was originally to construct a manual modelling tool that was not subject to the foibles of automated vision-based scanning systems. In so doing, it has become quite possible to model entirely novel objects with this interactive, hand-held tool - not just those in the scene in front of the user. Since the system has to be able to cope with adjustments to scenes in areas where there are no discernable features to track, it is capable of modelling parts of, or even entire, objects that are not actually present in the scene before the camera - the only limits are the proficiency and imagination of the user.
@@ -1342,7 +1336,7 @@ Overall, while this research has provided some interesting results and analysis 
 
 \clearpage
 
-\section{Further Work}
+\chapter{Further Work}
 As we have argued, the work described herein could well provide an interesting foundation for further research and development. Some of the most promising work today utilises many more techniques from computer vision; from recent developments in fully automated dense reconstruction \cite**{denserecon}, through to more interaction-based approaches, such as in the Jiim interface to VideoTrace \cite**{jiim}. These both strive for fully interactive performance, though with very differenct approaches to user interaction. It would be interesting to investigate a hybrid approach; perhaps using simple constraints defined through the interaction model described here as a more semantically aware base mesh for a dense reconstruction.
 
 Another type of improvement that should significantly enhance the system is also vision-based; awareness of a greater number of features in the scene. This could be just for the interaction (for example, using the edglet-enhanced version of PTAM discussed in the Evaluation), or to do a more VideoTrace-style automatic enhancement and fitting of edges to features in the scene (especially edgelets).
@@ -1362,13 +1356,13 @@ In short, there are a huge variety of directions this work could be taken in, al
 
 
 \clearpage
-\renewcommand*{\refname}{\section{References}}
+\renewcommand*{\bibname}{\chapter{References}}
 \bibliography{Report}
 \bibliographystyle{dcu}
 
 \clearpage
 \appendix
-\section{User-Configurable Parameters}
+\chapter{User-Configurable Parameters}
 \label{configparams}
 \noindent
 \ttfamily
@@ -1462,7 +1456,7 @@ In short, there are a huge variety of directions this work could be taken in, al
 
 \clearpage
 
-\section{MEL Script to Invoke Tool for Viewing}
+\chapter{MEL Script to Invoke Tool for Viewing}
 \label{melar}
 
 % Yes, this is generated from source. Don't try and edit too much!
