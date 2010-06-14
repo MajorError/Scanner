@@ -1,5 +1,5 @@
-%\documentclass[a4paper,10pt,twoside,openright]{report}
-\documentclass[a4paper,10pt]{report}
+\documentclass[a4paper,10pt,twoside]{report}
+%\documentclass[a4paper,10pt]{report}
 
 \usepackage{ucs}
 \usepackage{caption}
@@ -32,7 +32,7 @@ decorations.pathmorphing,shapes,matrix,shapes.symbols}
 \renewcommand{\textfraction}{0.1}
 \renewcommand{\floatpagefraction}{0.75}
 
-\title{Real-Time Interactive 3D Modelling with Commodity Hardware
+\title{\setcounter{page}{0} Real-Time Interactive 3D Modelling with Commodity Hardware
 \vspace{70pt}}
 \author{Peter Coetzee\\Supervisor: Andrew Davison
 \vspace{70pt}}
@@ -41,14 +41,14 @@ decorations.pathmorphing,shapes,matrix,shapes.symbols}
 \begin{document}
 \pagenumbering{roman}
 \maketitle
+\setcounter{page}{1}
 
 \makeatletter
 \newcommand\absname{Abstract}
   \newenvironment{myabstract}{%
       \vspace{50px}%
-      \titlepage
       \begin{center}%
-        \bfseries \absname
+        \bfseries \absname \vspace{-100px}
         \@endparpenalty\@M
       \end{center}}
 \makeatother
@@ -56,9 +56,9 @@ decorations.pathmorphing,shapes,matrix,shapes.symbols}
 \makeatletter
 \newcommand\ackname{Acknowledgements}
   \newenvironment{acknowledgements}{%
-      \vspace{70px}%
+      \vspace{50px}%
       \begin{center}%
-        \bfseries \ackname
+        \bfseries \ackname \vspace{-100px}
         \@endparpenalty\@M
       \end{center}}
 \makeatother
@@ -870,7 +870,8 @@ This smoothing is calculated in real-time, as the user pulls the target point, s
 
 \item{\textbf{texture.clean}: Often, textures are extracted from camera frames which are very close together, or which could cover more than one \texttt{PolyFace}. Due to the slight inaccuracies of both the PTAM tracking and the texture projection, coupled with the human eye's ability to detect discontinuites in an image, it is desirable to (within reason) choose shared frames of reduced quality, so as to visually improve the result. Furthermore, using fewer frames of video for texturing has the added bonus of reducing file sizes when saving the textures for export. This operation is completed in two passes. The first pass compares the camera pose for each pair of texture frames; if these are within a given tolerance, and the texture frame will cover both polygons, it will be shared between the two faces.
 
-In the second pass, the code examines adjacent pieces ot texture; if the frames are taken from sufficiently similar camera angles, it will choose whichever  image gives the most coverage - if the currently examined face is bounded on at least two sides by the same texture, the angle is within the tolerance, and the texture frame can cover the current face, then the replacement will be performed.}
+In the second pass, the code examines adjacent pieces ot texture; if the frames are taken from sufficiently similar camera angles, it will choose whichever  image gives the most coverage - if the currently examined face is bounded on at least two sides by the same texture, the angle is within the tolerance, and the texture frame can cover the current face, then the replacement will be performed. The results of this clean are illustrated in Figure~\ref{texclean}}
+
 \item{\textbf{code.save}, \textbf{code.load}: This simple pair of debugging commands demonstrate the power of separating Commands from Tools; they provide a simple way of exporting model geometry, and reloading it later. The save command simply streams a series of primitive commands - only \texttt{vertex.create} and \texttt{edge.connect} are required to reconstruct the model; GVars3 will then load the file later, and the model will be reconstructed. Both commands can take a filename as a parameter, to identify which file to use to save / load (otherwise it will use ``scanner\_model.out", the default filename).}
 
 \begin{figure}
@@ -901,6 +902,7 @@ In the second pass, the code examines adjacent pieces ot texture; if the frames 
 
 The reduced set of texture frames are then stored, as a series of consecutive images in a single 24-bit RGB TARGA\cite**{targa} file (see Figure~\ref{tgaformat}). The material data is stored in a \texttt{.mtl} file, which is essentially a plain text format defining the ambient, diffuse, and specular components of the named material (fixed at $1$, $1$, and $0$ respectively). It also permits selection of alpha transparency, and the illumination model to be used, along with naming the TGA file to use for texturing. This file is more-or-less the same regardless of the model. For example,
 
+\vspace{10pt}
 \noindent
 \ttfamily
 \hlstd{}\hlslc{\#\ Material\ database\ for\ scanner\textunderscore model.obj}\hspace*{\fill}\\
@@ -926,9 +928,9 @@ newmtl\ TextureMapped\hspace*{\fill}\\
 \normalfont
 \normalsize
 
-
 Finally, the \texttt{.obj} file encodes the details of the model's geometry; the set of vertices, their texture co-ordinates, and the vertex normals. The last section of this file links the OBJ geometry to the material file, and applies the texture to the set of face definitions which follow. These definitions are made in such a way as to ensure that the points are connected in an order which will preserve their surface normals - implicit in the OBJ definition. The OBJ file structure is as follows:
 
+\vspace{10pt}
 \noindent
 \ttfamily
 \hlstd{}\hlslc{\#}\hspace*{\fill}\\
@@ -986,6 +988,8 @@ g\ scanner\textunderscore model}\hlstd{\ \ }\hlstd{}\hlslc{\#\ Polygon\ group\ n
 \end{figure}
 
 With all three of these files serialised and linked, most standard modelling tools used in industry today can import without loss of information. An example of this is shown in Figure~\ref{blender}.}
+\clearpage
+\item{\textbf{obj.load}: Loading of OBJ files is a slightly more complex problem; due to the vast array of options and formats for storing OBJ, MTL, and TGA data the \texttt{obj.load} command will only work with a subset of files. The assumptions it makes are:
 
 \begin{figure}
   \begin{center}
@@ -994,8 +998,6 @@ With all three of these files serialised and linked, most standard modelling too
   \caption{An example of shaded geometry loaded into the modelling system from an external source}
   \label{load}
 \end{figure}
-
-\item{\textbf{obj.load}: Loading of OBJ files is a slightly more complex problem; due to the vast array of options and formats for storing OBJ, MTL, and TGA data the \texttt{obj.load} command will only work with a subset of files. The assumptions it makes are:
 \begin{itemize}
 \item{Meshes are triangulated (i.e. contain no faces of order \textgreater~3)}
 \item{Only one material database has been linked}
@@ -1009,7 +1011,7 @@ Any texture data which is loaded from disk for this geometry is stored in a sing
 \end{itemize}
 
 \section{Configuration}
-Throughout the implementation, it has been noted that GVars3 variables are used to expose user-configurable parameters. A full list of these can be seen in Appendix~\ref{configparams}. However, for a user to modify them they really need to know what they're looking for; they could type \texttt{gvarlist} in the tool's terminal, but this will list all variables in both PTAM and this system, many of which a user need not concern themselves with. Furthermore, there is no structure to these values, or indication as to how they should be set. Finally, a user may make mistakes when typing a variable, and not realise their mistake until it is too late.
+Throughout the implementation, it has been noted that GVars3 variables are used to expose user-configurable parameters. A full list of these can be seen in Appendix~\ref{configparams}. However, for a user to modify them they really need to know what they're looking for; they could type \texttt{gvarlist} in the tool's terminal, but this will list all variables in both PTAM and this system, many of which a user need not concern themselves with. Furthermore, there is no structure to these values, or indication as to how they should be set. Finally, a user may make mistakes when typing a variable, and not realise their mistake until it is too late. Providing a well-organised graphical interface to the configuration readily resolves many of these issues, while maintaining the user-friendly and un-cluttered nature of the software.
 
 \tikzset{
 >=stealth',
@@ -1040,7 +1042,7 @@ Throughout the implementation, it has been noted that GVars3 variables are used 
 
 There are two further ways for a user to configure the system; in the settings file, \texttt{settings.cfg}, and through a graphical user interface. There is a well-defined order of precedence to these variables; illustrated in Figure~\ref{configprecedence}. The settings file is pre-populated prior to distribution with all of the default values in the system, and is loaded with the system to set any default values, as if they were typed in on the system's command interface. This means that any plugins can be disabled in the configuration file, also (such as the \texttt{profiler} discussed previously).
 
-The configuration GUI divides up the configuration options by area; Processors, Commands, and ARRendering. The controls either take the form of a toggle button, or a slider, based on the data type of the value. The Processors section also includes buttons to enable and disable various \texttt{VisionProcessor}s. By default, these include:
+A configuration GUI has been provided that divides up the configuration options by area; Processors, Commands, and ARRendering. The controls either take the form of a toggle button, or a slider, based on the data type of the value. The Processors section also includes buttons to enable and disable various \texttt{VisionProcessor}s. By default, these include:
 
 \begin{enumerate}
 \item{PTAM Tracking}
@@ -1068,7 +1070,7 @@ The contents of this file can largely be auto-generated by a Bash shell script, 
 \section{The Game}
 Throughout this project, there has been a conscious focus on the dual design goals of transparent \textit{modularity} and \textit{extensibility}. As architected, the system is capable of being extended in numerous directions, without the user ever having to be aware of the underlying complexity of systems of plugins or the various extension points in the system. In order to demonstrate the extent to which this extensibility can completely alter the behaviour of the system, this Platform Showcase was devised; an opportunity to prove that the system constructed is not only a modelling tool, but also a valid \textit{platform} for building Augmented Reality systems which may rely on models of the environment.
 
-\begin{figure}[t]
+\begin{figure}[h]
     \subfigure[levelHead]{\includegraphics[width=165px]{levelhead3}\label{levelhead}}
     \quad
     \subfigure[SCOPE]{\includegraphics[width=165px]{scope1}\label{scope}}
@@ -1079,18 +1081,19 @@ One increasingly popular application of AR is in entertainment, where it has bee
 
 As mobile phones become more powerful, it is possible for them to perform accurate camera tracking while displaying real-time 3D graphics. This allows more complex game interactions, such as Fanta's Virtual Tennis\cite**{fantatennis} advertising game in which players print a marked paper tennis court and play tennis in real-time using two mobile phones as rackets. The Augmented Environments Lab at Georgia Tech has also experimented with several AR games, involving several different methods of interaction.
 
-However, many of these AR experiences are based on techniques popularised by University of Washington ARToolkit \cite**{artk}, which was itself based on earlier work \cite**{artkpaper} in collaboration between the University of Washington and Hiroshima City University. 
-
 \begin{wrapfigure}{l}{130pt}
+  \vspace{-15pt}
   \begin{center}
     \includegraphics[width=120px]{marker-axis1}
   \end{center}
   \vspace{-10pt}
   \caption{A visual marker used to extract axes}
-  \vspace{-20pt}
+  \vspace{-10pt}
   \label{markerar}
 \end{wrapfigure}
- This so-called \textit{marker based AR} requires tokens (Figure~\ref{markerar}) to extract co-ordinate axes and orient the augmented reality world. These are subject to a number of failure modes, including occlusion or a reduction in image quality due to, for example, motion blur (Figure~\ref{markerfail}). As PTAM tracks the scene based on a much larger number of feature points, if just one collection of points is obscured or untrackable it does not cause the entire track to fail.
+
+However, many of these AR experiences are based on techniques popularised by University of Washington ARToolkit \cite**{artk}, which was itself based on earlier work \cite**{artkpaper} in collaboration between the University of Washington and Hiroshima City University. 
+ This so-called \textit{marker based AR} requires tokens (Figure~\ref{markerar}) to extract co-ordinate axes and orient the augmented reality world. These are subject to a number of failure modes, including occlusion or a reduction in image quality due to, for example, motion blur (Figure~\ref{markerfail}). As PTAM tracks the scene based on a much larger number of feature points, if just one collection of points is obscured or untrackable it does not break the entire track.
 
 \begin{figure}[t]
     \vspace{10pt}
@@ -1106,7 +1109,7 @@ However, many of these AR experiences are based on techniques popularised by Uni
 With this background in mind, the goal is to set up a game engine within the tool's platform, to demonstrate how one can integrate physics, AI, and interactive game elements into a coheisve AR gaming environment.
 
 \section{Rendering}
-The existing Augmented Reality subsystem was built for extensibility; when the user activates the game mode, the game can safely replace the current instance of the renderer with one which is sensitive to the types of object in the game world. Each \texttt{GameObject} type has a different rendering method; for demonstrative purposes, \texttt{AIUnit}s are rendered as cubes, whilst \texttt{Projectile}s are spherical. As the renderer extends the existing behaviours, the full world model is rendered from the \texttt{Environment} as it is in the normal modelling use case - thus giving the output important results for immersion, such as occlusion or consistency of lighting, ``for free".
+The existing Augmented Reality subsystem was built for extensibility; when the user activates the game mode, the game can safely replace the current instance of the renderer with one which is sensitive to the types of object in the game world. Each \texttt{GameObject} type has a different rendering method; for demonstrative purposes, \texttt{AIUnit}s are rendered as cubes, whilst \texttt{Projectile}s are spherical. As the renderer extends the existing behaviours, the full world model is rendered from the \texttt{Environment} as it is in the normal modelling use case - thus giving the output important results for immersion, such as occlusion or consistency of lighting, as an integral part of the solution.
 
 \section{Real-Time Physics}
 In order to offer real-time physics simulation, the Bullet Physics library was selected \cite**{bullet}. This collision detection and rigid body physics library was first created by Erwin Coumans, from Sony Computer Entertainment, and has since become the most popular free/open source physics library in use today (rated 3\super{rd} according to \url{http://bulletphysics.org/wordpress/?p=88}, after the expensive closed-source solutions from nVidia and Havok). It has been used in a variety of commercial as well as free games, as well as powering award winning Visual Effects for Hollywood - notably the VES ``Outstanding Supporting Visual Effects in a Feature Motion Picture" for Framestore's work on Sherlock Holmes (\url{http://www.fxguide.com/article597.html} - fBounce is Framestore's custom Maya integration of Bullet). Evalulating the efficiency of this library prior to proceeding with it was vitally important; as PTAM already invokes a fair amount of computation-per-frame, the code for the game engine must be kept as lean as possible. Bullet was found to operate very efficiently, for the complexity of scene likely to be used - certainly well within the bounds of requirements.
@@ -1177,7 +1180,7 @@ Scaling a mesh is again likely only to be useful when loading from hard disk. Th
 Subdivision and smooth deformation are something of a ``mixed bag"; it is important that the user has experience using them, to know when it is suitable to use them. Subdivision can be very useful on a very smooth mesh, essentially performing the same work as \texttt{edge.bisect} but in an automated fashion on the entire model at once. The smooth deformation mode does not work so well; for small deformations there is (we find in real-world testing) little need to ``pull" all of the points simultaneously, and large deformations are quite unlikely. Future work, however, could investigate using a similar approach to do so-called ``voxel sculpting" to start from a primitive shape (cube, cylinder, etc) and work towards a smooth mesh by ``pulling" voxels as if the mesh were modelling clay. This approach is taken by the GPGPU accelerated modelling tool, 3D-Coat (\url{http://www.3d-coat.com/}).
 }
 
-\item{\textbf{Texture Application \& Repair}: As the texture application in the system is completely automated, the user should rarely need to concern themselves with how it works. In general, the distortion of textures for display works fairly well; even frames captured at quite oblique angles are mapped quite accurately. However, as discussed earlier and seen in Figure~\ref{camblur}, occasionally captured frames are blurred - in these cases, it is easy for the user to identify these and have the texture replaced. As the ``interaction primitive" for this is the same as interacting with planes, as evaluated above, using this tool should not require any extra practice or training for a user, keeping the entire texture system as low-impact as possible. To this end, experiments were also run with running the \texttt{texture.clean} command at regular intervals, to help repair texture discontinuities (as in Figure~\ref{texclean}), as a \texttt{VisionProcessor}. This worked very well for simple models, but can significantly reduce the framerate when the model becomes too complex. Future work on the efficiency of this method, by introducing further memoisation may well alleviate the problem.
+\item{\textbf{Texture Application \& Repair}: As the texture application in the system is completely automated, the user should rarely need to concern themselves with how it works. In general, the distortion of textures for display works fairly well; even frames captured at quite oblique angles are mapped quite accurately. However, as discussed earlier and seen in Figure~\ref{camblur}, occasionally captured frames are blurred - in these cases, it is easy for the user to identify these and have the texture replaced. As the ``interaction primitive" for this is the same as interacting with planes, as evaluated above, using this tool should not require any extra practice or training for a user, keeping the entire texture system as low-impact as possible. To this end, experiments were also run with running the \texttt{texture.clean} command at regular intervals, to help repair texture discontinuities (as in Figure~\ref{texclean}), as a \texttt{VisionProcessor} plugin. This worked very well for simple models, but can significantly reduce the framerate when the model becomes too complex. Future work on the efficiency of this method, by introducing further memoisation may well alleviate the problem.
 }
 
 \item{\textbf{Saving \& Loading}: There are two formats supported for saving and loading; ``code" and ``obj". The former was originally written as a debugging solution, showing how the GVars3-based command system can be used to quickly serialise a model, and even more easily load it back from disk. However, ``code" has a major limitation; it has no support for saving or loading any texture data on disk. However, the format is verbose and easy to understand and edit, since it takes the same format as the commands in the original system.
@@ -1240,7 +1243,7 @@ Of course, this highlights a problem with this approach to accuracy testing - as
   \label{histograms}
 \end{figure} 
 
-While the percentage error is easy to digest, the error map gives much more detailed information. Ideally, a measure somewhere between the two should provide an easy to compare metric, that provides more detailed information than just a percentage error. In order to do this, Figure~\ref{histograms} shows histograms generated showing the frequency of each amount of error. These make it easy to see that the errors present with a blank model are all present below a peak of 9\%, while those in the modelled case exhibit errors up to 74\% - although under 0.03\% of the image exhibits errors over 70\%. By way of contrast, approximately 40\% of the frame exhibits an error of under 10\%.
+While the percentage error is easy for a person to digest, the error map gives much more detailed information. Ideally, a measure somewhere between the two should provide an easy to compare metric, that provides more detailed information than just a percentage error. In order to do this, Figure~\ref{histograms} shows histograms generated indicating the frequency of each amount of error in the error maps; simply a case of counting the number of occurrences of each pixel intensity in the grayscale map. These make it easy to see that the errors present with a blank model are all present below a peak of 9\%, while those in the modelled case exhibit errors up to 74\% - although under 0.03\% of the image exhibits errors over 70\%. By way of contrast, approximately 40\% of the frame exhibits an error of under 10\%.
 
 %Another approach would be to perform feature detection on the source and AR camera frames, and estimate the motion of co-occurrent features between the two; any features that are not within the model would not have moved, but those which \textit{were} modelled, would be expected to exhibit some form of motion. 
 
@@ -1261,8 +1264,23 @@ A final key aspect for consideration is the performance of the system. Not only 
   \label{framerate}
 \end{figure} 
 
-In order to produce models of various resolution to test how well the system scales, an extra command was created. This command would add a number of new \texttt{Point}s to the \texttt{Environment}, and connecting each added \texttt{Point} to every existing point with probability defined by a GVars3 controlled variable, \texttt{edgeProb}. Finally, the resulting size of the three aspects of the model (points, edges, and faces) were recorded after each command invocation. The framerate observed was taken as an approximate average of those calculated while panning the camera around the model - ensuring that PTAM was performing fresh tracking, and the rate shown was ``fair". Whilst the camera was stable, many sizes of model would often exhibit higher framerates than those recorded here; this appeared to be a compound result of PTAM's efficiency, and an OpenGL optimisation of the rendering. The tables of results are given below, with the graphs generated from these data in Figure~\ref{framerate}. The first section of data were generated with an \texttt{edgeProb} of 1, whilst the second were formed from an \texttt{edgeProb} of 0.5.
+In order to produce models of various resolution to test how well the system scales, an extra command was created. This command would add a number of new \texttt{Point}s to the \texttt{Environment}, and connecting each added \texttt{Point} to every existing point with probability defined by a GVars3 controlled variable, \texttt{edgeProb}. Finally, the resulting size of the three aspects of the model (points, edges, and faces) were recorded after each command invocation. The framerate observed was taken as an approximate average of those calculated while panning the camera around the model - ensuring that PTAM was performing fresh tracking, and the rate shown was ``fair". Whilst the camera was stable, many sizes of model would often exhibit higher framerates than those recorded here; this appeared to be a compound result of PTAM's efficiency, and an OpenGL optimisation of the rendering. The tables of results are given at the end of the chapter, with the graphs generated from these data in Figure~\ref{framerate}. The first section of data were generated with an \texttt{edgeProb} of 1, whilst the second were formed from an \texttt{edgeProb} of 0.5.
 
+In analysing these graphs, we can clearly see that as the overall complexity of the model increases, the framerate decreases in proportion. However, the first two graphs (Figures~\ref{pointrate} and \ref{edgerate}) also have clear dips in framerate (highlighted) corresponding to the more complex models in the \textit{first} data set. The fact that these spurious discontinuities are not present in Figure~\ref{facerate} suggest that the primary cause of the drop in framerate is the increase in number of faces. This hypothesis is borne out by the profiling data, which show a significant proportion of each frame's rendering devoted to rendering the textured \texttt{PolyFace}s.
+
+With this in mind, a second random mesh generator was written. Instead of focussing on number of points, it can be tasked to generate a mesh of a given number of faces, by iteratively generating a new \texttt{PolyFace} from the current new point, as well as the previous two generated points. The mesh is not as heavily connected as in the previous generator, but arguably grows at a more realistic rate of faces in relation to number of points and edges. The raw data for this analysis is again below, with the graph generated from it shown in Figure~\ref{facesrate2}. \clearpage
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[width=340px]{FacesVsFramerate2}
+  \end{center}
+  \caption{Second analysis of effect of face count on framerate}
+  \label{facesrate2}
+\end{figure}
+
+\vspace{20pt}
+Data for the first analysis:
+\vspace{10pt}
 \begin{center}
 \begin{tabular}{| c | c | c || c |} 
 \hline
@@ -1290,18 +1308,9 @@ In order to produce models of various resolution to test how well the system sca
 \end{tabular}
 \end{center} 
 
-In analysing these graphs, we can clearly see that as the overall complexity of the model increases, the framerate decreases in proportion. However, the first two graphs (Figures~\ref{pointrate} and \ref{edgerate}) also have clear dips in framerate (highlighted) corresponding to the more complex models in the \textit{first} data set. The fact that these spurious discontinuities are not present in Figure~\ref{facerate} suggest that the primary cause of the drop in framerate is the increase in number of faces. This hypothesis is borne out by the profiling data, which show a significant proportion of each frame's rendering devoted to rendering the textured \texttt{PolyFace}s.
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=340px]{FacesVsFramerate2}
-  \end{center}
-  \caption{Second analysis of effect of face count on framerate}
-  \label{facesrate2}
-\end{figure}
-
-With this in mind, a second random mesh generator was written. Instead of focussing on number of points, it can be tasked to generate a mesh of a given number of faces, by iteratively generating a new \texttt{PolyFace} from the current new point, as well as the previous two generated points. The mesh is not as heavily connected as in the previous generator, but arguably grows at a more realistic rate of faces in relation to number of points and edges. The raw data for this analysis is again below, with the graph generated from it shown in Figure~\ref{facesrate2}.
-
+\clearpage
+Data for the second analysis::
+\vspace{10pt}
 \begin{center}
 \begin{tabular}{| c || c |} 
 \hline
@@ -1325,8 +1334,6 @@ With this in mind, a second random mesh generator was written. Instead of focuss
 \end{tabular}
 \end{center}
 
-\clearpage
-
 \chapter{Conclusion}
 As was highlighted at the very beginning of this project, there are a plethora of reasons for a user to want to generate a 3D model, from user-generated content in games, through to complex high-precision CAD. There is no way that any tool can claim to please all of the people, all of time, but it seems clear from the evaluation above that there is a definite niche for the system described in this document. Its performance has been found to be highly satisfactory, with rare drops in frame-rate, attributable to infeasibly complex models. Should it be made into a more commercial product, further development on the rendering subsystem to utilise more advanced OpenGL constructs should alleviate almost all of these difficulties. The true success has been in prototyping a variety of natural user interactions with the system. Informal user studies have shown that the average user can start modelling within just a few minutes of having the system demonstrated to them, with more advanced use cases becoming comfortable for them after a brief period of practice.
 
@@ -1348,14 +1355,12 @@ The final area that could have significant value in further development is explo
 \item{Undo \& Redo stack}
 \item{File Open / Save dialogs (for browsing)}
 \item{Friendlier configuration GUI}
-\item{Option to switch between a fully-automated mode}
+\item{Option to switch between a fully-automated mode and the manual modelling mode discussed already}
 \item{Automatic object translation / rotation detection and mesh realignment (making it easier to model all sides of an object)}
 \end{itemize}
 
 In short, there are a huge variety of directions this work could be taken in, almost all of which would be sure to expand on its utility and enhance its usability. That the approach taken here may serve as a foundation for such future work (both in spirit and even architecturally, from an engineering standpoint) is a rewarding conclusion to draw indeed.
 
-
-\clearpage
 \renewcommand*{\bibname}{\chapter{References}}
 \bibliography{Report}
 \bibliographystyle{dcu}
@@ -1411,7 +1416,6 @@ In short, there are a huge variety of directions this work could be taken in, al
 \hlstd{}\hspace*{\fill}\\
 \hspace*{\fill}\\
 
-\clearpage
 
 \noindent
 \hlslc{//}\hspace*{\fill}\\
@@ -1493,23 +1497,25 @@ In short, there are a huge variety of directions this work could be taken in, al
 \hllin{29\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\\
 \hllin{30\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\\
 \hllin{31\ }\hlstd{}\\
-\hllin{32\ }\hlcom{/{*}{*}}\\
-\hllin{33\ }\hlcom{\ {*}\ Assume\ the\ tool\ saved\ a\ model\ to\ the\ default}\\
-\hllin{34\ }\hlcom{\ {*}\ location,\ delete\ the\ current\ model\ and\ import}\\
-\hllin{35\ }\hlcom{\ {*}\ the\ tweaked\ model\ from\ disk}\\
-\hllin{36\ }\hlcom{\ {*}/}\hlstd{}\\
-\hllin{37\ }\hlkwa{global\ proc\ }\hlstd{loadFromViewer}\hlopt{()\ \usebox{\hlboxopenbrace}}\\
-\hllin{38\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwc{\$file\ }\hlstd{}\hlopt{=\ }\hlstd{}\hlstr{"/path/to/Modeller/scanner\textunderscore model.obj"}\hlstd{}\hlopt{;}\\
-\hllin{39\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{\\
-\hllin{40\ }}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ Delete\ the\ current\ mesh}\\
-\hllin{41\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for}\hlstd{}\hlopt{(\ }\hlstd{}\hlkwc{\$del\ }\hlstd{}\hlkwa{in\ }\hlstd{}\hlstr{`ls\ {-}l\ {-}type\ "mesh"`}\hlstd{\ }\hlopt{)\ \usebox{\hlboxopenbrace}}\\
-\hllin{42\ }\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwa{if\ }\hlstd{}\hlopt{(\ }\hlstd{}\hlkwb{objExists}\hlstd{}\hlopt{(\ }\hlstd{}\hlkwc{\$del\ }\hlstd{}\hlopt{)\ )}\\
-\hllin{43\ }\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlkwb{delete\ }\hlstd{}\hlkwc{\$del}\hlstd{}\hlopt{;}\\
-\hllin{44\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{\ \ }\hlopt{}\\
-\hllin{45\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{\\
-\hllin{46\ }}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ Load\ the\ saved\ OBJ\ file}\\
-\hllin{47\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwb{file\ }\hlstd{}\hlopt{{-}}\hlstd{import\ }\hlopt{{-}}\hlstd{type\ }\hlstr{"OBJ"}\hlstd{\ }\hlkwc{\$file}\hlstd{}\hlopt{;}\\
-\hllin{48\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{}
+\hllin{32\ }\hlstd{}\\
+\hllin{33\ }\hlcom{/{*}{*}}\\
+\hllin{34\ }\hlcom{\ {*}\ Assume\ the\ tool\ saved\ a\ model\ to\ the\ default}\\
+\hllin{35\ }\hlcom{\ {*}\ location,\ delete\ the\ current\ model\ and\ import}\\
+\hllin{36\ }\hlcom{\ {*}\ the\ tweaked\ model\ from\ disk}\\
+\hllin{37\ }\hlcom{\ {*}/}\hlstd{}\\
+\hllin{38\ }\hlkwa{global\ proc\ }\hlstd{loadFromViewer}\hlopt{()\ \usebox{\hlboxopenbrace}}\\
+\hllin{39\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwc{\$file\ }\hlstd{}\hlopt{=\ }\hlstd{}\hlstr{"/path/to/Modeller/scanner\textunderscore model.obj"}\hlstd{}\hlopt{;}\\
+\hllin{40\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{\\
+\hllin{41\ }}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ Delete\ the\ current\ mesh}\\
+\hllin{42\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for}\hlstd{}\hlopt{(\ }\hlstd{}\hlkwc{\$del\ }\hlstd{}\hlkwa{in\ }\hlstd{}\hlstr{`ls\ {-}l\ {-}type\ "mesh"`}\hlstd{\ }\hlopt{)\ \usebox{\hlboxopenbrace}}\\
+\hllin{43\ }\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwa{if\ }\hlstd{}\hlopt{(\ }\hlstd{}\hlkwb{objExists}\hlstd{}\hlopt{(\ }\hlstd{}\hlkwc{\$del\ }\hlstd{}\hlopt{)\ )}\\
+\hllin{44\ }\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlkwb{delete\ }\hlstd{}\hlkwc{\$del}\hlstd{}\hlopt{;}\\
+\hllin{45\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{\ \ }\hlopt{}\\
+\hllin{46\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{\\
+\hllin{47\ }}\hlstd{\ \ \ \ }\hlstd{}\hlslc{//\ Load\ the\ saved\ OBJ\ file}\\
+\hllin{48\ }\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwb{file\ }\hlstd{}\hlopt{{-}}\hlstd{import\ }\hlopt{{-}}\hlstd{type\ }\hlstr{"OBJ"}\hlstd{\ }\hlkwc{\$file}\hlstd{}\hlopt{;}\\
+\hllin{49\ }\hlstd{}\hlopt{\usebox{\hlboxclosebrace}}\hlstd{} \\
+\hllin{50\ }\hlstd{}\\
 \mbox{}
 \normalfont
 \normalsize
