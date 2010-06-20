@@ -292,9 +292,6 @@ void restoreGUI::click() {
     GUI.ParseLine( "drawPoints=1" );
     GUI.ParseLine( "drawFeatures=1" );
     GUI.ParseLine( "drawTarget=1" );
-    GUI.ParseLine( "drawClosestPoint=1" );
-    GUI.ParseLine( "drawClosestEdge=1" );
-    GUI.ParseLine( "drawClosestFace=1" );
 };
 
 MK_TOOL_PLUGIN( saveErrorMap, "1", "", );

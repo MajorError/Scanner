@@ -125,8 +125,11 @@ namespace game {
     void game::init( string args ) {
         GUI.ParseLine( "drawGrid=0" );
         GUI.ParseLine( "drawEdges=0" );
+        GUI.ParseLine( "drawFeatures=0" );
+        GUI.ParseLine( "drawClosestPoint=0" );
         GUI.ParseLine( "drawClosestEdge=0" );
         GUI.ParseLine( "drawClosestFace=0" );
+        GUI.ParseLine( "drawClosestPlane=0" );
         GUI.ParseLine( "textureExtractor.disable" );
         cerr << "Starting game" << endl;
         cerr << "Creating world map" << endl;
@@ -153,7 +156,7 @@ namespace game {
 
         // The world.
         btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-        dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -15 ) ) );
+        dynamicsWorld->setGravity( btVector3( 0, 0, GV3::get<double>( "gravity", -9.8 ) ) );
         dynamicsWorld->setInternalTickCallback( tick::callback );
         
         return dynamicsWorld;
